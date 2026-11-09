@@ -102,7 +102,6 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
             <div class="art-terminal crt boot" style="--i:2" role="img" aria-label="A small low-poly island floating in the air, slowly turning. Drag to turn it, click for a new one.">
               <div class="terminal-bar"><span>~/worlds/your-next-idea</span><span aria-hidden="true">− □ ×</span></div>
               <canvas class="island" id="island" aria-hidden="true"></canvas>
-              <div class="terminal-footer"><span><span class="dot pulse" aria-hidden="true"></span> <span id="island-seed">generating…</span></span><span>drag: orbit · click: new world</span></div>
             </div>
           </div>
           <div class="ticker" aria-label={ticker.join(', ')}>
@@ -173,7 +172,7 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
       document.documentElement.classList.add('js');
 
       const islandEl = document.querySelector<HTMLCanvasElement>('#island');
-      if (islandEl) island(islandEl, document.querySelector('#island-seed'), still);
+      if (islandEl) island(islandEl, still);
       const helloEl = document.querySelector<HTMLElement>('#hello');
       if (helloEl) hello(helloEl, still);
 

@@ -685,14 +685,12 @@ body::before {
       0 0;
   }
 }
-.art-terminal,
 .code-window,
 .demo-window {
   transition:
     box-shadow 0.4s,
     transform 0.4s;
 }
-.art-terminal:hover,
 .code-window:hover,
 .demo-window:hover {
   box-shadow: 14px 14px 0 #0b0e0b, 0 0 0 1px #c0fa7333;
@@ -993,7 +991,6 @@ body::before {
     flex-wrap: wrap;
   }
   .demo-window:hover .demo-stage img,
-  .art-terminal:hover,
   .code-window:hover,
   .demo-window:hover {
     transform: none;

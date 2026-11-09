@@ -31,7 +31,7 @@ const WATER = 0, SAND = 1, GRASS = 2, FOREST = 3, ROCK = 4, SNOW = 5, CLIFF = 6,
 // stays put, trees ride on the land vertex they stand on.
 const LAND = 0, SEA = 1, STONE = 2, LEAF = 3;
 
-export function island(canvas: HTMLCanvasElement, label: HTMLElement | null, still: boolean) {
+export function island(canvas: HTMLCanvasElement, still: boolean) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   let seed = (Math.random() * 0xffff) | 0;
@@ -180,7 +180,6 @@ export function island(canvas: HTMLCanvasElement, label: HTMLElement | null, sti
     const n = X.length;
     [px, py, pz, vx, vy, vz, sx, sy] = Array.from({ length: 8 }, () => new Float32Array(n));
     depth = new Float32Array(M.length);
-    if (label) label.textContent = `seed 0x${seed.toString(16).padStart(4, '0')} · ${M.length.toLocaleString('en-US')} triangles`;
   }
 
   // View state.
