@@ -1293,6 +1293,7 @@ function __wbg_get_imports() {
             return ret;
         },
         __wbg_new_with_byte_offset_and_length_3cd32055a417f095: function(arg0, arg1, arg2) {
+            if ((arg1 >>> 0) + (arg2 >>> 0) > arg0.byteLength) throw new RangeError(`mapped GPU buffer is ${arg0.byteLength} bytes, wanted ${arg2 >>> 0} at ${arg1 >>> 0}`);
             const ret = new Uint8Array(arg0, arg1 >>> 0, arg2 >>> 0);
             return ret;
         },

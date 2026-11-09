@@ -155,6 +155,14 @@
     const fail = (message) => { line(`<span class="bad">! ${message}</span>`); };
     window.addEventListener("error", (e) => fail("the game stopped: " + e.message));
 
+    // ?notimer hides GPU timestamps from the game (a check for browsers whose
+    // timestamp readback misbehaves).
+    if (new URLSearchParams(location.search).has("notimer") && window.GPUAdapter) {
+      const real = Object.getOwnPropertyDescriptor(GPUAdapter.prototype, "features");
+      Object.defineProperty(GPUAdapter.prototype, "features", {
+        get() { const f = new Set(real.get.call(this)); f.delete("timestamp-query"); return f; },
+      });
+    }
     // 0. The game draws with WebGPU; check for it before downloading anything.
     const adapter = navigator.gpu && await navigator.gpu.requestAdapter().catch(() => null);
     if (!adapter) {

@@ -20,6 +20,9 @@ if command -v wasm-opt >/dev/null; then
   wasm-opt -O3 --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext \
     "$out/game_bg.wasm" -o "$out/game_bg.wasm"
 fi
+# A GPU buffer view that doesn't fit its mapping says what it asked for, so a
+# browser's WebGPU quirk shows up as numbers rather than a bare RangeError.
+perl -0pi -e 's/const ret = new Uint8Array\(arg0, arg1 >>> 0, arg2 >>> 0\);/if ((arg1 >>> 0) + (arg2 >>> 0) > arg0.byteLength) throw new RangeError(`mapped GPU buffer is \${arg0.byteLength} bytes, wanted \${arg2 >>> 0} at \${arg1 >>> 0}`);\n            const ret = new Uint8Array(arg0, arg1 >>> 0, arg2 >>> 0);/' "$out/game.js"
 raw=$(wc -c < "$out/game_bg.wasm" | tr -d " ")
 packed=$(gzip -9c "$out/game_bg.wasm" | wc -c | tr -d " ")
 echo "built $out: game_bg.wasm $((raw / 1024)) KiB, $((packed / 1024)) KiB gzipped"
