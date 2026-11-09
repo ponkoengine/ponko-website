@@ -1,0 +1,6 @@
+{
+  "repository": "ponkoengine/ponko",
+  "revision": "66ff7adfe73e5871b48f263c396c764b3ea36344",
+  "wasmBindgen": "0.2.130",
+  "rust": "1.96.1"
+}

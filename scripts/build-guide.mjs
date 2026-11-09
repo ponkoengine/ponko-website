@@ -77,14 +77,14 @@ try {
   execFileSync("tar", ["-xzf", archive, "-C", binDir]);
   await chmod(bin, 0o755);
 }
-// Legacy Pages demos were retired. Keep this deployment honest about availability.
+// Point the hosted guide at the games built alongside this website.
 const webChapter = resolve(source, "book/src/web.md");
 const originalWebChapter = await readFile(webChapter, "utf8");
 await writeFile(
   webChapter,
   originalWebChapter.replace(
     /The same game code[\s\S]*?(?=## Building your game)/,
-    "The engine includes browser-build tooling. Hosted playable demos are not yet deployed on ponko.dev. Build the public [battle](https://github.com/ponkoengine/ponko/blob/main/examples/battle.rs), [flow](https://github.com/ponkoengine/ponko/blob/main/examples/flow.rs), and [ants](https://github.com/ponkoengine/ponko/blob/main/examples/ants.rs) examples locally using the instructions below.\n\n",
+    "Play [Asteroids](/play/asteroids/), [Breakout](/play/breakout/), or the [3D arena shooter](/play/arena/). These games are compiled from Rust using Ponko. The [website examples](/) show their source alongside the running game. The engine also includes browser-build tooling for your own games.\n\n",
   ),
 );
 try {

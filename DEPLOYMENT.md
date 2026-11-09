@@ -57,3 +57,18 @@ in ignored `.cache/`. It never reads private sibling repositories.
 `npm run build:site` builds only Astro for rapid layout work. Guide links need
 the full build to work. On localhost, clipboard access requires a secure
 context; the copy button also supplies a readable fallback if access fails.
+
+## Playable games
+
+The full build now compiles the games in `games/` to WASM before building Astro.
+It fetches only the pinned public Ponko revision in `games/engine.json`, uses
+locked Rust dependencies, and installs the pinned Rust and wasm-bindgen tooling
+if the build host needs them. Allow network access to GitHub, crates.io,
+static.rust-lang.org, and sh.rustup.rs. The first build takes longer; `.cache/`
+and `games/target/` are safe build caches. No binaries are checked into Git.
+
+`public/play/build-info.json` (served at `/play/build-info.json`) records engine
+provenance, the game source fingerprint and each WASM checksum. Same-origin
+frames are allowed by `_headers` so the homepage can embed these games. Games
+remain available directly at `/play/asteroids/`, `/play/breakout/` and `/play/arena/`.
+See `games/README.md` for development, controls and verification.

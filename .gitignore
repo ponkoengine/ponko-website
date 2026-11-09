@@ -4,3 +4,9 @@ dist/
 .cache/
 .env
 .env.*
+
+# Generated browser games and Rust build cache
+public/play/
+games/target/
+test-results/
+playwright-report/

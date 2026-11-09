@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Ponko playable example</title>
+    <link rel="icon" href="data:," />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #10171e;
+        color: #e1e6df;
+        font:
+          13px/1.5 system-ui,
+          sans-serif;
+      }
+      #crabby {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+        outline: 0;
+        touch-action: none;
+      }
+      #status {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        text-align: center;
+        background: #10171e;
+        padding: 25px;
+        gap: 12px;
+      }
+      #status[hidden] {
+        display: none;
+      }
+      #status a {
+        color: #c3d5b3;
+      }
+      #toolbar {
+        position: absolute;
+        bottom: 8px;
+        right: 10px;
+        display: flex;
+        gap: 6px;
+      }
+      button {
+        background: #1c2630e8;
+        border: 1px solid #53616a;
+        border-radius: 3px;
+        color: #e1e6df;
+        padding: 7px 11px;
+        font: 11px monospace;
+        cursor: pointer;
+      }
+      button:focus-visible {
+        outline: 2px solid #c3d5b3;
+        outline-offset: 2px;
+      }
+      #touch {
+        display: none;
+        position: absolute;
+        bottom: 45px;
+        left: 10px;
+        right: 10px;
+        justify-content: space-between;
+        pointer-events: none;
+      }
+      #touch > div {
+        display: flex;
+        gap: 7px;
+      }
+      #touch button {
+        pointer-events: auto;
+        min-width: 45px;
+        min-height: 45px;
+        touch-action: none;
+        user-select: none;
+      }
+      #touch button.held {
+        background: #566650;
+      }
+      #pause-note {
+        position: absolute;
+        top: 40%;
+        left: 0;
+        right: 0;
+        text-align: center;
+        pointer-events: none;
+        background: #10171ebd;
+        padding: 15px;
+      }
+      #pause-note[hidden] {
+        display: none;
+      }
+      @media (pointer: coarse) {
+        #touch {
+          display: flex;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas
+      id="crabby"
+      tabindex="0"
+      aria-label="Playable game canvas. Controls are below the game on the main page."
+    ></canvas>
+    <div id="status" role="status">Loading compiled game…</div>
+    <div id="pause-note" hidden>Paused · press P or Resume to continue</div>
+    <div id="toolbar">
+      <button type="button" id="pause">Pause</button
+      ><button type="button" id="restart">Restart</button>
+    </div>
+    <div id="touch">
+      <div>
+        <button type="button" data-bit="1" aria-label="Move or turn left">
+          ←</button
+        ><button type="button" data-bit="2" aria-label="Move or turn right">
+          →</button
+        ><button type="button" data-bit="4" id="up">↑</button
+        ><button type="button" data-bit="64" id="down">↓</button>
+      </div>
+      <div>
+        <button type="button" data-bit="16" id="dash">Dash</button
+        ><button type="button" data-bit="8" id="fire">Fire</button>
+      </div>
+    </div>
+    <script type="module">
+      const canvas = document.getElementById("crabby"),
+        status = document.getElementById("status"),
+        pause = document.getElementById("pause"),
+        note = document.getElementById("pause-note");
+      window.__ponkoInput = 0;
+      window.__ponkoPaused = false;
+      window.__ponkoOffscreen = false;
+      window.addEventListener("message", (e) => {
+        if (e.origin !== location.origin || e.source !== parent) return;
+        if (e.data?.type === "ponko-visibility") {
+          window.__ponkoOffscreen = !e.data.visible;
+          clear();
+        }
+        if (e.data?.type === "ponko-focus") canvas.focus();
+      });
+      const name = location.pathname.split("/").filter(Boolean).at(-1);
+      document.title = `${name} / Ponko`;
+      const arena = name === "arena",
+        breakout = name === "breakout";
+      document.getElementById("down").hidden = !arena;
+      document.getElementById("dash").hidden = !arena;
+      document.getElementById("up").hidden = breakout;
+      document
+        .getElementById("up")
+        .setAttribute("aria-label", arena ? "Move forward" : "Thrust");
+      document
+        .getElementById("down")
+        .setAttribute("aria-label", "Move backward");
+      document.getElementById("fire").textContent = breakout ? "Serve" : "Fire";
+      function fail(error) {
+        status.hidden = false;
+        status.textContent = `Could not start this game: ${error.message || error}. Try a current browser with WebGPU or WebGL2, or reload to retry.`;
+        parent.postMessage(
+          { type: "ponko-error", message: status.textContent },
+          location.origin,
+        );
+      }
+      window.addEventListener("error", (e) => {
+        if (!String(e.message).includes("Using exceptions for control flow"))
+          fail(e.error || e.message);
+      });
+      window.addEventListener("unhandledrejection", (e) => {
+        if (!String(e.reason).includes("Using exceptions for control flow"))
+          fail(e.reason);
+      });
+      window.addEventListener(
+        "ponko-ready",
+        () => {
+          status.hidden = true;
+          parent.postMessage({ type: "ponko-ready" }, location.origin);
+        },
+        { once: true },
+      );
+      const timeout = setTimeout(() => {
+        if (!window.__ponkoReady) fail("Startup timed out.");
+      }, 45000);
+      window.addEventListener("ponko-ready", () => clearTimeout(timeout), {
+        once: true,
+      });
+      function clear() {
+        window.__ponkoInput = 0;
+        document
+          .querySelectorAll(".held")
+          .forEach((b) => b.classList.remove("held"));
+      }
+      window.addEventListener("blur", clear);
+      document.addEventListener("visibilitychange", clear);
+      pause.onclick = () => {
+        window.__ponkoPaused = !window.__ponkoPaused;
+        pause.textContent = window.__ponkoPaused ? "Resume" : "Pause";
+        note.hidden = !window.__ponkoPaused;
+        canvas.focus();
+      };
+      document.getElementById("restart").onclick = () => {
+        window.__ponkoPaused = false;
+        pause.textContent = "Pause";
+        note.hidden = true;
+        window.__ponkoInput = 32;
+        setTimeout(() => (window.__ponkoInput &= ~32), 80);
+        canvas.focus();
+      };
+      for (const b of document.querySelectorAll("[data-bit]")) {
+        b.onpointerdown = (e) => {
+          e.preventDefault();
+          canvas.focus();
+          b.setPointerCapture(e.pointerId);
+          window.__ponkoInput |= Number(b.dataset.bit);
+          b.classList.add("held");
+        };
+        const release = () => {
+          window.__ponkoInput &= ~Number(b.dataset.bit);
+          b.classList.remove("held");
+        };
+        b.onpointerup = release;
+        b.onpointercancel = release;
+        b.onlostpointercapture = release;
+      }
+      window.addEventListener("keydown", (e) => {
+        if (
+          ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(
+            e.code,
+          )
+        )
+          e.preventDefault();
+        if (e.code === "KeyP" && !e.repeat) pause.click();
+      });
+      canvas.addEventListener("pointerdown", () => canvas.focus());
+      try {
+        const { default: init } = await import("./game.js");
+        await init();
+        if (parent === window) canvas.focus();
+      } catch (e) {
+        if (!String(e).includes("Using exceptions for control flow")) fail(e);
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+[package]
+name = "ponko-arcade"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[features]
+default = []
+runtime = ["dep:ponko", "dep:wasm-bindgen", "dep:js-sys"]
+
+[dependencies]
+glam = "0.34.2"
+ponko = { path = "../.cache/engine", default-features = false, features = ["window", "3d"], optional = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = { version = "0.2.130", optional = true }
+js-sys = { version = "0.3.107", optional = true }
+
+[[bin]]
+name = "asteroids"
+required-features = ["runtime"]
+
+[[bin]]
+name = "breakout"
+required-features = ["runtime"]
+
+[[bin]]
+name = "arena"
+required-features = ["runtime"]

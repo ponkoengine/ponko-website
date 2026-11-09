@@ -8,13 +8,21 @@
   },
   "scripts": {
     "dev": "astro dev --host 127.0.0.1",
-    "build": "astro build && node scripts/build-guide.mjs",
+    "build": "node scripts/build-games.mjs && astro build && node scripts/build-guide.mjs",
     "build:site": "astro build",
     "preview": "astro preview --host 127.0.0.1",
     "check": "node scripts/check-build.mjs",
-    "test": "node --test scripts/*.test.mjs"
+    "test": "node --test scripts/*.test.mjs",
+    "build:games": "node scripts/build-games.mjs",
+    "test:games": "node scripts/prepare-engine.mjs && cargo test --manifest-path games/Cargo.toml --locked",
+    "test:browser": "playwright test"
   },
   "dependencies": {
-    "astro": "7.4.7"
+    "astro": "7.4.7",
+    "motion": "12.42.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "pngjs": "7.0.0"
   }
 }
