@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en" data-wasm-bytes="6446746">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0b0e0b">
+  <title>Tide · ponko</title>
+  <meta name="description" content="A browser game built with the Ponko engine: raise towers and bend the path of thousands of units on a live flow field.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    :root { --bg: #0b0e0b; --panel: #121712; --line: #343c32; --text: #e8e9dc; --muted: #a5ae9f; --accent: #c0fa73;
+            --warn: #ff7a5c; --pad: max(16px, env(safe-area-inset-left));
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; color-scheme: dark; }
+    [hidden] { display: none !important; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); overflow: hidden;
+                 font-size: 12px; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+                 -webkit-tap-highlight-color: transparent; }
+    canvas#crabby { display: block; width: 100vw !important; height: 100vh !important; height: 100dvh !important;
+                    outline: none; touch-action: none; cursor: crosshair; }
+    button { font: inherit; }
+
+    /* Boot screen */
+    .boot { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: var(--bg); padding: 24px;
+            transition: opacity .5s, visibility 0s .5s; }
+    .boot.done { opacity: 0; visibility: hidden; }
+    .boot a { pointer-events: auto; }
+    .boot pre { margin: 0; width: min(440px, 100%); font: inherit; line-height: 2; color: var(--muted); white-space: pre-wrap; }
+    .boot .brand { color: var(--text); font-size: 15px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 10px; display: block; }
+    .boot .brand span { color: var(--accent); }
+    .boot .ok { color: var(--accent); }
+    .boot .bad { color: var(--warn); }
+    .boot .meter { display: flex; gap: 10px; align-items: center; }
+    .boot .meter i { flex: 1; height: 6px; border: 1px solid var(--line); position: relative; }
+    .boot .meter i::after { content: ""; position: absolute; inset: 0; width: var(--p, 0%); background: var(--accent); transition: width .15s; }
+    .blink { animation: blink 1s steps(1) infinite; color: var(--accent); }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* HUD */
+    .hud { position: fixed; left: 0; right: 0; top: 0; display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;
+           padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 0 var(--pad); pointer-events: none; }
+    .stat { color: var(--muted); letter-spacing: 1px; font-size: 10px; text-transform: uppercase; }
+    .stat b { display: block; color: var(--text); font-size: 22px; font-weight: 500; letter-spacing: -0.5px; text-transform: none; line-height: 1.3; }
+    .stat small { display: block; font-size: 10px; letter-spacing: .5px; text-transform: none; margin-top: 2px; }
+    .stat small em { font-style: normal; color: var(--warn); }
+    .stat.right { text-align: right; }
+    .bar { width: 150px; height: 6px; border: 1px solid var(--line); margin-top: 8px; margin-left: auto; }
+    .bar i { display: block; height: 100%; width: 100%; background: var(--accent); transition: width .25s, background .2s; }
+    .bar.low i { background: var(--warn); }
+    .actions { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px;
+               padding: 0 max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) var(--pad); pointer-events: none; }
+    .chip { border: 1px solid var(--line); background: #0b0e0bcc; padding: 8px 12px; color: var(--muted); }
+    .chip b { color: var(--accent); font-size: 18px; font-weight: 500; margin-right: 6px; }
+    .chip.empty b { color: var(--warn); }
+    .chip.bump { animation: bump .4s ease-out; }
+    @keyframes bump { 40% { transform: translateY(-4px); border-color: var(--accent); } }
+    .charge { pointer-events: auto; cursor: pointer; width: 92px; height: 92px; border-radius: 50%; border: 1px solid var(--line);
+              color: var(--muted); background: #0b0e0bcc; font-size: 10px; letter-spacing: 1px; position: relative; touch-action: none;
+              display: grid; place-items: center; align-content: center; line-height: 1.4; }
+    .charge::before { content: ""; position: absolute; inset: -1px; border-radius: 50%; padding: 2px;
+                      background: conic-gradient(var(--accent) calc(var(--ready, 1) * 360deg), transparent 0);
+                      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+                      -webkit-mask-composite: xor; mask-composite: exclude; }
+    .charge.ready { color: var(--bg); background: var(--accent); border-color: var(--accent); box-shadow: 0 0 24px #c0fa7355; }
+    .charge.ready::before { display: none; }
+    .charge.on { background: #fff; color: var(--bg); box-shadow: 0 0 40px #ffffffaa; }
+    .charge:active { transform: scale(.95); }
+    .charge kbd { font: inherit; font-size: 9px; opacity: .7; border: 0; padding: 0; color: inherit; }
+    .stats { position: fixed; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+             color: var(--muted); font-size: 10px; white-space: nowrap; pointer-events: none; }
+    .stats span { color: var(--accent); }
+
+    .banner { position: fixed; left: 0; right: 0; top: 20%; text-align: center; pointer-events: none; opacity: 0;
+              text-shadow: 0 0 24px #0b0e0b; }
+    .banner b { display: block; font-size: clamp(34px, 9vw, 64px); font-weight: 500; letter-spacing: -2px; }
+    .banner span { color: var(--muted); }
+    .banner.show { animation: banner 2.2s ease-out; }
+    @keyframes banner { 0% { opacity: 0; transform: translateY(8px); } 12%, 70% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+    .toast { position: fixed; left: 50%; top: max(96px, calc(env(safe-area-inset-top) + 86px)); transform: translate(-50%, -6px);
+             border: 1px solid var(--line); background: #0b0e0be6; padding: 8px 13px; color: var(--muted); width: max-content;
+             max-width: calc(100vw - 32px); text-align: center; font-size: 11px; line-height: 1.6; pointer-events: none;
+             opacity: 0; transition: opacity .3s, transform .3s; }
+    .toast.on { opacity: 1; transform: translate(-50%, 0); }
+    .toast b { color: var(--accent); font-weight: 500; }
+    .toast em { color: var(--warn); font-style: normal; }
+    .hurt { position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 120px #ff5a3c; opacity: 0; transition: opacity .5s; }
+    .hurt.on { opacity: .55; transition: none; }
+
+    /* Title and game over */
+    .screen { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; text-align: center; padding: 24px;
+              background: radial-gradient(ellipse at center, #0b0e0be6 0%, #0b0e0b99 45%, #0b0e0b22 80%);
+              pointer-events: none; transition: opacity .35s; }
+    .screen.hidden { opacity: 0; visibility: hidden; transition: opacity .35s, visibility 0s .35s; }
+    .screen h1 { margin: 0 0 8px; font-size: clamp(34px, 9vw, 60px); font-weight: 500; letter-spacing: -2px; }
+    .screen h1 em { font-style: normal; color: var(--accent); }
+    .screen p { margin: 6px auto; color: var(--muted); line-height: 1.75; max-width: 40ch; }
+    .legend { display: grid; gap: 6px; margin: 18px auto 0; max-width: 340px; text-align: left; color: var(--muted); font-size: 11px; }
+    .legend span { display: flex; gap: 10px; align-items: center; }
+    .legend i { flex: none; width: 14px; height: 14px; display: inline-block; }
+    .go { display: inline-block; margin-top: 22px; color: var(--bg); background: var(--accent); padding: 11px 20px;
+          pointer-events: auto; cursor: pointer; border: 0; font-weight: 700; }
+    .go:hover { background: var(--text); }
+    .go:focus-visible, .charge:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+    .keys { margin-top: 14px; font-size: 10px; color: var(--muted); }
+    kbd { border: 1px solid var(--line); padding: 1px 6px; color: var(--text); font: inherit; }
+    .touch-only { display: none; }
+    @media (pointer: coarse) { .touch-only { display: inline; } .desk-only { display: none !important; } }
+    @media (max-width: 520px) { .bar { width: 110px; } .stat b { font-size: 18px; } .stats { display: none; } .charge { width: 80px; height: 80px; } }
+    @media (prefers-reduced-motion: reduce) { .blink, .chip.bump { animation: none; } .banner.show { animation-duration: 3s; } }
+  </style>
+</head>
+<body>
+  <canvas id="crabby" tabindex="0" aria-label="Tide game board"></canvas>
+
+  <div class="boot" id="boot" role="status" aria-live="polite">
+    <pre id="log"><span class="brand"><span>[p]</span> ponko · tide</span></pre>
+  </div>
+
+  <div class="hud" id="hud" hidden>
+    <div class="stat">wave<b id="wave">1</b><small id="wavenote">get ready</small></div>
+    <div class="stat right">burned<b id="kills">0</b><div class="bar" id="corebar"><i id="core"></i></div><small>core</small></div>
+  </div>
+  <div class="actions" id="actions" hidden>
+    <div class="chip" id="towers"><b id="towercount">0</b>towers</div>
+    <button class="charge" id="charge" type="button" aria-label="Overcharge all towers">OVER<br>CHARGE<kbd class="desk-only">space</kbd></button>
+  </div>
+  <div class="stats" id="stats" hidden><span id="alive">0</span> units · sim <span id="sim">0.00</span> ms · <span id="fps">0</span> fps</div>
+  <div class="banner" id="banner"><b id="bannertitle"></b><span id="bannernote"></span></div>
+  <div class="toast" id="toast"></div>
+  <div class="hurt" id="hurt"></div>
+
+  <div class="screen hidden" id="screen">
+    <div>
+      <h1 id="title">Tide<em>.</em></h1>
+      <p id="subtitle">Waves of units march from the red gates to your core. Build towers in their way: towers zap whatever comes close, and units have to walk around them.</p>
+      <div class="legend" id="legend">
+        <span><i style="background:#ff5c47"></i>gates: units come in where they glow</span>
+        <span><i style="background:#c0fa73"></i>towers: zap nearby units; build a maze</span>
+        <span><i style="border:1px solid #ff8a5c"></i>route lines: where units will walk</span>
+      </div>
+      <button class="go" id="go" type="button">▶ hold the line</button>
+      <div class="keys">
+        <span class="desk-only">click: build or take back a tower · <kbd>space</kbd> overcharge</span>
+        <span class="touch-only">tap: build or take back a tower · button: overcharge</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import init, { start, hover, tap, begin, overcharge, events, hud } from "./game.js";
+    const $ = (id) => document.getElementById(id);
+    const log = $("log");
+    const line = (text) => { const el = document.createElement("span"); el.style.display = "block"; el.innerHTML = text; log.append(el); return el; };
+    const dots = (label) => label + " " + ".".repeat(Math.max(2, 22 - label.length));
+    const fail = (message) => { line(`<span class="bad">! ${message}</span>`); };
+    window.addEventListener("error", (e) => fail("the game stopped: " + e.message));
+
+    // 0. The game draws with WebGPU; check for it before downloading anything.
+    const adapter = navigator.gpu && await navigator.gpu.requestAdapter().catch(() => null);
+    if (!adapter) {
+      line(`&gt; ${dots("find webgpu")} <span class="bad">missing</span>`);
+      line(`<span class="bad">Tide needs WebGPU.</span> Try a current Chrome or Edge (desktop or Android), Safari 26 (Mac, iPhone, iPad), or Firefox on Windows.`);
+      line(`<a href="/" style="color:var(--accent)">← back to ponko.dev</a>`);
+      await new Promise(() => {}); // stop here, quietly
+    }
+    line(`&gt; ${dots("find webgpu")} <span class="ok">ok</span>`);
+
+    // 1. Download the engine with a progress bar.
+    const expected = Number(document.documentElement.dataset.wasmBytes) || 6e6;
+    line(`<span class="meter">&gt; ${dots("fetch game_bg.wasm")} <i id="bar"></i><span id="pct">0%</span></span>`);
+    let bytes;
+    try {
+      const response = await fetch("./game_bg.wasm");
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const reader = response.body.getReader();
+      const chunks = []; let got = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value); got += value.length;
+        const p = Math.min(99, (got / expected) * 100);
+        $("bar").style.setProperty("--p", p + "%"); $("pct").textContent = Math.floor(p) + "%";
+      }
+      bytes = new Uint8Array(got); let at = 0;
+      for (const c of chunks) { bytes.set(c, at); at += c.length; }
+      $("bar").style.setProperty("--p", "100%"); $("pct").innerHTML = `<span class="ok">${(got / 1048576).toFixed(1)} MB</span>`;
+    } catch (e) { fail("could not download the game: " + e.message); throw e; }
+
+    // 2. Compile, then start the engine and wait for its first frames.
+    const compile = line(`&gt; ${dots("compile webassembly")} <span class="blink">_</span>`);
+    await new Promise(requestAnimationFrame);
+    try { await init({ module_or_path: bytes }); }
+    catch (e) { fail("this browser can't run WebAssembly"); throw e; }
+    compile.innerHTML = `&gt; ${dots("compile webassembly")} <span class="ok">ok</span>`;
+    const gpu = line(`&gt; ${dots("start renderer")} <span class="blink">_</span>`);
+    const units = Number(new URLSearchParams(location.search).get("units")) || 0;
+    try { start(units); } catch (e) {
+      // winit leaves its startup function by throwing; that's not an error.
+      if (!String(e).includes("Using exceptions for control flow")) { fail("could not start: " + e + " (needs WebGPU or WebGL2)"); throw e; }
+    }
+    await new Promise((resolve) => { const wait = () => (hud()[7] > 0 ? resolve() : requestAnimationFrame(wait)); wait(); });
+    gpu.innerHTML = `&gt; ${dots("start renderer")} <span class="ok">ok</span>`;
+    line(`&gt; ${dots("spawn unit pool")} <span class="ok">${(units || 12000).toLocaleString("en-US")}</span>`);
+    line(`&gt; ready<span class="blink">_</span>`);
+    await new Promise((r) => setTimeout(r, 450));
+    $("boot").classList.add("done");
+    $("stats").hidden = false;
+
+    // Pointer: mouse hover previews a tower; a click or tap builds or takes one back.
+    const canvas = $("crabby");
+    const at = (e) => { const r = canvas.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; };
+    let down = null, clearHover = 0;
+    canvas.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") hover(...at(e)); });
+    canvas.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") hover(-1, -1); });
+    canvas.addEventListener("pointerdown", (e) => { down = { x: e.clientX, y: e.clientY, id: e.pointerId }; });
+    canvas.addEventListener("pointerup", (e) => {
+      if (!down || down.id !== e.pointerId || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 16) return;
+      down = null;
+      const [x, y] = at(e);
+      tap(x, y);
+      if (e.pointerType !== "mouse") {
+        hover(x, y); clearTimeout(clearHover);
+        clearHover = setTimeout(() => hover(-1, -1), 600);
+      }
+    });
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+    $("go").addEventListener("click", () => { begin(); canvas.focus(); });
+    $("charge").addEventListener("pointerdown", (e) => { e.preventDefault(); overcharge(); navigator.vibrate?.(15); });
+
+    // Messages that explain what just happened.
+    const toast = $("toast");
+    const say = (html, ms = 3000) => {
+      toast.innerHTML = html; toast.classList.add("on");
+      clearTimeout(say.t); say.t = setTimeout(() => toast.classList.remove("on"), ms);
+    };
+    const bannerEl = $("banner");
+    const banner = (title, note = "") => {
+      $("bannertitle").textContent = title; $("bannernote").textContent = note;
+      bannerEl.classList.remove("show"); void bannerEl.offsetWidth; bannerEl.classList.add("show");
+    };
+    const GATES = ["north", "south", "west", "east"];
+    const gateNames = (mask) => GATES.filter((_, i) => mask & (1 << i)).join(" + ");
+    const touch = matchMedia("(pointer: coarse)").matches;
+    const verb = touch ? "tap" : "click";
+    let built = 0, told = {};
+    const once = (key, html, ms) => { if (!told[key]) { told[key] = true; say(html, ms); } };
+
+    const screen = $("screen");
+    let phase = -1, towers = -1, hurtTimer = 0;
+    function frame() {
+      const [p, kills, best, core, t, alive, sim, fps, w, attacking, countdown, gates, ready, charged] = hud();
+      for (const e of events()) {
+        if (e === 1) say(`<em>can't build there</em> · units always need a way to the core`);
+        else if (e === 2) say(`<em>no towers left</em> · clear the wave for +2, or take one back`);
+        else if (e === 3) banner(`wave ${w} cleared`, "+2 towers");
+        else if (e === 4) {
+          $("hurt").classList.add("on"); clearTimeout(hurtTimer);
+          hurtTimer = setTimeout(() => $("hurt").classList.remove("on"), 120);
+          once("leak", `<em>units reached the core</em> · put towers along the red route`, 3600);
+        }
+        else if (e === 5) {
+          banner(`wave ${w}`, `from the ${gateNames(gates)}`);
+          if (w === 3) once("runner", `<b>runners</b> are here: fast, fragile, yellow`, 3600);
+          if (w === 5) once("brute", `<b>brutes</b> are here: slow, pink, and they hit the core hard`, 3600);
+        }
+        else if (e === 6) banner("overcharge", "double damage, double reach");
+        else if (e === 7) { built++; if (built === 1) say(`tower up · it zaps units that come near · ${verb} it again to take it back`, 4200); }
+      }
+      $("wave").textContent = Math.max(w, 1);
+      $("wavenote").innerHTML = p !== 1 ? "" : attacking ? `${alive.toLocaleString("en-US")} on the board`
+        : `next in <em>${Math.ceil(countdown)}s</em> · ${gateNames(gates)}`;
+      $("kills").textContent = kills.toLocaleString("en-US");
+      $("core").style.width = (core * 100).toFixed(1) + "%";
+      $("corebar").classList.toggle("low", core < 0.35);
+      $("alive").textContent = alive.toLocaleString("en-US");
+      $("sim").textContent = sim.toFixed(2);
+      $("fps").textContent = Math.round(fps);
+      const charge = $("charge");
+      charge.style.setProperty("--ready", ready.toFixed(3));
+      charge.classList.toggle("ready", ready >= 1 && !charged);
+      charge.classList.toggle("on", !!charged);
+      if (t !== towers) {
+        const chip = $("towers");
+        if (t > towers && towers >= 0) { chip.classList.remove("bump"); void chip.offsetWidth; chip.classList.add("bump"); }
+        towers = t; $("towercount").textContent = t; chip.classList.toggle("empty", t === 0);
+      }
+      if (p !== phase) {
+        phase = p;
+        screen.classList.toggle("hidden", p === 1);
+        $("hud").hidden = p === 0;
+        $("actions").hidden = p !== 1;
+        if (p === 1) {
+          told = {}; built = 0;
+          setTimeout(() => say(`units will come from the <em>blinking gate</em> · ${verb} the board to build towers along their route`, 5200), 400);
+        }
+        if (p === 2) {
+          $("title").innerHTML = "Overrun<em>.</em>";
+          $("subtitle").textContent = `You held ${w} wave${w === 1 ? "" : "s"} and burned ${kills.toLocaleString("en-US")} units` + (kills >= best && kills > 0 ? ". A new best." : `. Best: ${best.toLocaleString("en-US")}.`);
+          $("legend").hidden = true;
+          $("go").textContent = "▶ again";
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+    $("go").focus({ preventScroll: true });
+  </script>
+</body>
+</html>

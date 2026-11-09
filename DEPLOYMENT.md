@@ -46,6 +46,16 @@ The hook URL is a secret. Never put it in source or build output. This hook is
 optional for launching the website; until connected, guide changes arrive on
 the next website deployment or a manual retry in Cloudflare.
 
+## The playable demo
+
+`/play/tide/` is a small game built with the engine (source in `demo/tide`,
+pinned to an exact public engine commit in its `Cargo.toml`). Its compiled
+WebAssembly is committed under `public/play/tide/`, so deployments need no
+Rust toolchain. After changing the demo or bumping its engine revision,
+rebuild it with `scripts/build-demo.sh` (it needs the `wasm32-unknown-unknown`
+target and `wasm-bindgen-cli` 0.2.130) and commit the output. The game needs
+WebGPU and says so on browsers without it.
+
 ## Local development
 
 Use Node 26.13.0 and `npm ci`. `npm run dev` runs the Astro homepage. Run
