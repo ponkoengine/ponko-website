@@ -9,21 +9,16 @@ import {
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 import { createHash } from "node:crypto";
+import { fetchBytes } from "./fetch.mjs";
 
 // Only fetch the public engine. Never read sibling checkouts during a deployment.
 const cache = resolve(".cache");
 await mkdir(cache, { recursive: true });
 async function json(url) {
-  const response = await fetch(url, {
-    headers: { "User-Agent": "ponko-website-build" },
-  });
-  if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-  return response.json();
+  return JSON.parse((await fetchBytes(url)).toString('utf8'));
 }
-async function download(url, destination, digest) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-  const data = Buffer.from(await response.arrayBuffer());
+async function download(url, destination, digest, options) {
+  const data = await fetchBytes(url, options);
   if (
     digest &&
     `sha256:${createHash("sha256").update(data).digest("hex")}` !== digest
@@ -75,7 +70,9 @@ try {
   if (!asset?.digest?.startsWith("sha256:"))
     throw new Error("Missing mdBook release checksum");
   const archive = resolve(cache, "mdbook.tar.gz");
-  await download(asset.browser_download_url, archive, asset.digest);
+  await download(asset.url, archive, asset.digest, {
+    headers: { Accept: "application/octet-stream" },
+  });
   await mkdir(binDir, { recursive: true });
   execFileSync("tar", ["-xzf", archive, "-C", binDir]);
   await chmod(bin, 0o755);
