@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ponko.dev/sitemap.xml
