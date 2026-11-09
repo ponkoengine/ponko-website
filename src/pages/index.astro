@@ -1,0 +1,114 @@
+---
+import '../styles/global.css';
+const modules = [
+  ['01', 'A small start. Room to grow.', 'Start with Game and Ctx. Reach for entities, components and fixed-step systems when your game needs them.', 'ecs.html', 'Explore the ECS'],
+  ['02', 'Pixels, polygons, possibility.', 'A wgpu-powered 2D and 3D renderer, with physics, audio and UI alongside it. Build from code, with your own asset tools.', '3d.html', 'See the rendering guide'],
+  ['03', 'See what your code is doing.', 'Inspect components, step a running simulation, capture screenshots and measure performance. Connect external tools and agents through MCP.', 'agents.html', 'Meet the runtime tools'],
+  ['04', 'Keep the simulation running.', 'Fixed-tick, headless runs without a window or GPU. Rust first, with C and C++ bindings for native integrations.', 'headless.html', 'Run headless'],
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111411" />
+    <title>Ponko — games begin with code.</title>
+    <meta name="description" content="A code-first Rust engine for 2D and 3D games. Integrated simulation tools, C and C++ bindings, and room to build your own thing." />
+    <link rel="canonical" href="https://ponko.dev/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:title" content="Ponko — games begin with code." />
+    <meta property="og:description" content="A code-first Rust engine for 2D and 3D games. Open source. Built to be explored." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://ponko.dev/" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="shell">
+      <header>
+        <a class="brand" href="/" aria-label="Ponko home"><span aria-hidden="true">[p]</span> ponko<span class="cursor" aria-hidden="true">_</span></a>
+        <nav aria-label="Main navigation">
+          <a href="/guide/">Guide</a><a href="https://docs.rs/ponko/">API <span aria-hidden="true">↗</span></a><a href="https://github.com/ponkoengine/ponko">GitHub <span aria-hidden="true">↗</span></a>
+        </nav>
+      </header>
+      <main id="main">
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="eyebrow"><span class="dot" aria-hidden="true"></span> OPEN SOURCE GAME ENGINE <span class="version">v0.0.1 / early days</span></div>
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <h1 id="hero-title">Games begin<br />with <em>code.</em><span class="block-cursor" aria-hidden="true">▌</span></h1>
+              <p class="intro">A code-first Rust engine for 2D and 3D games.<br class="desktop-break" /> A little less ceremony. A lot to make.</p>
+              <div class="actions"><a class="button" href="/guide/getting-started.html">Start building <span aria-hidden="true">↗</span></a><a class="text-link" href="#inside">Look inside <span aria-hidden="true">↓</span></a></div>
+              <div class="install"><code><span aria-hidden="true">$ </span>cargo add ponko</code><button id="copy" type="button" aria-label="Copy cargo add ponko command">copy <span aria-hidden="true">⧉</span></button></div>
+              <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
+            </div>
+            <div class="art-terminal" aria-label="Illustrative ASCII landscape: a small world waiting to be built" role="img">
+              <div class="terminal-bar"><span>~/worlds/your-next-idea</span><span aria-hidden="true">− □ ×</span></div>
+              <pre class="landscape" aria-hidden="true">             .              +
+      +            .                 .
+                  _..._       .
+        .       .'     '.
+               /  .--.   \       +
+    +          | (    )  |
+               \  '--'  /
+          .     '.___.'           .
+
+              /\          /\
+        /\   /  \   /\   /  \  /\
+   ____/  \_/    \_/  \_/    \/  \____
+  /    .        .       .        .     \
+ /__  ___  ___  ___  ___  ___  ___  ____\
+    | |  | |  | |  | |  | |  | |
+    |_|  |_|  |_|  |_|  |_|  |_|
+
+          [ your world goes here ]</pre>
+              <div class="terminal-footer"><span><span class="dot" aria-hidden="true"></span> imagination online</span><span>∞ possibilities</span></div>
+            </div>
+          </div>
+          <div class="system-line"><span>RUST FIRST</span><span>2D + 3D</span><span>C / C++ BINDINGS</span><span>HEADLESS READY</span></div>
+        </section>
+        <section id="inside" class="section" aria-labelledby="inside-title">
+          <div class="section-heading"><span class="label">01 / UNDER THE HOOD</span><h2 id="inside-title">Bring an idea.<br />Keep your hands on the code.</h2><p>Integrated tools to get moving. Direct APIs to make it yours.</p></div>
+          <div class="modules">{modules.map(([number, title, description, page, link]) => <article><span class="module-number">[{number}]</span><div><h3>{title}</h3><p>{description}</p><a href={`/guide/${page}`}>{link} <span aria-hidden="true">↗</span></a></div></article>)}</div>
+        </section>
+        <section class="section start" aria-labelledby="start-title">
+          <div><span class="label">02 / HELLO, WORLD</span><h2 id="start-title">The first frame<br />is yours.</h2><p>One setup closure. One frame loop.<br />Add a sprite, then make it move.</p><a class="text-link" href="/guide/getting-started.html">Follow the complete tutorial <span aria-hidden="true">↗</span></a></div>
+          <div class="code-window"><div class="terminal-bar"><span>src/main.rs</span><span>RUST</span></div><pre is:raw><code><span class="syntax">use</span> ponko::*;
+
+<span class="syntax">fn</span> <span class="function">main</span>() {
+    Game::new(<span class="string">"My Game"</span>, 800, 600).run(|ctx| {
+        <span class="syntax">let</span> sprite = ctx.load_texture(<span class="string">"crab.png"</span>);
+        <span class="syntax">let mut</span> position = vec2(400.0, 300.0);
+
+        <span class="syntax">move</span> |ctx: &amp;mut Ctx| {
+            <span class="syntax">if</span> ctx.key_down(Key::Right) {
+                position.x += 200.0 * ctx.dt();
+            }
+            ctx.draw(&amp;sprite, position);
+        }
+    });
+}</code></pre><div class="code-note">Place crab.png in assets/. The guide covers setup and platform dependencies.</div></div>
+        </section>
+        <section class="section project" aria-labelledby="project-title">
+          <span class="label">03 / BUILT IN THE OPEN</span>
+          <div class="project-grid"><div><h2 id="project-title">Early days.<br />Open doors.</h2><p>Ponko is a young engine with an ambitious direction. Expect rough edges, check the current capabilities, and help shape what comes next.</p><p>Contribute where you’re comfortable: Rust, a small bug fix, a clearer example. You don’t need to take on every language or write a book to help.</p></div><div class="directory"><a href="https://github.com/ponkoengine/ponko/blob/main/ROADMAP.md"><span><small>./what-is-next</small>Read the roadmap</span><span aria-hidden="true">↗</span></a><a href="https://github.com/ponkoengine/ponko/blob/main/CONTRIBUTING.md"><span><small>./make-it-better</small>Find your first contribution</span><span aria-hidden="true">↗</span></a><a href="https://github.com/ponkoengine/ponko/issues"><span><small>./talk-to-us</small>Issues & ideas</span><span aria-hidden="true">↗</span></a></div></div>
+        </section>
+        <section class="closing"><span aria-hidden="true">&gt;_</span><h2>Make something<br /><em>only you would make.</em></h2><a class="button" href="/guide/getting-started.html">Get started <span aria-hidden="true">↗</span></a></section>
+      </main>
+      <footer><a class="brand" href="/">[p] ponko</a><span>A world starts somewhere.</span><div><a href="/guide/">Guide</a><a href="https://docs.rs/ponko/">API</a><a href="https://github.com/ponkoengine/ponko-website">Site source ↗</a></div></footer>
+    </div>
+    <script>
+      const button = document.querySelector<HTMLButtonElement>('#copy');
+      const status = document.querySelector<HTMLElement>('#copy-status');
+      button?.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText('cargo add ponko');
+          if (status) status.textContent = 'Copied. Your terminal is next.';
+          button.textContent = 'copied ✓';
+        } catch {
+          if (status) status.textContent = 'Select and copy the command above.';
+        }
+      });
+    </script>
+  </body>
+</html>
