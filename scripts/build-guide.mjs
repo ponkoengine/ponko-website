@@ -17,8 +17,8 @@ await mkdir(cache, { recursive: true });
 async function json(url) {
   return JSON.parse((await fetchBytes(url)).toString('utf8'));
 }
-async function download(url, destination, digest) {
-  const data = await fetchBytes(url);
+async function download(url, destination, digest, options) {
+  const data = await fetchBytes(url, options);
   if (
     digest &&
     `sha256:${createHash("sha256").update(data).digest("hex")}` !== digest
@@ -70,7 +70,9 @@ try {
   if (!asset?.digest?.startsWith("sha256:"))
     throw new Error("Missing mdBook release checksum");
   const archive = resolve(cache, "mdbook.tar.gz");
-  await download(asset.browser_download_url, archive, asset.digest);
+  await download(asset.url, archive, asset.digest, {
+    headers: { Accept: "application/octet-stream" },
+  });
   await mkdir(binDir, { recursive: true });
   execFileSync("tar", ["-xzf", archive, "-C", binDir]);
   await chmod(bin, 0o755);

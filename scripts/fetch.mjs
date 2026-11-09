@@ -1,13 +1,13 @@
 import { setTimeout as delay } from 'node:timers/promises';
 
 // Retry temporary upstream failures, including errors while reading the body.
-export async function fetchBytes(url, { fetchImpl = fetch, pause = delay } = {}) {
+export async function fetchBytes(url, { fetchImpl = fetch, pause = delay, headers = {} } = {}) {
   const attempts = 4;
   for (let attempt = 1; attempt <= attempts; attempt++) {
     let response;
     try {
       response = await fetchImpl(url, {
-        headers: { 'User-Agent': 'ponko-website-build' },
+        headers: { 'User-Agent': 'ponko-website-build', ...headers },
         signal: AbortSignal.timeout(60_000),
       });
       if (response.ok) return Buffer.from(await response.arrayBuffer());

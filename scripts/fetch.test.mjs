@@ -34,3 +34,14 @@ test('retries a connection lost while reading an archive', async () => {
   assert.equal(result.toString(), 'complete');
   assert.equal(calls, 2);
 });
+
+test('forwards binary asset negotiation headers', async () => {
+  await fetchBytes('https://example.com/asset', { pause,
+    headers: { Accept: 'application/octet-stream' },
+    fetchImpl: async (_url, options) => {
+      assert.equal(options.headers.Accept, 'application/octet-stream');
+      assert.equal(options.headers['User-Agent'], 'ponko-website-build');
+      return new Response('archive');
+    },
+  });
+});
