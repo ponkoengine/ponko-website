@@ -2,7 +2,7 @@
 // the game window beside it shows what those lines do. It plays by itself.
 
 const STEP_MS = 2600;
-const HOLD_MS = 4200;
+const HOLD_MS = 9000;
 
 export function hello(root: HTMLElement, still: boolean) {
   const lines = [...root.querySelectorAll<HTMLElement>('.ln')];
