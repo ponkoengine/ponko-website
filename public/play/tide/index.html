@@ -155,9 +155,9 @@
     const fail = (message) => { line(`<span class="bad">! ${message}</span>`); };
     window.addEventListener("error", (e) => fail("the game stopped: " + e.message));
 
-    // ?notimer hides GPU timestamps from the game (a check for browsers whose
-    // timestamp readback misbehaves).
-    if (new URLSearchParams(location.search).has("notimer") && window.GPUAdapter) {
+    // The game needs no GPU timings, and reading timestamps back crashes
+    // Safari on iOS, so the engine never sees the "timestamp-query" feature.
+    if (window.GPUAdapter) {
       const real = Object.getOwnPropertyDescriptor(GPUAdapter.prototype, "features");
       Object.defineProperty(GPUAdapter.prototype, "features", {
         get() { const f = new Set(real.get.call(this)); f.delete("timestamp-query"); return f; },
