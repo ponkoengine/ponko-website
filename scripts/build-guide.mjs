@@ -5,6 +5,7 @@ import {
   chmod,
   rm,
   readdir,
+  copyFile,
 } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
@@ -99,6 +100,14 @@ try {
 } finally {
   await writeFile(webChapter, originalWebChapter);
 }
+// The site's look: the panda favicon and a warm theme over mdBook's own.
+// mdBook names its favicons favicon[-hash].svg/png; replace whichever it wrote.
+for (const name of await readdir("dist/guide")) {
+  const icon = name.match(/^favicon(?:-[0-9a-f]+)?\.(svg|png)$/);
+  if (icon)
+    await copyFile(resolve("public", `favicon.${icon[1]}`), resolve("dist/guide", name));
+}
+await copyFile("scripts/guide-brand.css", "dist/guide/ponko-brand.css");
 // The engine book also supports local rustdoc; this deployment uses docs.rs.
 for (const name of await readdir("dist/guide")) {
   if (!name.endsWith(".html")) continue;
@@ -106,11 +115,16 @@ for (const name of await readdir("dist/guide")) {
   const html = await readFile(path, "utf8");
   await writeFile(
     path,
-    html.replace(
-      /href="api\/(ponko(?:_ecs|_ffi)?)\/([^"]*)"/g,
-      (_, crate, page) =>
-        `href="https://docs.rs/${crate}/0.0.1/${crate}/${page}"`,
-    ),
+    html
+      .replace(
+        /href="api\/(ponko(?:_ecs|_ffi)?)\/([^"]*)"/g,
+        (_, crate, page) =>
+          `href="https://docs.rs/${crate}/0.0.1/${crate}/${page}"`,
+      )
+      .replace(
+        "</head>",
+        '<link rel="stylesheet" href="/guide/ponko-brand.css">\n</head>',
+      ),
   );
 }
 await writeFile(

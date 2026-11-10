@@ -221,14 +221,14 @@ export function island(canvas: HTMLCanvasElement, still: boolean) {
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx!.clearRect(0, 0, W, H);
     const glow = ctx!.createRadialGradient(W / 2, H * 0.5, 0, W / 2, H * 0.5, W * 0.55);
-    glow.addColorStop(0, 'rgba(192,250,115,0.07)');
-    glow.addColorStop(1, 'rgba(192,250,115,0)');
+    glow.addColorStop(0, 'rgba(236,107,60,0.08)');
+    glow.addColorStop(1, 'rgba(236,107,60,0)');
     ctx!.fillStyle = glow;
     ctx!.fillRect(0, 0, W, H);
     for (const s of stars) {
       const a = 0.25 + 0.35 * Math.sin(t * 1.3 + s.p);
       if (a <= 0) continue;
-      ctx!.fillStyle = `rgba(192,250,115,${a.toFixed(2)})`;
+      ctx!.fillStyle = `rgba(246,231,214,${a.toFixed(2)})`;
       ctx!.fillRect(s.x * W, s.y * H * 0.35 + 8, 1.5, 1.5);
     }
 
@@ -268,7 +268,7 @@ export function island(canvas: HTMLCanvasElement, still: boolean) {
       ctx!.closePath();
       ctx!.fillStyle = fills[f];
       ctx!.fill();
-      ctx!.strokeStyle = hover ? 'rgba(192,250,115,0.45)' : fills[f];
+      ctx!.strokeStyle = hover ? 'rgba(236,107,60,0.5)' : fills[f];
       ctx!.stroke();
     }
   }

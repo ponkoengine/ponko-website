@@ -20,7 +20,7 @@ const code: [number, string][] = [
   [7, `            ctx.world.query::&lt;&amp;${S('mut')} Transform2D&gt;().for_each(|t| t.rotation += dt);`],
   [7, `        })`],
   [1, `        .run(|ctx| {`],
-  [2, `            ctx.clear(Color::hex(0x1B2A1B));`],
+  [2, `            ctx.clear(Color::hex(0x2A1916));`],
   [3, `            ${S('let')} sprite = ctx.load_texture(${Q('"crab.png"')});`],
   [3, `            ${S('let mut')} position = vec2(400.0, 300.0);`],
   [6, `            ctx.world.spawn_batch((0..1_000).map(|i| {`],
@@ -52,7 +52,7 @@ const steps = [
 // A pixel crab for the preview.
 const crab = ['..X.......X..', '.XX.......XX.', '.X..X...X..X.', '.XXXOXXXOXXX.', '..XXXXXXXXX..', 'XXXXXXXXXXXXX', 'X.XXXXXXXXX.X', '..X.X...X.X..'];
 const crabRects = crab
-  .flatMap((row, y) => [...row].map((c, x) => (c === '.' ? '' : `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${c === 'O' ? '#111411' : '#ff7a5c'}"/>`)))
+  .flatMap((row, y) => [...row].map((c, x) => (c === '.' ? '' : `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${c === 'O' ? '#15100e' : '#ff7a5c'}"/>`)))
   .join('');
 
 const facts = [
@@ -67,11 +67,16 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#111411" />
+    <meta name="theme-color" content="#15100e" />
     <title>Ponko — games begin with code.</title>
     <meta name="description" content="A code-first Rust engine for 2D and 3D games. Integrated simulation tools, C and C++ bindings, and room to build your own thing." />
     <link rel="canonical" href="https://ponko.dev/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=JetBrains+Mono:wght@400;500;700&display=swap" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta property="og:title" content="Ponko — games begin with code." />
     <meta property="og:description" content="A code-first Rust engine for 2D and 3D games. Open source. Built to be explored." />
     <meta property="og:type" content="website" />
@@ -83,7 +88,7 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
     <div class="glow" aria-hidden="true"></div>
     <div class="shell">
       <header>
-        <a class="brand" href="/" aria-label="Ponko home"><span aria-hidden="true">[p]</span> ponko<span class="cursor" aria-hidden="true">_</span></a>
+        <a class="brand" href="/" aria-label="Ponko home"><img class="brand-mark" src="/brand/ponko-face.svg" width="46" height="36" alt="" />ponko<span class="cursor" aria-hidden="true">_</span></a>
         <nav aria-label="Main navigation">
           <a href="#play">Play</a><a href="/guide/">Guide</a><a href="https://docs.rs/ponko/">API <span aria-hidden="true">↗</span></a><a href="https://github.com/ponkoengine/ponko">GitHub <span aria-hidden="true">↗</span></a>
         </nav>
@@ -99,10 +104,10 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
               <div class="install boot" style="--i:5"><code><span aria-hidden="true">$ </span><span id="cmd">cargo add ponko</span><span class="caret" aria-hidden="true"></span></code><button id="copy" type="button" aria-label="Copy cargo add ponko command">copy <span aria-hidden="true">⧉</span></button></div>
               <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
             </div>
-            <div class="art-terminal crt boot" style="--i:2" role="img" aria-label="A small low-poly island floating in the air, slowly turning. Drag to turn it, click for a new one.">
-              <div class="terminal-bar"><span>~/worlds/your-next-idea</span><span aria-hidden="true">− □ ×</span></div>
+            <div class="peek-wrap boot" style="--i:2"><img class="peek" src="/brand/ponko-face.svg" width="132" height="103" alt="" /><div class="art-terminal crt" role="img" aria-label="A small low-poly island floating in the air, slowly turning. Drag to turn it, click for a new one.">
+              <div class="terminal-bar"><span>~/worlds/your-next-idea</span><span aria-hidden="true">drag · click</span></div>
               <canvas class="island" id="island" aria-hidden="true"></canvas>
-            </div>
+            </div></div>
           </div>
           <div class="ticker" aria-label={ticker.join(', ')}>
             <div class="ticker-track" aria-hidden="true">{[0, 1].map(() => <div>{ticker.map((t) => <span>{t}</span>)}</div>)}</div>
@@ -161,9 +166,9 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
           <span class="label reveal">03 / BUILT IN THE OPEN</span>
           <div class="project-grid"><div class="reveal"><h2 id="project-title">Early days.<br />Open doors.</h2><p>Ponko is a young engine with an ambitious direction. Expect rough edges, check the current capabilities, and help shape what comes next.</p><p>Contribute where you’re comfortable: Rust, a small bug fix, a clearer example. You don’t need to take on every language or write a book to help.</p></div><div class="directory reveal" style="--i:1"><a href="https://github.com/ponkoengine/ponko/blob/main/ROADMAP.md"><span><small>./what-is-next</small>Read the roadmap</span><span aria-hidden="true">↗</span></a><a href="https://github.com/ponkoengine/ponko/blob/main/CONTRIBUTING.md"><span><small>./make-it-better</small>Find your first contribution</span><span aria-hidden="true">↗</span></a><a href="https://github.com/ponkoengine/ponko/issues"><span><small>./talk-to-us</small>Issues & ideas</span><span aria-hidden="true">↗</span></a></div></div>
         </section>
-        <section class="closing reveal"><span class="prompt" aria-hidden="true">&gt;<span class="blink-soft">_</span></span><h2>Make something<br /><em>only you would make.</em></h2><a class="button" href="/guide/getting-started.html">Get started <span aria-hidden="true">↗</span></a></section>
+        <section class="closing reveal"><img class="closing-mark" src="/brand/ponko-face.svg" width="112" height="87" alt="" /><h2>Make something<br /><em>only you would make.</em></h2><a class="button" href="/guide/getting-started.html">Get started <span aria-hidden="true">↗</span></a></section>
       </main>
-      <footer><a class="brand" href="/">[p] ponko</a><span>A world starts somewhere.</span><div><a href="/guide/">Guide</a><a href="https://docs.rs/ponko/">API</a><a href="https://github.com/ponkoengine/ponko-website">Site source ↗</a></div></footer>
+      <footer><a class="brand" href="/"><img class="brand-mark" src="/brand/ponko-face.svg" width="36" height="28" alt="" />ponko</a><span>A world starts somewhere.</span><div><a href="/guide/">Guide</a><a href="https://docs.rs/ponko/">API</a><a href="https://github.com/ponkoengine/ponko-website">Site source ↗</a></div></footer>
     </div>
     <script>
       import { island } from '../scripts/island';
