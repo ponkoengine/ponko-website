@@ -342,16 +342,19 @@ export function dots(canvas: HTMLCanvasElement, still: boolean, onFrame?: (f: Fr
   const BX = new Float32Array(N), BY = new Float32Array(N), BS = new Float32Array(N), BC = new Uint8Array(N);
   const PX = new Float32Array(N), PY = new Float32Array(N), PR = new Float32Array(N), PC = new Uint8Array(N);
   let W = 0, H = 0, dpr = 1;
+  // The canvas is sized by CSS to the tallest the viewport gets (100lvh), so
+  // on phones the toolbar sliding in and out neither resizes nor stretches it.
   function resize() {
     dpr = Math.min(small.matches ? 1.5 : 2, devicePixelRatio || 1);
-    W = innerWidth, H = innerHeight;
+    W = canvas.clientWidth || innerWidth, H = canvas.clientHeight || innerHeight;
+    if (canvas.width === Math.round(W * dpr) && canvas.height === Math.round(H * dpr)) return;
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
   }
   // Centre and scale of a scene on screen.
   const rect = (place: Place): [number, number, number] =>
     place === 'full' ? [W / 2, H / 2, H / 2]
-    : place === 'centre' ? [W / 2, H * 0.5, Math.min(W * 0.47, H * 0.66)]
+    : place === 'centre' ? (small.matches ? [W / 2, H * 0.62, W * 0.47] : [W / 2, H * 0.5, Math.min(W * 0.47, H * 0.66)])
     : small.matches ? [W / 2, H * 0.27, Math.min(W * 0.42, H * 0.22)]
     : [W * 0.73, H * 0.52, Math.min(W * 0.23, H * 0.36)];
 
@@ -464,7 +467,7 @@ export function dots(canvas: HTMLCanvasElement, still: boolean, onFrame?: (f: Fr
   }
 
   resize();
-  addEventListener('resize', resize);
+  new ResizeObserver(resize).observe(canvas);
   const t0 = performance.now();
   const frame = (now: number) => {
     requestAnimationFrame(frame);

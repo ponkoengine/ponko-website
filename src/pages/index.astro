@@ -121,7 +121,14 @@ const crabRects = crab
     <meta property="og:description" content="A free, open-source engine for 2D and 3D games, written in Rust." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://ponko.dev/" />
-    <meta property="og:image" content="https://ponko.dev/play/tide/poster.webp" />
+    <meta property="og:image" content="https://ponko.dev/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Ponko's red panda logo drawn in dots, beside the line: You make the game. Ponko runs it." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ponko, a game engine for Rust" />
+    <meta name="twitter:description" content="A free, open-source engine for 2D and 3D games, written in Rust." />
+    <meta name="twitter:image" content="https://ponko.dev/og.png" />
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -312,10 +319,17 @@ const crabRects = crab
             });
             rail?.classList.toggle('on', now > 0);
           }
-          const aim = innerWidth > 900 ? 0.5 : 0.72;
+          // On wide screens the words fade in and drift as they pass the
+          // middle. On phones they simply scroll, over their own backing.
+          const wide = innerWidth > 900;
           for (const el of copies) {
+            if (!wide) {
+              el.style.opacity = '';
+              el.style.transform = '';
+              continue;
+            }
             const b = el.getBoundingClientRect();
-            const off = (b.top + b.height / 2) / innerHeight - aim;
+            const off = (b.top + b.height / 2) / innerHeight - 0.5;
             el.style.opacity = String(Math.max(0, Math.min(1, 1.5 - Math.abs(off) * 3.4)));
             if (!still) el.style.transform = `translateY(${off * 46}px)`;
           }
@@ -325,11 +339,13 @@ const crabRects = crab
       const helloEl = document.querySelector<HTMLElement>('#hello-demo');
       const helloPin = document.querySelector<HTMLElement>('#hello');
       if (helloEl && helloPin) {
-        // On wide screens the section holds still while the scroll wheel
-        // steps through the program, one step per flick of the wheel.
-        const wide = matchMedia('(min-width: 901px)').matches;
-        if (wide) addStops(helloPin, Number(getComputedStyle(helloPin).getPropertyValue('--steps')) || 7);
-        hello(helloEl, still, wide ? helloPin : undefined);
+        // On wide screens with a mouse or trackpad the section holds still
+        // while the wheel steps through the program, one step per flick.
+        // Phones and tablets scroll past it normally. Keep this query in
+        // step with the .pin rules in global.css.
+        const pinned = matchMedia('(min-width: 901px) and (hover: hover) and (pointer: fine)');
+        addStops(helloPin, Number(getComputedStyle(helloPin).getPropertyValue('--steps')) || 7, () => pinned.matches);
+        hello(helloEl, still, helloPin, pinned);
       }
 
       // Copy the install command.

@@ -96,6 +96,7 @@ pre {
   z-index: 0;
   width: 100vw;
   height: 100vh;
+  height: 100lvh;
   pointer-events: none;
 }
 main,
@@ -441,7 +442,7 @@ a[href^="http"]:not(.links a)::after,
 
 /* Hello, world on wide screens: the section is several screens tall and its
    content stays pinned while the scroll steps through the program. */
-@media (min-width: 901px) {
+@media (min-width: 901px) and (hover: hover) and (pointer: fine) {
   .pin {
     height: calc(100vh + (var(--steps) - 1) * 42vh);
     padding: 0;
@@ -471,7 +472,7 @@ a[href^="http"]:not(.links a)::after,
     min-height: 1.6em;
   }
 }
-@media (min-width: 901px) and (max-height: 860px) {
+@media (min-width: 901px) and (hover: hover) and (pointer: fine) and (max-height: 860px) {
   .pin .row .body p:first-child {
     display: none;
   }
@@ -1099,11 +1100,19 @@ a[href^="http"]:not(.links a)::after,
     padding-top: 46svh;
   }
   .chapter {
-    align-items: end;
+    align-items: start;
     min-height: 120svh;
   }
+  /* The dots draw in the top part of the screen; the words scroll up over
+     them on a backing of night, so the two never mix. */
   .chapter-copy {
-    padding: 46svh 0 48px;
+    margin-top: 42svh;
+    padding: 28px 0 48px;
+    background: linear-gradient(transparent, var(--night) 28px);
+  }
+  .hero-copy {
+    background: linear-gradient(transparent, var(--night) 28px);
+    padding-top: 28px;
   }
   .row,
   .hello {

@@ -4,12 +4,13 @@
 // exactly one stop. Touch screens keep their own scrolling, and so does
 // anyone who asks for reduced motion.
 
-const stops: { el: HTMLElement; count: number }[] = [];
+const stops: { el: HTMLElement; count: number; active: () => boolean }[] = [];
 
 // Positions of `count` evenly spaced stops through the part of `el` that
 // scrolls past while it is pinned.
-export function addStops(el: HTMLElement, count: number) {
-  stops.push({ el, count: Math.max(2, count) });
+// `active` says whether the stops apply right now.
+export function addStops(el: HTMLElement, count: number, active: () => boolean = () => true) {
+  stops.push({ el, count: Math.max(2, count), active });
 }
 
 export function smoothScroll() {
@@ -40,7 +41,8 @@ export function smoothScroll() {
   // Where the next wheel movement should land, given the stops.
   function aim(from: number, delta: number): { to: number; stop: boolean } {
     const to = from + delta;
-    for (const { el, count } of stops) {
+    for (const { el, count, active } of stops) {
+      if (!active()) continue;
       const top = el.getBoundingClientRect().top + scrollY;
       const span = el.offsetHeight - innerHeight;
       if (span <= 0) continue;
