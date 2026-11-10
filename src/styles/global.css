@@ -349,45 +349,6 @@ em {
   font-size: 10px;
 }
 
-/* The panda peeks over the hero's window. */
-.peek-wrap {
-  position: relative;
-  padding-top: 62px;
-}
-.peek {
-  position: absolute;
-  top: 0;
-  right: 11%;
-  width: 132px;
-  height: auto;
-  z-index: 0;
-  transform-origin: 50% 100%;
-  animation: peek 7s ease-in-out infinite;
-}
-.peek-wrap .art-terminal {
-  z-index: 1;
-}
-.peek-wrap:hover .peek {
-  animation-play-state: paused;
-  transform: translateY(-14px) rotate(-6deg);
-  transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
-}
-@keyframes peek {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0);
-  }
-  12% {
-    transform: translateY(-10px) rotate(-4deg);
-  }
-  20% {
-    transform: translateY(-10px) rotate(3deg);
-  }
-  30% {
-    transform: translateY(0) rotate(0);
-  }
-}
-
 /* ---------- Sections ---------- */
 .section {
   padding: 110px 0;
@@ -664,9 +625,7 @@ body::before {
 .code-window:hover,
 .demo-window:hover,
 .art-terminal:hover {
-  border-color: #ec6b3c66;
-  box-shadow: var(--shadow), 0 0 0 4px #ec6b3c14, 0 20px 60px -20px #ec6b3c40;
-  transform: translateY(-3px);
+  border-color: #ec6b3c55;
 }
 
 /* The ticker under the hero. */
@@ -1009,12 +968,6 @@ canvas.island:active {
   .intro {
     font-size: 16px;
   }
-  .peek {
-    width: 104px;
-  }
-  .peek-wrap {
-    padding-top: 50px;
-  }
   .section {
     padding: 60px 0;
   }
@@ -1060,7 +1013,6 @@ canvas.island:active {
   .cursor,
   .blink-soft,
   .block-cursor,
-  .peek,
   .closing-mark,
   .crt::after,
   .ticker-track,
@@ -1374,47 +1326,6 @@ canvas.island:active {
   pointer-events: none;
 }
 
-/* The panda talks. */
-.bubble {
-  position: absolute;
-  top: -6px;
-  right: calc(11% + 146px);
-  z-index: 2;
-  padding: 9px 14px;
-  border: 1px solid var(--line);
-  border-radius: 14px 14px 4px 14px;
-  background: var(--panel);
-  color: var(--text);
-  font-family: var(--mono);
-  font-size: 12px;
-  white-space: nowrap;
-  box-shadow: var(--shadow);
-  opacity: 0;
-  transform: translateY(6px) scale(0.96);
-  transform-origin: 100% 100%;
-  transition:
-    opacity 0.3s,
-    transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
-  pointer-events: none;
-}
-.bubble::after {
-  content: "";
-  position: absolute;
-  right: -7px;
-  bottom: 8px;
-  width: 12px;
-  height: 12px;
-  background: var(--panel);
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  transform: rotate(-45deg);
-}
-.peek-wrap:hover .bubble,
-.peek-wrap.talk .bubble {
-  opacity: 1;
-  transform: none;
-}
-
 /* Each module ends in a command that runs it. */
 .modules article > div {
   display: flex;
@@ -1555,15 +1466,6 @@ footer h3 {
 }
 
 @media (max-width: 650px) {
-  .bubble {
-    right: auto;
-    left: 0;
-    top: 4px;
-    border-radius: 14px 14px 14px 4px;
-  }
-  .bubble::after {
-    display: none;
-  }
   .ls a {
     grid-template-columns: 1fr auto;
     gap: 2px 12px;

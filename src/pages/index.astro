@@ -105,10 +105,10 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
               <div class="install boot" style="--i:5"><code><span aria-hidden="true">$ </span><span id="cmd">cargo add ponko</span><span class="caret" aria-hidden="true"></span></code><button id="copy" type="button" aria-label="Copy cargo add ponko command">copy <span aria-hidden="true">⧉</span></button></div>
               <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
             </div>
-            <div class="peek-wrap boot" style="--i:2"><img class="peek" src="/brand/ponko-face.svg" width="132" height="103" alt="" /><span class="bubble" aria-hidden="true">psst… drag the island</span><div class="art-terminal crt" role="img" aria-label="A small low-poly island floating in the air, slowly turning. Drag to turn it, click for a new one.">
+            <div class="art-terminal crt boot" style="--i:2" role="img" aria-label="A small low-poly island floating in the air, slowly turning. Drag to turn it, click for a new one.">
               <div class="terminal-bar"><span>~/worlds/your-next-idea</span><span aria-hidden="true">drag · click</span></div>
               <canvas class="island" id="island" aria-hidden="true"></canvas>
-            </div></div>
+            </div>
           </div>
           <div class="ticker" aria-label={ticker.join(', ')}>
             <div class="ticker-track" aria-hidden="true">{[0, 1].map(() => <div>{ticker.map((t) => <span>{t}</span>)}</div>)}</div>
@@ -190,12 +190,6 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
       addEventListener('scroll', progress, { passive: true });
       progress();
 
-      // The panda says hello once, then only on hover.
-      const peek = document.querySelector<HTMLElement>('.peek-wrap');
-      if (peek && !still) {
-        setTimeout(() => peek.classList.add('talk'), 1600);
-        setTimeout(() => peek.classList.remove('talk'), 5200);
-      }
 
       const islandEl = document.querySelector<HTMLCanvasElement>('#island');
       if (islandEl) island(islandEl, still);
