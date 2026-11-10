@@ -1,6 +1,6 @@
 // A small floating island: a low-poly mesh, flat shaded and sorted back to
-// front on a plain 2D canvas. No WebGL, no downloads. Drag to turn it, click
-// for a new one.
+// front on a plain 2D canvas, then printed as a grid of dots. No WebGL, no
+// downloads. Drag to turn it, click for a new one.
 
 const RINGS = 16;
 const SECTORS = 48;
@@ -13,19 +13,10 @@ const L = (() => {
   return v.map((x) => x / n);
 })();
 
-// water, sand, grass, forest, rock, snow, cliff, dirt, deep rock, tree
-const COLORS = [
-  [62, 128, 118],
-  [196, 188, 128],
-  [160, 214, 98],
-  [96, 150, 66],
-  [118, 126, 110],
-  [230, 236, 220],
-  [132, 110, 78],
-  [92, 76, 56],
-  [56, 48, 40],
-  [58, 112, 60],
-];
+// How light each material is before lighting, 0 (black) to 1 (paper):
+// water, sand, grass, forest, rock, snow, cliff, dirt, deep rock, tree.
+const TONE = [1.0, 0.98, 0.9, 0.64, 0.74, 1.08, 0.52, 0.42, 0.3, 0.36];
+const INK = '#1b1715';
 const WATER = 0, SAND = 1, GRASS = 2, FOREST = 3, ROCK = 4, SNOW = 5, CLIFF = 6, DIRT = 7, DEEP = 8, TREE = 9;
 // Vertex kinds: land moves with the grow animation, water ripples, rock
 // stays put, trees ride on the land vertex they stand on.
@@ -186,8 +177,10 @@ export function island(canvas: HTMLCanvasElement, still: boolean) {
   let W = 0, H = 0, F = 1, dpr = 1;
   let yaw = 0.6, pitch = 0.5, spin = 0;
   let grow = still ? 1 : 0, growFrom = performance.now();
-  let hover = false;
-  const stars = Array.from({ length: 22 }, (_, i) => ({ x: (i * 0.618 + 0.07) % 1, y: ((i * 0.377 + 0.02) % 1) * 0.9, p: i * 1.7 }));
+  // The dot grid and the offscreen image it samples.
+  let CELL = 6, cols = 1, rows = 1;
+  const off = document.createElement('canvas');
+  const o = off.getContext('2d', { willReadFrequently: true });
 
   function resize() {
     dpr = Math.min(2, devicePixelRatio || 1);
@@ -195,7 +188,10 @@ export function island(canvas: HTMLCanvasElement, still: boolean) {
     H = canvas.clientHeight;
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
-    F = Math.min(W * 1.62, H * 1.62);
+    F = Math.min(W * 1.85, H * 1.85);
+    CELL = Math.max(4, Math.min(6, W / 125));
+    cols = off.width = Math.max(1, Math.ceil(W / CELL));
+    rows = off.height = Math.max(1, Math.ceil(H / CELL));
   }
 
   function draw(t: number) {
@@ -218,19 +214,10 @@ export function island(canvas: HTMLCanvasElement, still: boolean) {
       sy[i] = H / 2 - (F * y2) / z2;
     }
 
-    ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx!.clearRect(0, 0, W, H);
-    const glow = ctx!.createRadialGradient(W / 2, H * 0.5, 0, W / 2, H * 0.5, W * 0.55);
-    glow.addColorStop(0, 'rgba(236,107,60,0.08)');
-    glow.addColorStop(1, 'rgba(236,107,60,0)');
-    ctx!.fillStyle = glow;
-    ctx!.fillRect(0, 0, W, H);
-    for (const s of stars) {
-      const a = 0.25 + 0.35 * Math.sin(t * 1.3 + s.p);
-      if (a <= 0) continue;
-      ctx!.fillStyle = `rgba(246,231,214,${a.toFixed(2)})`;
-      ctx!.fillRect(s.x * W, s.y * H * 0.35 + 8, 1.5, 1.5);
-    }
+    // Rasterise the shaded mesh into a small offscreen image, one pixel per
+    // dot, then draw a dot for every pixel: bigger where it's darker.
+    o!.setTransform(1 / CELL, 0, 0, 1 / CELL, 0, 0);
+    o!.clearRect(0, 0, W, H);
 
     // Shade, cull and sort.
     const visible: number[] = [];
@@ -250,27 +237,48 @@ export function island(canvas: HTMLCanvasElement, still: boolean) {
         mat === WATER
           ? Math.min(1.3, Math.max(0.55, 0.8 + (nx * L[0] + nz * L[2]) * 9))
           : 0.38 + 0.68 * Math.max(0, nx * L[0] + ny * L[1] + nz * L[2]);
-      const col = COLORS[mat];
-      fills[f] = `rgb(${Math.min(255, col[0] * lit) | 0},${Math.min(255, col[1] * lit) | 0},${Math.min(255, col[2] * lit) | 0})`;
+      const v = Math.max(0, Math.min(255, TONE[mat] * lit * 255)) | 0;
+      fills[f] = `rgb(${v},${v},${v})`;
       depth[f] = vz[a] + vz[b] + vz[c];
       visible.push(f);
     }
     visible.sort((p, q) => depth[q] - depth[p]);
 
-    ctx!.lineJoin = 'round';
-    ctx!.lineWidth = hover ? 0.7 : 0.6;
+    o!.lineJoin = 'round';
+    o!.lineWidth = CELL * 0.6;
     for (const f of visible) {
       const a = tris[f * 3], b = tris[f * 3 + 1], c = tris[f * 3 + 2];
-      ctx!.beginPath();
-      ctx!.moveTo(sx[a], sy[a]);
-      ctx!.lineTo(sx[b], sy[b]);
-      ctx!.lineTo(sx[c], sy[c]);
-      ctx!.closePath();
-      ctx!.fillStyle = fills[f];
-      ctx!.fill();
-      ctx!.strokeStyle = hover ? 'rgba(236,107,60,0.5)' : fills[f];
-      ctx!.stroke();
+      o!.beginPath();
+      o!.moveTo(sx[a], sy[a]);
+      o!.lineTo(sx[b], sy[b]);
+      o!.lineTo(sx[c], sy[c]);
+      o!.closePath();
+      o!.fillStyle = fills[f];
+      o!.fill();
+      o!.strokeStyle = fills[f];
+      o!.stroke();
     }
+
+    const img = o!.getImageData(0, 0, cols, rows).data;
+    ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx!.clearRect(0, 0, W, H);
+    ctx!.fillStyle = INK;
+    ctx!.beginPath();
+    const max = CELL * 0.56;
+    for (let j = 0; j < rows; j++) {
+      for (let i = 0; i < cols; i++) {
+        const k = (j * cols + i) * 4;
+        const alpha = img[k + 3];
+        if (alpha < 8) continue;
+        const ink = (1 - img[k] / 255) * (alpha / 255);
+        const r = max * Math.pow(ink, 0.62);
+        if (r < 0.45) continue;
+        const x = (i + 0.5) * CELL, y = (j + 0.5) * CELL;
+        ctx!.moveTo(x + r, y);
+        ctx!.arc(x, y, r, 0, Math.PI * 2);
+      }
+    }
+    ctx!.fill();
   }
 
   function reseed() {
@@ -304,8 +312,6 @@ export function island(canvas: HTMLCanvasElement, still: boolean) {
   };
   canvas.addEventListener('pointerup', release);
   canvas.addEventListener('pointercancel', () => (down = null));
-  canvas.addEventListener('pointerenter', () => (hover = true));
-  canvas.addEventListener('pointerleave', () => (hover = false));
 
   build();
   resize();
