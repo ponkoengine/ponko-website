@@ -1,0 +1,56 @@
+/* Ponko's colors over mdBook's themes, so the guide matches ponko.dev.
+   Dark themes get the site's warm browns; light ones keep their paper
+   and take the panda orange for links and highlights. */
+.coal,
+.navy,
+.ayu {
+  --bg: #15100e;
+  --fg: #eadccd;
+  --sidebar-bg: #1b1411;
+  --sidebar-fg: #c9b8a9;
+  --sidebar-non-existant: #6f5d52;
+  --sidebar-active: #ec6b3c;
+  --sidebar-header-border-color: #ec6b3c;
+  --sidebar-spacer: #3a2b24;
+  --scrollbar: #4a382f;
+  --icons: #9c8678;
+  --icons-hover: #f6e7d6;
+  --links: #ef7a4e;
+  --inline-code-color: #f3c26b;
+  --theme-popup-bg: #211915;
+  --theme-popup-border: #3a2b24;
+  --theme-hover: #2c211c;
+  --quote-bg: #1d1613;
+  --quote-border: #3a2b24;
+  --table-border-color: #3a2b24;
+  --table-header-bg: #211915;
+  --table-alternate-bg: #1a1310;
+  --searchbar-border-color: #3a2b24;
+  --searchbar-bg: #211915;
+  --searchbar-fg: #f6e7d6;
+  --searchbar-shadow-color: #000;
+  --searchresults-header-fg: #bba797;
+  --searchresults-border-color: #3a2b24;
+  --searchresults-li-bg: #1d1613;
+  --search-mark-bg: #ec6b3c66;
+}
+.light,
+.rust {
+  --links: #c2481f;
+  --sidebar-active: #c2481f;
+  --sidebar-header-border-color: #c2481f;
+  --search-mark-bg: #ec6b3c44;
+}
+.coal pre,
+.navy pre,
+.ayu pre,
+.coal pre > .buttons,
+.navy pre > .buttons,
+.ayu pre > .buttons {
+  background: #110c0a;
+}
+.coal .hljs,
+.navy .hljs,
+.ayu .hljs {
+  background: #110c0a;
+}
