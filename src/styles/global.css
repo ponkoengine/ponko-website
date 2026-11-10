@@ -399,6 +399,10 @@ em {
   gap: 30px;
   align-items: start;
 }
+.label::before {
+  content: "❯ ";
+  opacity: 0.7;
+}
 .label {
   display: inline-block;
   justify-self: start;
@@ -501,38 +505,6 @@ h3 {
   margin-top: 22px;
   max-width: 500px;
 }
-.directory {
-  display: grid;
-  gap: 12px;
-  align-content: start;
-}
-.directory a {
-  padding: 20px 24px;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm);
-  background: var(--bg-2);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-family: var(--sans);
-  font-size: 18px;
-  font-weight: 700;
-}
-.directory a:hover {
-  border-color: var(--accent);
-}
-.directory small {
-  display: block;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--dim);
-  margin-bottom: 4px;
-}
-.directory > a > span:last-child {
-  color: var(--accent);
-}
-
 /* ---------- Closing and footer ---------- */
 .closing {
   position: relative;
@@ -572,28 +544,6 @@ h3 {
 }
 .closing .intro {
   margin: -14px auto 30px;
-}
-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 25px;
-  padding: 30px 0 40px;
-  border-top: 1px solid var(--line-soft);
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 12px;
-}
-footer .brand {
-  font-size: 20px;
-  color: var(--text);
-}
-footer .brand-mark {
-  height: 30px;
-}
-footer div {
-  display: flex;
-  gap: 20px;
 }
 @keyframes blink {
   50% {
@@ -750,11 +700,15 @@ body::before {
   background: var(--bg-2);
 }
 .ticker span::before {
-  content: "●";
-  color: var(--accent);
-  margin-right: 10px;
-  font-size: 8px;
-  vertical-align: 2px;
+  content: "";
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-right: 9px;
+  vertical-align: -1px;
+  background: var(--accent);
+  -webkit-mask: url(/brand/paw.svg) center / contain no-repeat;
+  mask: url(/brand/paw.svg) center / contain no-repeat;
 }
 @keyframes ticker {
   to {
@@ -788,27 +742,16 @@ body::before {
   transform: translateY(-3px);
 }
 .modules article a span,
-.text-link span,
-.directory > a > span:last-child {
+.text-link span {
   display: inline-block;
   transition: transform 0.25s;
 }
 .modules article:hover a span,
-.text-link:hover span,
-.directory > a:hover > span:last-child {
+.text-link:hover span {
   transform: translate(3px, -3px);
 }
 .text-link[href^="#"]:hover span {
   transform: translateY(3px);
-}
-.directory a {
-  transition:
-    border-color 0.3s,
-    transform 0.3s,
-    color 0.2s;
-}
-.directory a:hover {
-  transform: translateX(6px);
 }
 .button {
   transition:
@@ -1098,13 +1041,6 @@ canvas.island:active {
   }
   .closing {
     padding: 70px 0;
-  }
-  footer {
-    flex-wrap: wrap;
-  }
-  footer div {
-    width: 100%;
-    gap: 25px;
   }
   .demo-stage {
     aspect-ratio: 4 / 3;
@@ -1410,5 +1346,249 @@ canvas.island:active {
   .game-stage .crowd i,
   .game-stage .key {
     animation: none !important;
+  }
+}
+
+
+/* ---------- Ponko's den ---------- */
+
+/* The tail: orange and brown rings, as in the panda's tail. */
+.tail {
+  height: 14px;
+  margin: 28px 0 0;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, #ffffff1c, transparent 45%, #0000004d),
+    repeating-linear-gradient(90deg, var(--accent) 0 46px, #a13c1d 52px, #3a2019 56px 64px, #a13c1d 68px, var(--accent) 74px 80px);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.tail-progress {
+  position: fixed;
+  inset: 0 auto auto 0;
+  z-index: 50;
+  width: calc(var(--p, 0) * 100%);
+  height: 5px;
+  background: repeating-linear-gradient(90deg, var(--accent) 0 22px, #3a2019 22px 34px);
+  border-radius: 0 999px 999px 0;
+  box-shadow: 0 0 14px #ec6b3c66;
+  pointer-events: none;
+}
+
+/* The panda talks. */
+.bubble {
+  position: absolute;
+  top: -6px;
+  right: calc(11% + 146px);
+  z-index: 2;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px 14px 4px 14px;
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
+  transform-origin: 100% 100%;
+  transition:
+    opacity 0.3s,
+    transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+  pointer-events: none;
+}
+.bubble::after {
+  content: "";
+  position: absolute;
+  right: -7px;
+  bottom: 8px;
+  width: 12px;
+  height: 12px;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  transform: rotate(-45deg);
+}
+.peek-wrap:hover .bubble,
+.peek-wrap.talk .bubble {
+  opacity: 1;
+  transform: none;
+}
+
+/* Each module ends in a command that runs it. */
+.modules article > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.modules article > div > a {
+  margin-top: auto;
+}
+.module-cmd {
+  display: block;
+  margin-top: 18px;
+  padding: 10px 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--screen);
+  color: var(--cream);
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.module-cmd span {
+  color: var(--accent);
+}
+.modules article:hover .module-cmd {
+  border-color: #ec6b3c44;
+}
+
+/* The project links as a directory listing. */
+.directory {
+  align-self: start;
+}
+.ls {
+  padding: 18px 20px 20px;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.ls-cmd {
+  color: var(--text);
+  margin: 0 0 10px;
+}
+.ls-cmd > span:first-child {
+  color: var(--accent);
+}
+.project .ls p {
+  margin-top: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+.project .ls .ls-idle {
+  margin-top: 10px;
+}
+.ls a {
+  display: grid;
+  grid-template-columns: 10ch 16ch 1fr auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 9px 10px;
+  margin: 0 -10px;
+  border-radius: 8px;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.ls a:hover {
+  background: var(--accent-soft);
+}
+.perm {
+  color: var(--dim);
+}
+.ls-name {
+  color: var(--honey);
+  font-weight: 700;
+}
+.ls-desc {
+  color: var(--muted);
+}
+.ls-arrow {
+  color: var(--accent);
+  transition: transform 0.25s;
+}
+.ls a:hover .ls-arrow {
+  transform: translate(3px, -3px);
+}
+.ls a:hover .ls-desc {
+  color: var(--text);
+}
+
+/* Footer */
+footer {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 30px 40px;
+  padding: 44px 0 40px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.foot-brand .brand {
+  font-size: 22px;
+  color: var(--text);
+}
+footer .brand-mark {
+  height: 30px;
+}
+.foot-brand p {
+  margin-top: 14px;
+  max-width: 300px;
+  line-height: 1.6;
+}
+.foot-col {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+footer h3 {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.foot-col a:hover {
+  color: var(--text);
+}
+.signoff {
+  grid-column: 1 / -1;
+  padding-top: 24px;
+  border-top: 1px solid var(--line-soft);
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+}
+.signoff > span:first-child {
+  color: var(--accent);
+}
+
+@media (max-width: 650px) {
+  .bubble {
+    right: auto;
+    left: 0;
+    top: 4px;
+    border-radius: 14px 14px 14px 4px;
+  }
+  .bubble::after {
+    display: none;
+  }
+  .ls a {
+    grid-template-columns: 1fr auto;
+    gap: 2px 12px;
+    padding: 10px;
+  }
+  .perm {
+    display: none;
+  }
+  .ls-desc {
+    grid-column: 1;
+    font-size: 12px;
+  }
+  .ls-arrow {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  footer {
+    grid-template-columns: 1fr 1fr;
+  }
+  .foot-brand {
+    grid-column: 1 / -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tail-progress {
+    display: none;
   }
 }

@@ -1,10 +1,10 @@
 ---
 import '../styles/global.css';
 const modules = [
-  ['01', 'A small start. Room to grow.', 'Start with Game and Ctx. Reach for entities, components and fixed-step systems when your game needs them.', 'ecs.html', 'Explore the ECS'],
-  ['02', 'Pixels, polygons, possibility.', 'A wgpu-powered 2D and 3D renderer, with physics, audio and UI alongside it. Build from code, with your own asset tools.', '3d.html', 'See the rendering guide'],
-  ['03', 'See what your code is doing.', 'Inspect components, step a running simulation, capture screenshots and measure performance. Connect external tools and agents through MCP.', 'agents.html', 'Meet the runtime tools'],
-  ['04', 'Keep the simulation running.', 'Fixed-tick, headless runs without a window or GPU. Rust first, with C and C++ bindings for native integrations.', 'headless.html', 'Run headless'],
+  ['01', 'A small start. Room to grow.', 'Start with Game and Ctx. Reach for entities, components and fixed-step systems when your game needs them.', 'ecs.html', 'Explore the ECS', 'cargo run --example ecs'],
+  ['02', 'Pixels, polygons, possibility.', 'A wgpu-powered 2D and 3D renderer, with physics, audio and UI alongside it. Build from code, with your own asset tools.', '3d.html', 'See the rendering guide', 'cargo run --example 3d'],
+  ['03', 'See what your code is doing.', 'Inspect components, step a running simulation, capture screenshots and measure performance. Connect external tools and agents through MCP.', 'agents.html', 'Meet the runtime tools', 'cargo run --example editor'],
+  ['04', 'Keep the simulation running.', 'Fixed-tick, headless runs without a window or GPU. Rust first, with C and C++ bindings for native integrations.', 'headless.html', 'Run headless', 'cargo run --example headless'],
 ];
 
 // "Hello, world" step by step: each line says in which step it appears.
@@ -86,6 +86,7 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
   <body>
     <a class="skip" href="#main">Skip to content</a>
     <div class="glow" aria-hidden="true"></div>
+    <div class="tail-progress" aria-hidden="true"></div>
     <div class="shell">
       <header>
         <a class="brand" href="/" aria-label="Ponko home"><img class="brand-mark" src="/brand/ponko-face.svg" width="46" height="36" alt="" />ponko<span class="cursor" aria-hidden="true">_</span></a>
@@ -104,7 +105,7 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
               <div class="install boot" style="--i:5"><code><span aria-hidden="true">$ </span><span id="cmd">cargo add ponko</span><span class="caret" aria-hidden="true"></span></code><button id="copy" type="button" aria-label="Copy cargo add ponko command">copy <span aria-hidden="true">⧉</span></button></div>
               <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
             </div>
-            <div class="peek-wrap boot" style="--i:2"><img class="peek" src="/brand/ponko-face.svg" width="132" height="103" alt="" /><div class="art-terminal crt" role="img" aria-label="A small low-poly island floating in the air, slowly turning. Drag to turn it, click for a new one.">
+            <div class="peek-wrap boot" style="--i:2"><img class="peek" src="/brand/ponko-face.svg" width="132" height="103" alt="" /><span class="bubble" aria-hidden="true">psst… drag the island</span><div class="art-terminal crt" role="img" aria-label="A small low-poly island floating in the air, slowly turning. Drag to turn it, click for a new one.">
               <div class="terminal-bar"><span>~/worlds/your-next-idea</span><span aria-hidden="true">drag · click</span></div>
               <canvas class="island" id="island" aria-hidden="true"></canvas>
             </div></div>
@@ -112,10 +113,11 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
           <div class="ticker" aria-label={ticker.join(', ')}>
             <div class="ticker-track" aria-hidden="true">{[0, 1].map(() => <div>{ticker.map((t) => <span>{t}</span>)}</div>)}</div>
           </div>
+          <div class="tail" aria-hidden="true"></div>
         </section>
 
         <section id="play" class="section play" aria-labelledby="play-title">
-          <div class="section-heading reveal"><span class="label">00 / PLAY IT NOW</span><h2 id="play-title">This runs on Ponko.<br />Right here, in your tab.</h2><p>Tide is a small 3D game built with the engine and compiled to WebAssembly. Raise towers, and thousands of units re-route around them in the same frame.</p></div>
+          <div class="section-heading reveal"><span class="label">00 · play it now</span><h2 id="play-title">This runs on Ponko.<br />Right here, in your tab.</h2><p>Tide is a small 3D game built with the engine and compiled to WebAssembly. Raise towers, and thousands of units re-route around them in the same frame.</p></div>
           <div class="play-grid">
             <div class="demo-window crt reveal" id="demo">
               <div class="terminal-bar"><span>~/play/tide <span class="muted">· webassembly + webgpu</span></span><a href="/play/tide/" class="bar-link">full screen ↗</a></div>
@@ -133,7 +135,7 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
                 <div class="fact reveal" style={`--i:${i}`}><b><span class="count" data-to={n}>{Number(n).toLocaleString('en-US')}</span>{unit}</b><span>{text}</span></div>
               ))}
               <div class="how reveal" style="--i:3">
-                <span class="label">HOW TO PLAY</span>
+                <span class="label">how to play</span>
                 <p>Units march from the glowing gates to your core. Click or tap a cell to raise a tower: it zaps whatever comes close, and the flow field bends around it. Space, or the round button, overcharges every tower.</p>
               </div>
             </div>
@@ -141,11 +143,11 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
         </section>
 
         <section id="inside" class="section" aria-labelledby="inside-title">
-          <div class="section-heading reveal"><span class="label">01 / UNDER THE HOOD</span><h2 id="inside-title">Bring an idea.<br />Keep your hands on the code.</h2><p>Integrated tools to get moving. Direct APIs to make it yours.</p></div>
-          <div class="modules">{modules.map(([number, title, description, page, link], i) => <article class="reveal" style={`--i:${i % 2}`}><span class="module-number">[{number}]</span><div><h3>{title}</h3><p>{description}</p><a href={`/guide/${page}`}>{link} <span aria-hidden="true">↗</span></a></div></article>)}</div>
+          <div class="section-heading reveal"><span class="label">01 · under the hood</span><h2 id="inside-title">Bring an idea.<br />Keep your hands on the code.</h2><p>Integrated tools to get moving. Direct APIs to make it yours.</p></div>
+          <div class="modules">{modules.map(([number, title, description, page, link, cmd], i) => <article class="reveal" style={`--i:${i % 2}`}><span class="module-number">{number}</span><div><h3>{title}</h3><p>{description}</p><a href={`/guide/${page}`}>{link} <span aria-hidden="true">↗</span></a><code class="module-cmd"><span aria-hidden="true">$ </span>{cmd}</code></div></article>)}</div>
         </section>
         <section class="section hello" aria-labelledby="start-title">
-          <div class="section-heading reveal"><span class="label">02 / HELLO, WORLD</span><h2 id="start-title">The first frame<br />is yours.</h2><p>One setup closure. One frame loop. Seven steps from an empty window to a thousand spinning crabs. <a class="text-link" href="/guide/getting-started.html">Follow the tutorial <span aria-hidden="true">↗</span></a></p></div>
+          <div class="section-heading reveal"><span class="label">02 · hello, world</span><h2 id="start-title">The first frame<br />is yours.</h2><p>One setup closure. One frame loop. Seven steps from an empty window to a thousand spinning crabs. <a class="text-link" href="/guide/getting-started.html">Follow the tutorial <span aria-hidden="true">↗</span></a></p></div>
           <div class="hello-demo reveal" id="hello" data-captions={JSON.stringify(steps.map((x) => x[1]))}>
             <div class="hello-grid">
               <div class="code-window crt" style={`--lines:${code.length}`}><div class="terminal-bar"><span>src/main.rs</span><span>cargo run</span></div><pre><code>{code.map(([step, line]) => <span class="ln" data-step={step} hidden={step > 1} set:html={line || ' '} />)}</code></pre></div>
@@ -163,18 +165,37 @@ const ticker = ['RUST FIRST', '2D + 3D', 'C / C++ BINDINGS', 'HEADLESS READY', '
           </div>
         </section>
         <section class="section project" aria-labelledby="project-title">
-          <span class="label reveal">03 / BUILT IN THE OPEN</span>
-          <div class="project-grid"><div class="reveal"><h2 id="project-title">Early days.<br />Open doors.</h2><p>Ponko is a young engine with an ambitious direction. Expect rough edges, check the current capabilities, and help shape what comes next.</p><p>Contribute where you’re comfortable: Rust, a small bug fix, a clearer example. You don’t need to take on every language or write a book to help.</p></div><div class="directory reveal" style="--i:1"><a href="https://github.com/ponkoengine/ponko/blob/main/ROADMAP.md"><span><small>./what-is-next</small>Read the roadmap</span><span aria-hidden="true">↗</span></a><a href="https://github.com/ponkoengine/ponko/blob/main/CONTRIBUTING.md"><span><small>./make-it-better</small>Find your first contribution</span><span aria-hidden="true">↗</span></a><a href="https://github.com/ponkoengine/ponko/issues"><span><small>./talk-to-us</small>Issues & ideas</span><span aria-hidden="true">↗</span></a></div></div>
+          <span class="label reveal">03 · built in the open</span>
+          <div class="project-grid"><div class="reveal"><h2 id="project-title">Early days.<br />Open doors.</h2><p>Ponko is a young engine with an ambitious direction. Expect rough edges, check the current capabilities, and help shape what comes next.</p><p>Contribute where you’re comfortable: Rust, a small bug fix, a clearer example. You don’t need to take on every language or write a book to help.</p></div><div class="directory code-window reveal" style="--i:1"><div class="terminal-bar"><span>~/ponko</span><span class="muted">zsh</span></div><div class="ls"><p class="ls-cmd"><span aria-hidden="true">❯ </span>ls -la</p><a href="https://github.com/ponkoengine/ponko/blob/main/ROADMAP.md"><span class="perm" aria-hidden="true">drwxr-xr-x</span><span class="ls-name">what-is-next/</span><span class="ls-desc">Read the roadmap</span><span class="ls-arrow" aria-hidden="true">↗</span></a><a href="https://github.com/ponkoengine/ponko/blob/main/CONTRIBUTING.md"><span class="perm" aria-hidden="true">drwxr-xr-x</span><span class="ls-name">make-it-better/</span><span class="ls-desc">Find your first contribution</span><span class="ls-arrow" aria-hidden="true">↗</span></a><a href="https://github.com/ponkoengine/ponko/issues"><span class="perm" aria-hidden="true">-rw-r--r--</span><span class="ls-name">talk-to-us.md</span><span class="ls-desc">Issues & ideas</span><span class="ls-arrow" aria-hidden="true">↗</span></a><a href="https://github.com/ponkoengine/ponko"><span class="perm" aria-hidden="true">-rwxr-xr-x</span><span class="ls-name">source.rs</span><span class="ls-desc">Read the code</span><span class="ls-arrow" aria-hidden="true">↗</span></a><p class="ls-cmd ls-idle"><span aria-hidden="true">❯ </span><span class="cursor" aria-hidden="true">_</span></p></div></div></div>
         </section>
         <section class="closing reveal"><img class="closing-mark" src="/brand/ponko-face.svg" width="112" height="87" alt="" /><h2>Make something<br /><em>only you would make.</em></h2><a class="button" href="/guide/getting-started.html">Get started <span aria-hidden="true">↗</span></a></section>
       </main>
-      <footer><a class="brand" href="/"><img class="brand-mark" src="/brand/ponko-face.svg" width="36" height="28" alt="" />ponko</a><span>A world starts somewhere.</span><div><a href="/guide/">Guide</a><a href="https://docs.rs/ponko/">API</a><a href="https://github.com/ponkoengine/ponko-website">Site source ↗</a></div></footer>
+      <div class="tail" aria-hidden="true"></div>
+      <footer>
+        <div class="foot-brand"><a class="brand" href="/"><img class="brand-mark" src="/brand/ponko-face.svg" width="36" height="28" alt="" />ponko</a><p>A friendly game engine in Rust. A world starts somewhere.</p></div>
+        <div class="foot-col"><h3>Learn</h3><a href="/guide/getting-started.html">Get started</a><a href="/guide/">Guide</a><a href="https://docs.rs/ponko/">API reference ↗</a></div>
+        <div class="foot-col"><h3>Project</h3><a href="https://github.com/ponkoengine/ponko">GitHub ↗</a><a href="https://github.com/ponkoengine/ponko/blob/main/ROADMAP.md">Roadmap ↗</a><a href="https://github.com/ponkoengine/ponko-website">Site source ↗</a></div>
+        <p class="signoff"><span aria-hidden="true">❯ </span>exit <span class="muted">— thanks for stopping by. the panda will keep the den warm.</span></p>
+      </footer>
     </div>
     <script>
       import { island } from '../scripts/island';
       import { hello } from '../scripts/hello';
       const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
       document.documentElement.classList.add('js');
+
+      // The tail along the top fills as you scroll.
+      const root = document.documentElement;
+      const progress = () => root.style.setProperty('--p', String(Math.min(1, scrollY / Math.max(1, root.scrollHeight - innerHeight))));
+      addEventListener('scroll', progress, { passive: true });
+      progress();
+
+      // The panda says hello once, then only on hover.
+      const peek = document.querySelector<HTMLElement>('.peek-wrap');
+      if (peek && !still) {
+        setTimeout(() => peek.classList.add('talk'), 1600);
+        setTimeout(() => peek.classList.remove('talk'), 5200);
+      }
 
       const islandEl = document.querySelector<HTMLCanvasElement>('#island');
       if (islandEl) island(islandEl, still);
