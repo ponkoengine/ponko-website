@@ -1,15 +1,55 @@
 ---
 import '../styles/global.css';
 
-const features = [
-  ['Entities and systems', 'An archetype ECS with parallel queries. Small games can start with plain variables in a closure and move to entities later.', 'ecs.html'],
-  ['2D and 3D rendering', 'A wgpu renderer: sprites, tilemaps, text, PBR meshes, glTF, animation, shadows, terrain and your own WGSL materials.', '3d.html'],
-  ['Physics, audio, UI', 'Rapier physics in 2D and 3D, audio, UI, input action maps, scenes, prefabs and save files.', 'physics.html'],
-  ['Inspect a running game', 'A runtime inspector, traces and profiling. An MCP server lets tools and AI agents start, step and screenshot your game.', 'agents.html'],
-  ['Headless runs', 'Run the simulation at a fixed tick with no window and no GPU. Useful for servers, tests and long batch runs.', 'headless.html'],
-  ['C and C++', 'A C API and a C++17 wrapper, for native code that needs to drive the engine or be driven by it.', 'c-cpp.html'],
-  ['The web', 'Build for the browser with WebGPU or WebGL2. The game further up this page is one of those builds.', 'web.html'],
-  ['Reloading', 'Assets reload when the file changes on disk. Code hot patching is there too, if you turn it on.', 'hot-patching.html'],
+const gh = 'https://github.com/ponkoengine/ponko';
+
+// The story told on the way down. Each chapter has its own picture in dots.
+const chapters = [
+  {
+    id: 'entities', scene: 'swarm', tag: 'Entities',
+    title: 'Twelve thousand units. One loop.',
+    body: 'Start with plain variables in a closure. When the game outgrows them, move to an archetype ECS and its queries spread across every core you have.',
+    points: [['Systems are functions', 'Write one, add it, and it runs every frame.'], ['Parallel by default', 'Queries split their work across threads for you.']],
+    link: ['Entities and systems', 'ecs.html'],
+  },
+  {
+    id: 'rendering', scene: 'terrain', tag: 'Rendering',
+    title: '2D and 3D, on one renderer.',
+    body: 'Sprites, tilemaps and text sit beside PBR meshes, glTF, animation, shadows and terrain. When the game needs a look of its own, you write the material.',
+    points: [['Built on wgpu', 'Vulkan, Metal, DirectX and WebGPU from the same code.'], ['Your own shaders', 'Materials are WGSL files you can open and change.']],
+    link: ['Rendering in 3D', '3d.html'],
+  },
+  {
+    id: 'physics', scene: 'stack', tag: 'Physics, audio, UI',
+    title: 'Everything a game needs is already in the box.',
+    body: 'Rapier physics in 2D and 3D, audio, UI, input action maps, scenes, prefabs and save files. One crate, and Cargo features switch off whatever you leave out.',
+    points: [['No plugin hunt', 'The parts are made to work with each other.'], ['Pay for what you use', 'A 2D game does not carry the 3D renderer.']],
+    link: ['Physics', 'physics.html'],
+  },
+  {
+    id: 'inspect', scene: 'report', tag: 'Inspect',
+    title: 'See inside the game while it runs.',
+    body: 'A runtime inspector, traces and profiling come with the engine. Run the simulation headless at a fixed tick, with no window and no GPU, for servers, tests and long batch runs.',
+    points: [['Made for agents too', 'An MCP server lets AI tools start, step and screenshot your game.'], ['Reload as you work', 'Assets update when the file changes on disk.']],
+    link: ['Working with agents', 'agents.html'],
+  },
+  {
+    id: 'ship', scene: 'globe', tag: 'Ship',
+    title: 'Desktop, browser, or inside your C++.',
+    body: 'Build for the web with WebGPU or WebGL2 and send people a link. Or drive the engine from native code through its C API and C++17 wrapper.',
+    points: [['A link is a release', 'The game below is a 2.1 MB web build.'], ['Bring your own code', 'Call Ponko from C and C++, or call them from Ponko.']],
+    link: ['Building for the web', 'web.html'],
+  },
+];
+
+// The stops on the rail at the left of the page.
+const stops = [
+  ['top', 'Start'],
+  ...chapters.map((c) => [c.id, c.tag]),
+  ['play', 'Play'],
+  ['hello', 'Code'],
+  ['early', 'Status'],
+  ['go', 'Go'],
 ];
 
 // "Hello, world" step by step: each line says in which step it appears.
@@ -61,20 +101,13 @@ const crab = ['..X.......X..', '.XX.......XX.', '.X..X...X..X.', '.XXXOXXXOXXX.'
 const crabRects = crab
   .flatMap((row, y) => [...row].map((c, x) => (c === '.' ? '' : `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${c === 'O' ? '#15100e' : '#ff7a5c'}"/>`)))
   .join('');
-
-const facts = [
-  ['12,000', 'units on the board, each one updated every frame'],
-  ['1', 'instanced mesh draws all of them'],
-  ['2.1 MB', 'to download. Nothing to install.'],
-];
-const gh = 'https://github.com/ponkoengine/ponko';
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#fbfaf7" />
+    <meta name="theme-color" content="#120e0c" />
     <title>Ponko, a game engine for Rust</title>
     <meta name="description" content="Ponko is a free, open-source engine for 2D and 3D games, written in Rust. You write the game as ordinary code; the engine handles the window, drawing, input, audio and physics." />
     <link rel="canonical" href="https://ponko.dev/" />
@@ -92,6 +125,8 @@ const gh = 'https://github.com/ponkoengine/ponko';
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
+    <canvas id="dots" class="dots" aria-hidden="true"></canvas>
+
     <header class="top">
       <div class="wrap top-row">
         <a class="brand" href="/" aria-label="Ponko home"><img src="/brand/ponko-face.svg" width="36" height="28" alt="" />Ponko</a>
@@ -105,31 +140,53 @@ const gh = 'https://github.com/ponkoengine/ponko';
       </div>
     </header>
 
+    <nav class="rail" id="rail" aria-label="On this page">
+      <span class="rail-fill" aria-hidden="true"></span>
+      <img class="rail-rider" src="/brand/ponko-face.svg" width="26" height="20" alt="" />
+      <ol>
+        {stops.map(([id, label], i) => (
+          <li style={`top:${(i / (stops.length - 1)) * 100}%`}><a href={`#${id}`}><i aria-hidden="true"></i><span>{label}</span></a></li>
+        ))}
+      </ol>
+    </nav>
+
     <main id="main">
-      <section class="hero wrap" aria-labelledby="hero-title">
+      <section class="hero wrap" id="top" data-scene="logo" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <h1 id="hero-title" class="dot">A game engine for Rust</h1>
-          <p class="lede">Ponko is a free, open-source engine for 2D and 3D games. You write the game as ordinary Rust code, and the engine handles the window, drawing, input, audio and physics.</p>
+          <h1 id="hero-title">You make the game.<br />Ponko runs it<span class="stop">.</span></h1>
+          <p class="lede">A free, open-source engine for 2D and 3D games in Rust. Your game is ordinary code you can read from top to bottom. The window, the renderer, input, audio and physics are already there.</p>
           <div class="actions">
             <a class="pill" href="/guide/getting-started.html">Get started</a>
             <a class="pill ghost" href="#play">Play the demo</a>
           </div>
           <div class="install">
             <code><span class="prompt" aria-hidden="true">$</span> cargo add ponko</code>
-            <button id="copy" type="button" aria-label="Copy the command cargo add ponko">Copy</button>
-            <span id="copy-status" class="copy-status" role="status" aria-live="polite"></span>
+            <button class="copy" type="button" aria-label="Copy the command cargo add ponko">Copy</button>
           </div>
         </div>
-        <figure class="hero-art">
-          <canvas id="island" aria-label="A small floating island drawn in dots. Drag to turn it, click for a new one." role="img"></canvas>
-          <figcaption>Drag to turn the island. Click for a new one.</figcaption>
-        </figure>
       </section>
 
-      <section id="play" class="section" aria-labelledby="play-title">
+      <div class="story">
+        {chapters.map((c) => (
+          <section class="chapter" id={c.id} data-scene={c.scene} aria-labelledby={`${c.id}-title`}>
+            <div class="wrap">
+              <div class="chapter-copy">
+                <h2 id={`${c.id}-title`}>{c.title}</h2>
+                <p class="chapter-body">{c.body}</p>
+                <ul class="points">
+                  {c.points.map(([name, text]) => <li><b>{name}</b><span>{text}</span></li>)}
+                </ul>
+                <a class="arrow" href={`/guide/${c.link[1]}`}>{c.link[0]}</a>
+              </div>
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <section id="play" class="section" data-scene="drift" aria-labelledby="play-title">
         <div class="wrap">
           <div class="row">
-            <h2 id="play-title" class="dot">Try it in your browser</h2>
+            <h2 id="play-title">Don't take our word for it. Play it.</h2>
             <div class="body">
               <p>Tide is a small game made with Ponko and compiled to WebAssembly. Units walk from the gates to your core. Click a cell to put a tower there: it zaps anything that comes close, and every unit works out a new path around it. Space charges all the towers at once.</p>
             </div>
@@ -142,32 +199,31 @@ const gh = 'https://github.com/ponkoengine/ponko';
                 <span class="run-note">2.1 MB, needs a browser with WebGPU</span>
               </a>
             </div>
-            <div class="demo-foot">
-              <dl class="facts">
-                {facts.map(([n, text]) => <div><dt>{n}</dt><dd>{text}</dd></div>)}
-              </dl>
-              <a class="arrow" href="/play/tide/">Open full screen</a>
-            </div>
+            <dl class="boards">
+              <div><dt><canvas class="board" data-text="12,000" role="img" aria-label="12,000"></canvas></dt><dd>units on the board, each one updated every frame</dd></div>
+              <div><dt><canvas class="board" data-text="1" role="img" aria-label="1"></canvas></dt><dd>instanced mesh draws all of them</dd></div>
+              <div><dt><canvas class="board" data-text="2.1 MB" role="img" aria-label="2.1 MB"></canvas></dt><dd>to download, and nothing to install. <a class="arrow" href="/play/tide/">Open full screen</a></dd></div>
+            </dl>
           </div>
         </div>
       </section>
 
-      <section class="section band" aria-labelledby="hello-title">
-        <div class="wrap">
+      <section id="hello" class="section pin" data-scene="drift" aria-labelledby="hello-title" style={`--steps:${steps.length}`}>
+        <div class="wrap pin-stage">
           <div class="row">
-            <h2 id="hello-title" class="dot">Hello, world</h2>
+            <h2 id="hello-title">A whole game fits on one screen.</h2>
             <div class="body">
-              <p>This is a whole program. It opens a window, draws a sprite and moves it with the arrow keys. The last two steps add a thousand entities and one system that turns them all.</p>
+              <p>This is a complete program. It opens a window, draws a sprite and moves it with the arrow keys. The last two steps add a thousand entities and one system that turns them all.</p>
               <p><a class="arrow" href="/guide/getting-started.html">Write it yourself in the tutorial</a></p>
             </div>
           </div>
-          <div class="hello" id="hello" data-captions={JSON.stringify(captions)}>
+          <div class="hello" id="hello-demo" data-captions={JSON.stringify(captions)}>
             <div class="code" style={`--lines:${code.length}`}>
-              <div class="code-bar"><span>src/main.rs</span></div>
+              <div class="code-bar"><span>src/main.rs</span><span class="code-meter" aria-hidden="true"><i></i></span></div>
               <pre><code>{code.map(([step, line]) => <span class="ln" data-step={step} hidden={step > 1} set:html={line || ' '} />)}</code></pre>
             </div>
             <div class="game">
-              <div class="game-bar"><span>My Game</span><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
+              <div class="game-bar"><span>My Game</span><span>800 × 600</span></div>
               <div class="game-stage" data-step="1">
                 <span class="empty-note">An empty window, 60 frames a second</span>
                 <div class="crowd" aria-hidden="true" style={`--crab:url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 8' shape-rendering='crispEdges'>${crabRects.replaceAll('"', "'")}</svg>`)}")`}></div>
@@ -175,34 +231,24 @@ const gh = 'https://github.com/ponkoengine/ponko';
                 <span class="keys" aria-hidden="true"><kbd class="key key-left">←</kbd><kbd class="key key-right">→</kbd></span>
               </div>
               <p class="step-caption" id="step-caption" set:html={captions[0]}></p>
+              <div class="step-nav">
+                <ol class="step-dots">
+                  {steps.map(([title], i) => <li><button type="button" data-go={i + 1} aria-label={`Step ${i + 1}: ${title}`} aria-current={i === 0 ? 'step' : undefined}><span>{title}</span></button></li>)}
+                </ol>
+                <p class="cue" aria-hidden="true"><i class="wheel"></i><span>Scroll to write the next step</span></p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="section" aria-labelledby="features-title">
+      <section id="early" class="section" data-scene="drift" aria-labelledby="early-title">
         <div class="wrap">
           <div class="row">
-            <h2 id="features-title" class="dot">What's in it</h2>
+            <h2 id="early-title">It's early. That's the good part.</h2>
             <div class="body">
-              <p>The parts most games need, in one crate. Cargo features turn off what you don't use.</p>
-            </div>
-          </div>
-          <ul class="features">
-            {features.map(([title, text, page]) => (
-              <li><h3>{title}</h3><p>{text}</p><a class="arrow" href={`/guide/${page}`}>Read the guide</a></li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section class="section band" aria-labelledby="early-title">
-        <div class="wrap">
-          <div class="row">
-            <h2 id="early-title" class="dot">It's early</h2>
-            <div class="body">
-              <p>Ponko is at version 0.0.1. It runs real games, but the API still changes between versions, some things are missing, and not many people use it yet. If you need a mature engine today, Bevy or Unity will serve you better. The guide <a class="inline" href="/guide/comparison.html">compares the three</a> feature by feature.</p>
-              <p>If you'd like to help shape it, bug reports, small fixes and clearer examples are all welcome.</p>
+              <p>Ponko is at version 0.0.1. It already runs real games, and the one further up this page is one of them. The API still changes between versions, so expect to update your code as it settles.</p>
+              <p>Arrive now and you get a say in what it becomes. Bug reports, small fixes and clearer examples all change the engine.</p>
               <ul class="links">
                 <li><a href={`${gh}/blob/main/ROADMAP.md`}><span>Roadmap</span><span>What works and what's next</span></a></li>
                 <li><a href={`${gh}/blob/main/CONTRIBUTING.md`}><span>Contributing</span><span>How to send a change</span></a></li>
@@ -210,6 +256,19 @@ const gh = 'https://github.com/ponkoengine/ponko';
                 <li><a href={gh}><span>Source</span><span>github.com/ponkoengine/ponko</span></a></li>
               </ul>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="finale" id="go" data-scene="finale" aria-labelledby="go-title">
+        <div class="finale-copy">
+          <h2 id="go-title">The game in your head is ready when you are.</h2>
+          <div class="actions">
+            <a class="pill" href="/guide/getting-started.html">Start your first game</a>
+          </div>
+          <div class="install">
+            <code><span class="prompt" aria-hidden="true">$</span> cargo add ponko</code>
+            <button class="copy" type="button" aria-label="Copy the command cargo add ponko">Copy</button>
           </div>
         </div>
       </section>
@@ -227,26 +286,63 @@ const gh = 'https://github.com/ponkoengine/ponko';
     </footer>
 
     <script>
-      import { island } from '../scripts/island';
+      import { dots } from '../scripts/dots';
+      import { board } from '../scripts/board';
       import { hello } from '../scripts/hello';
+      import { smoothScroll, addStops } from '../scripts/smooth';
+      smoothScroll();
       const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      const islandEl = document.querySelector<HTMLCanvasElement>('#island');
-      if (islandEl) island(islandEl, still);
-      const helloEl = document.querySelector<HTMLElement>('#hello');
-      if (helloEl) hello(helloEl, still);
+      // The rail: the panda rides down it as the page scrolls, and the stops
+      // behind it stay lit. Chapter text fades in as it reaches the middle.
+      const rail = document.querySelector<HTMLElement>('#rail');
+      const stops = rail ? [...rail.querySelectorAll('li')] : [];
+      const copies = [...document.querySelectorAll<HTMLElement>('.chapter-copy')];
+      let lit = -1;
+      const canvas = document.querySelector<HTMLCanvasElement>('#dots');
+      if (canvas) {
+        dots(canvas, still, ({ index, between, count }) => {
+          rail?.style.setProperty('--at', String((index + Math.min(1, between)) / (count - 1)));
+          const now = between > 0.5 ? index + 1 : index;
+          if (now !== lit) {
+            lit = now;
+            stops.forEach((el, i) => {
+              el.classList.toggle('past', i <= now);
+              el.classList.toggle('here', i === now);
+            });
+            rail?.classList.toggle('on', now > 0);
+          }
+          const aim = innerWidth > 900 ? 0.5 : 0.72;
+          for (const el of copies) {
+            const b = el.getBoundingClientRect();
+            const off = (b.top + b.height / 2) / innerHeight - aim;
+            el.style.opacity = String(Math.max(0, Math.min(1, 1.5 - Math.abs(off) * 3.4)));
+            if (!still) el.style.transform = `translateY(${off * 46}px)`;
+          }
+        });
+      }
+      document.querySelectorAll<HTMLCanvasElement>('.board').forEach((el) => board(el, still));
+      const helloEl = document.querySelector<HTMLElement>('#hello-demo');
+      const helloPin = document.querySelector<HTMLElement>('#hello');
+      if (helloEl && helloPin) {
+        // On wide screens the section holds still while the scroll wheel
+        // steps through the program, one step per flick of the wheel.
+        const wide = matchMedia('(min-width: 901px)').matches;
+        if (wide) addStops(helloPin, Number(getComputedStyle(helloPin).getPropertyValue('--steps')) || 7);
+        hello(helloEl, still, wide ? helloPin : undefined);
+      }
 
       // Copy the install command.
-      const button = document.querySelector<HTMLButtonElement>('#copy');
-      const status = document.querySelector<HTMLElement>('#copy-status');
-      button?.addEventListener('click', async () => {
-        try {
-          await navigator.clipboard.writeText('cargo add ponko');
-          button.textContent = 'Copied';
+      document.querySelectorAll<HTMLButtonElement>('.copy').forEach((button) => {
+        button.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText('cargo add ponko');
+            button.textContent = 'Copied';
+          } catch {
+            button.textContent = 'Select it to copy';
+          }
           setTimeout(() => (button.textContent = 'Copy'), 1800);
-        } catch {
-          if (status) status.textContent = 'Couldn’t copy. Select the command instead.';
-        }
+        });
       });
 
       // The demo: on a desktop it runs in the page; on touch screens, full screen.

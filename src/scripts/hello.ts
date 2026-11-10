@@ -1,10 +1,11 @@
 // "Hello, world" step by step: the code grows a few lines at a time while
-// the game window beside it shows what those lines do. It plays by itself.
+// the game window beside it shows what those lines do. Given a section to
+// follow, the scroll position picks the step; otherwise it plays by itself.
 
 const STEP_MS = 2600;
 const HOLD_MS = 9000;
 
-export function hello(root: HTMLElement, still: boolean) {
+export function hello(root: HTMLElement, still: boolean, follow?: HTMLElement) {
   const lines = [...root.querySelectorAll<HTMLElement>('.ln')];
   const preview = root.querySelector<HTMLElement>('.game-stage')!;
   const crowd = root.querySelector<HTMLElement>('.crowd');
@@ -41,7 +42,48 @@ export function hello(root: HTMLElement, still: boolean) {
       }
     }
     preview.dataset.step = String(n);
-    if (caption) caption.innerHTML = texts[n - 1] ?? '';
+    root.dataset.step = String(n);
+    root.classList.toggle('done', n === last);
+    if (caption) {
+      caption.innerHTML = texts[n - 1] ?? '';
+      if (animate) {
+        caption.classList.remove('swap');
+        void caption.offsetWidth;
+        caption.classList.add('swap', n < before ? 'back' : 'ahead');
+        caption.classList.toggle('back', n < before);
+      }
+    }
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('past', i < n);
+      if (i === n - 1) dot.setAttribute('aria-current', 'step');
+      else dot.removeAttribute('aria-current');
+    });
+  }
+  const dots = [...root.querySelectorAll<HTMLButtonElement>('[data-go]')];
+
+  if (follow) {
+    root.classList.add('scrubbed');
+    show(1, false);
+    const span = () => Math.max(1, follow.offsetHeight - innerHeight);
+    const update = () => {
+      const at = Math.min(1, Math.max(0, -follow.getBoundingClientRect().top / span()));
+      // A continuous reading for the meter, and the nearest step for the rest.
+      root.style.setProperty('--progress', at.toFixed(4));
+      const n = Math.min(last, 1 + Math.round(at * (last - 1)));
+      if (n !== step) show(n, !still);
+    };
+    // The dots under the caption jump straight to their step.
+    for (const dot of dots) {
+      dot.addEventListener('click', () => {
+        const k = Number(dot.dataset.go) - 1;
+        const top = follow.getBoundingClientRect().top + scrollY;
+        scrollTo({ top: top + (span() * k) / (last - 1), behavior: still ? 'auto' : 'smooth' });
+      });
+    }
+    addEventListener('scroll', update, { passive: true });
+    addEventListener('resize', update);
+    update();
+    return;
   }
 
   if (still) {
@@ -56,6 +98,12 @@ export function hello(root: HTMLElement, still: boolean) {
     timer = window.setTimeout(next, n === last ? HOLD_MS : STEP_MS);
   }
 
+  // Without scrolling to follow, the dots still pick a step.
+  for (const dot of dots) dot.addEventListener('click', () => {
+    clearTimeout(timer);
+    show(Number(dot.dataset.go), true);
+    timer = window.setTimeout(next, HOLD_MS);
+  });
   show(1, false);
   // Play while it's on screen; start over from the top each time it comes back.
   new IntersectionObserver(([e]) => {
