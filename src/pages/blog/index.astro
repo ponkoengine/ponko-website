@@ -5,6 +5,6 @@ import { getPosts } from '../../lib/blog';
 
 const posts = await getPosts();
 ---
-<Base title="Blog · Ponko Engine" description="News from Ponko: releases, how the engine works inside, and games people make with it.">
+<Base title="Blog · Ponko Engine" description="News from Ponko: releases, how the engine works inside, and games people make with it." image="/og/blog.png" imageAlt="The Ponko blog: news from the engine.">
   <BlogIndex posts={posts} />
 </Base>

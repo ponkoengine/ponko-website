@@ -12,12 +12,17 @@ interface Props {
   /** Social card title, if it should differ from the <title>. */
   socialTitle?: string;
   socialDescription?: string;
-  /** An absolute path or URL for the share image. */
+  /** An absolute path or URL for the share image, 1200×630 unless said. */
   image?: string;
   imageAlt?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   type?: 'website' | 'article';
-  /** For articles: an ISO date. */
+  /** For articles: ISO dates, who wrote it, its topics. */
   published?: string;
+  modified?: string;
+  authors?: string[];
+  tags?: string[];
   /** Hide the header and footer, for pages that stand on their own. */
   bare?: boolean;
   /** Where the "Demo" link in the header goes. */
@@ -33,8 +38,13 @@ const {
   socialDescription = description,
   image = '/og.png',
   imageAlt = "Ponko's red panda logo drawn in dots, beside the line: You make the game. Ponko runs it.",
+  imageWidth = 1200,
+  imageHeight = 630,
   type = 'website',
   published,
+  modified,
+  authors = [],
+  tags = [],
   bare = false,
   demoHref,
   noindex = false,
@@ -42,7 +52,26 @@ const {
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const imageUrl = new URL(image, Astro.site);
-const isDefaultImage = image === '/og.png';
+const imageType = /\.png($|\?)/.test(image) ? 'image/png' : /\.jpe?g($|\?)/.test(image) ? 'image/jpeg' : /\.webp($|\?)/.test(image) ? 'image/webp' : undefined;
+
+// Structured data for search engines: an article with its dates and authors,
+// or the site itself.
+const jsonLd =
+  type === 'article'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: socialTitle,
+        description,
+        image: [imageUrl.href],
+        datePublished: published,
+        dateModified: modified ?? published,
+        author: authors.map((name) => ({ '@type': name.startsWith('The ') ? 'Organization' : 'Person', name })),
+        publisher: { '@type': 'Organization', name: 'Ponko Engine', url: Astro.site?.href, logo: { '@type': 'ImageObject', url: new URL('/apple-touch-icon.png', Astro.site).href } },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': canonical.href },
+        keywords: tags.join(', ') || undefined,
+      }
+    : { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ponko Engine', url: Astro.site?.href };
 ---
 <!doctype html>
 <html lang="en">
@@ -67,14 +96,24 @@ const isDefaultImage = image === '/og.png';
     <meta property="og:type" content={type} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={imageUrl} />
-    {isDefaultImage && <meta property="og:image:width" content="1200" />}
-    {isDefaultImage && <meta property="og:image:height" content="630" />}
+    <meta property="og:image:secure_url" content={imageUrl} />
+    {imageType && <meta property="og:image:type" content={imageType} />}
+    <meta property="og:image:width" content={String(imageWidth)} />
+    <meta property="og:image:height" content={String(imageHeight)} />
     <meta property="og:image:alt" content={imageAlt} />
+    <meta property="og:locale" content="en_GB" />
     {published && <meta property="article:published_time" content={published} />}
+    {(modified ?? published) && <meta property="article:modified_time" content={modified ?? published} />}
+    {authors.map((a) => <meta property="article:author" content={a} />)}
+    {tags[0] && <meta property="article:section" content={tags[0]} />}
+    {tags.map((t) => <meta property="article:tag" content={t} />)}
+    {authors.length > 0 && <meta name="author" content={authors.join(', ')} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={socialTitle} />
     <meta name="twitter:description" content={socialDescription} />
     <meta name="twitter:image" content={imageUrl} />
+    <meta name="twitter:image:alt" content={imageAlt} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <slot name="head" />
   </head>
   <body>

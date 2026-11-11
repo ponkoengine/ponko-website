@@ -34,8 +34,11 @@ const minutes = readingMinutes(post.body);
   description={description}
   type="article"
   published={date.toISOString()}
-  image={cover?.src}
-  imageAlt={cover ? coverAlt ?? title : undefined}
+  modified={updated?.toISOString()}
+  authors={authors}
+  tags={tags}
+  image={`/og/blog/${post.id}.png`}
+  imageAlt={`${title}: a post on the Ponko blog, with its picture in dots.`}
   noindex={draft}
 >
   <main id="main" class="post">

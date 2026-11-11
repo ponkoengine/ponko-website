@@ -12,6 +12,6 @@ export async function getStaticPaths() {
 const { name, slug } = Astro.props;
 const posts = await getPosts();
 ---
-<Base title={`${name} · Ponko blog`} description={`Posts about ${name} on the Ponko blog.`}>
+<Base title={`${name} · Ponko blog`} description={`Posts about ${name} on the Ponko blog.`} image="/og/blog.png" imageAlt="The Ponko blog: news from the engine.">
   <BlogIndex posts={posts} selected={[slug]} />
 </Base>

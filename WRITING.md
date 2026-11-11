@@ -41,7 +41,8 @@ draft: true                             # set to false to publish
 
 Every post has its own picture in dots. It sits behind the title at the top
 of the post, moving slowly (still for readers who ask for reduced motion),
-and appears again in the list of posts. The palette and shape are
+leads the list of posts when the post is the newest, and is on the post's
+share card. The palette and shape are
 picked from the post's address, so a post always looks the same and two posts
 rarely match. To choose them yourself:
 
@@ -56,9 +57,18 @@ art: { palette: amber, shape: sphere }
 
 ### Cover image
 
-A `cover` is optional. It's shown under the title, and is used as the share
-image on social sites (otherwise they show the site's own card). It should be
-at least 1600 pixels wide.
+A `cover` is optional. It's shown under the title and in the list of posts.
+It should be at least 1600 pixels wide.
+
+### Sharing
+
+Every post gets a share card, the picture social sites and chats show for a
+link to it: the post's title beside its picture in dots, made at build time
+at `/og/blog/<post>.png` (see `src/lib/og-card.ts`). The page also carries
+the title, description, dates, authors and tags for social sites (Open
+Graph and Twitter tags) and search engines (structured data). Nothing to do
+but write a good `title` and `description`; check how a card looks by
+opening its address on the dev server.
 
 The build checks all of this. A missing description or a misspelled field
 stops `npm run build` with a message saying which post and which field.
