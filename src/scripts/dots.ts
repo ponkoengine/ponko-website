@@ -58,9 +58,12 @@ export function dots(canvas: HTMLCanvasElement, still: boolean, onFrame?: (f: Fr
   };
 
   // Turns a drawing into dots on a regular grid: one dot per opaque pixel.
-  // The drawing is scaled so it has about `want` opaque pixels.
+  // The drawing is scaled so it has about `want` opaque pixels, and every one
+  // of them gets a dot as long as there are `cap` to go round. Dropping
+  // pixels would leave holes in the picture, so `want` should sit a little
+  // under `cap` (the fit is only within 4%).
   type Points = { x: Float32Array; y: Float32Array; c: Uint8Array; n: number };
-  function raster(aspect: number, want: number, paint: (c: CanvasRenderingContext2D, w: number, h: number) => void, colour: (r: number, g: number, b: number) => number): Points {
+  function raster(aspect: number, want: number, cap: number, paint: (c: CanvasRenderingContext2D, w: number, h: number) => void, colour: (r: number, g: number, b: number) => number): Points {
     const off = document.createElement('canvas');
     const o = off.getContext('2d', { willReadFrequently: true })!;
     let w = Math.round(Math.sqrt((want / 0.4) * aspect));
@@ -85,7 +88,7 @@ export function dots(canvas: HTMLCanvasElement, still: boolean, onFrame?: (f: Fr
     }
     const got = found.length / 3;
     const order = Array.from({ length: got }, (_, i) => i).sort((a, b) => hash(a, 7) - hash(b, 7));
-    const n = Math.min(got, want);
+    const n = Math.min(got, cap);
     const p: Points = { x: new Float32Array(n), y: new Float32Array(n), c: new Uint8Array(n), n };
     for (let i = 0; i < n; i++) {
       const k = order[i] * 3;
@@ -307,13 +310,13 @@ export function dots(canvas: HTMLCanvasElement, still: boolean, onFrame?: (f: Fr
     .then((svg) => {
       const img = new Image();
       img.onload = () => {
-        logo = raster(720 / 560, Math.floor(N * 0.94), (c, w, h) => c.drawImage(img, 0, 0, w, h), (r, g) => (r > 215 && g > 190 ? CREAM : r > 150 ? ORANGE : DIM));
+        logo = raster(720 / 560, Math.floor(N * 0.9), N, (c, w, h) => c.drawImage(img, 0, 0, w, h), (r, g) => (r > 215 && g > 190 ? CREAM : r > 150 ? ORANGE : DIM));
       };
       img.src = URL.createObjectURL(new Blob([svg.replace('<svg ', '<svg width="720" height="560" ')], { type: 'image/svg+xml' }));
     })
     .catch(() => {});
   const letter = () => {
-    word = raster(2.9, wordDots, (c, w, h) => {
+    word = raster(2.9, Math.floor(wordDots * 0.94), wordDots, (c, w, h) => {
       c.fillStyle = '#fff';
       c.textAlign = 'center';
       c.textBaseline = 'middle';
@@ -324,7 +327,7 @@ export function dots(canvas: HTMLCanvasElement, still: boolean, onFrame?: (f: Fr
       c.fillText('Ponko', w / 2, h * 0.5);
     }, () => CREAM);
     const lines = ['> ponko inspect', 'tick      48,211', 'entities  12,000', 'sim       0.41 ms', 'draws     1'];
-    readout = raster(1.5, Math.floor(N * 0.9), (c, w, h) => {
+    readout = raster(1.5, Math.floor(N * 0.9), N, (c, w, h) => {
       c.textBaseline = 'middle';
       c.font = `500 ${w / 10.4}px "JetBrains Mono", monospace`;
       lines.forEach((line, i) => {
