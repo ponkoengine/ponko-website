@@ -1,0 +1,23 @@
+---
+// A game to play from the post: a still with a play button that opens the
+// game in a new tab, where it fills the window.
+//   <Play src="/play/tide/" poster="/play/tide/poster.webp" title="Tide" note="2.1 MB, needs WebGPU" />
+interface Props {
+  src: string;
+  title: string;
+  poster?: string;
+  note?: string;
+  caption?: string;
+}
+const { src, title, poster, note, caption } = Astro.props;
+---
+<figure class="figure wide embed game">
+  <div class="embed-stage">
+    {poster && <img src={poster} alt="" loading="lazy" decoding="async" />}
+    <a class="embed-run" href={src} target="_blank" rel="noopener">
+      <span class="pill">Play {title}</span>
+      {note && <span class="run-note">{note}</span>}
+    </a>
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>

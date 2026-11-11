@@ -170,18 +170,79 @@ a[href^="http"]:not(.links a)::after,
   --out: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1.5 8.5 8.5 1.5M3.2 1.5h5.3v5.3'/%3E%3C/svg%3E");
 }
 
-/* Header. */
+/* Header. Flat across the top of a page; once the page scrolls, the row
+   keeps its width and becomes a floating island of frosted glass with a fine grid of dots
+   in it, like the rest of the site. */
 .top {
   position: fixed;
   inset: 0 0 auto;
   z-index: 10;
-  background: linear-gradient(var(--night) 30%, transparent);
+  padding-top: env(safe-area-inset-top);
+  pointer-events: none;
+}
+.top::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 -24px;
+  background: linear-gradient(var(--night) 35%, transparent);
+  transition: opacity 0.35s;
+  pointer-events: none;
+}
+.top.solid::before,
+.top.open::before {
+  opacity: 0;
+}
+/* Behind the open phone menu, the page dims. */
+.top::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgb(10 7 6 / 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s, visibility 0s 0.25s;
+}
+.top.open::after {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.25s;
 }
 .top-row {
+  --ease: cubic-bezier(0.32, 0.9, 0.3, 1);
+  position: relative;
   display: flex;
   align-items: center;
-  height: 76px;
   gap: 40px;
+  width: min(100% - var(--gutter) * 2, var(--wrap));
+  height: 76px;
+  margin: 0 auto;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  pointer-events: auto;
+  transition:
+    height 0.55s var(--ease),
+    margin 0.55s var(--ease),
+    padding 0.55s var(--ease),
+    background-color 0.35s,
+    border-color 0.35s,
+    box-shadow 0.35s;
+}
+.top.solid .top-row,
+.top.open .top-row {
+  height: 58px;
+  margin-top: 12px;
+  padding: 0 8px 0 18px;
+  border-color: rgb(244 233 219 / 0.1);
+  background-color: rgb(30 23 19 / 0.74);
+  background-image: radial-gradient(rgb(244 233 219 / 0.06) 0.9px, transparent 1.3px);
+  background-size: 6px 6px;
+  box-shadow:
+    0 1px 0 rgb(244 233 219 / 0.06) inset,
+    0 18px 40px -18px rgb(0 0 0 / 0.75);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  backdrop-filter: blur(18px) saturate(1.4);
 }
 .brand {
   display: inline-flex;
@@ -191,23 +252,133 @@ a[href^="http"]:not(.links a)::after,
   font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.01em;
+  transition: font-size 0.55s var(--ease);
 }
-.top nav {
+.brand img {
+  transition: transform 0.55s var(--ease);
+}
+.solid .brand {
+  font-size: 19px;
+}
+.solid .brand img {
+  transform: scale(0.86);
+}
+.brand:hover img {
+  transform: rotate(-8deg) scale(1.05);
+}
+.top-nav {
+  position: relative;
   display: flex;
-  gap: 30px;
+  align-items: center;
+  gap: 4px;
   margin-left: auto;
 }
-.top nav a {
+.nav-link {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
   color: var(--muted);
   font-size: 15px;
-  transition: color 0.15s;
+  transition: color 0.2s;
 }
-.top nav a:hover {
+.nav-link:hover,
+.nav-link[aria-current] {
   color: var(--ink);
 }
+.nav-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+/* The highlight that glides between links. */
+.nav-glide {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: var(--w, 0);
+  height: 36px;
+  border-radius: 999px;
+  background: rgb(244 233 219 / 0.08);
+  box-shadow: 0 0 0 1px rgb(244 233 219 / 0.06) inset;
+  opacity: 0;
+  transform: translate(var(--x, 0), -50%);
+  transition:
+    transform 0.45s cubic-bezier(0.3, 1.25, 0.4, 1),
+    width 0.45s cubic-bezier(0.3, 1.25, 0.4, 1),
+    opacity 0.2s;
+  pointer-events: none;
+}
+.nav-glide.on {
+  opacity: 1;
+}
+.nav-glide.jump {
+  transition: none;
+}
+.top-nav .pill {
+  margin-left: 12px;
+}
+.menu-button {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  margin: 0 -10px 0 auto;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+.solid .menu-button,
+.open .menu-button {
+  margin-right: 0;
+}
+.menu-icon {
+  position: relative;
+  width: 20px;
+  height: 12px;
+}
+.menu-icon i {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 0.3s cubic-bezier(0.3, 1.3, 0.5, 1), top 0.3s;
+}
+.menu-icon i:first-child {
+  top: 2px;
+}
+.menu-icon i:last-child {
+  top: 9px;
+}
+.open .menu-icon i:first-child {
+  top: 5.5px;
+  transform: rotate(45deg);
+}
+.open .menu-icon i:last-child {
+  top: 5.5px;
+  transform: rotate(-45deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .top-row,
+  .brand,
+  .brand img,
+  .nav-glide {
+    transition: none;
+  }
+}
 
-/* The rail at the left: a line with a stop for each part of the page. The
-   panda rides down it as you scroll; click a stop to jump there. */
+/* The rail at the left, shown only while the story is pinned: a stop for
+   each chapter, with the panda riding down as you scroll. Click a stop to
+   jump to that chapter. */
 .rail {
   --at: 0;
   position: fixed;
@@ -218,10 +389,13 @@ a[href^="http"]:not(.links a)::after,
   width: 2px;
   background: var(--line);
   opacity: 0;
-  transition: opacity 0.5s;
+  visibility: hidden;
+  transition: opacity 0.4s, visibility 0s 0.4s;
 }
 .rail.on {
   opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s;
 }
 .rail-fill {
   position: absolute;
@@ -363,17 +537,48 @@ a[href^="http"]:not(.links a)::after,
   color: var(--ink);
 }
 
-/* The story: one chapter per screen, words on the left, dots on the right. */
+/* The story, pinned: the stage holds still for one screen per chapter
+   while the words cross over and the dots behind them change picture.
+   The empty .chapter sections are what actually scrolls past. */
+.story {
+  position: relative;
+  height: calc(var(--chapters) * 100vh + 30vh);
+  height: calc(var(--chapters) * 100svh + 30svh);
+}
+.story-stage {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+/* One screen of scroll per chapter, laid over the story's length. */
 .chapter {
+  position: absolute;
+  inset: calc(var(--i) * 100vh) 0 auto;
+  inset: calc(var(--i) * 100svh) 0 auto;
+  height: 100vh;
+  height: 100svh;
+  pointer-events: none;
+}
+.story-grid {
   display: grid;
-  align-items: center;
-  min-height: 130vh;
+  height: 100%;
+  padding-top: 76px;
+  padding-bottom: 40px;
 }
 .chapter-copy {
+  grid-area: 1 / 1;
+  align-self: center;
   max-width: 540px;
+  opacity: 0;
   will-change: opacity, transform;
 }
-.chapter h2 {
+.chapter-copy:first-child {
+  opacity: 1;
+}
+.chapter-copy h2 {
   font-size: clamp(36px, 4.2vw, 58px);
   line-height: 1.04;
   letter-spacing: -0.03em;
@@ -440,47 +645,9 @@ a[href^="http"]:not(.links a)::after,
   padding-top: 8px;
 }
 
-/* Hello, world on wide screens: the section is several screens tall and its
-   content stays pinned while the scroll steps through the program. */
-@media (min-width: 901px) and (hover: hover) and (pointer: fine) {
-  .pin {
-    height: calc(100vh + (var(--steps) - 1) * 42vh);
-    padding: 0;
-  }
-  .pin-stage {
-    position: sticky;
-    top: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 100vh;
-    padding-top: 76px;
-    padding-bottom: 24px;
-  }
-  .pin .row h2 {
-    font-size: clamp(30px, 3vw, 42px);
-  }
-  .pin .hello {
-    margin-top: 28px;
-  }
-  .pin .code pre {
-    padding: 12px 0;
-    font-size: 12.5px;
-    line-height: 1.6;
-  }
-  .pin .code .ln {
-    min-height: 1.6em;
-  }
-}
-@media (min-width: 901px) and (hover: hover) and (pointer: fine) and (max-height: 860px) {
-  .pin .row .body p:first-child {
-    display: none;
-  }
-}
 
-/* Showing that Hello, world moves: a meter in the code bar that follows the
-   scroll, a dot per step, a hint to keep scrolling, and the caption sliding
-   in from the direction you're going. */
+/* Hello, world's controls: a meter in the code bar for how far along it
+   is, a dot per step, and back / play-pause / next buttons. */
 .code-meter {
   position: relative;
   width: 120px;
@@ -495,9 +662,7 @@ a[href^="http"]:not(.links a)::after,
   background: var(--accent);
   transform-origin: left;
   transform: scaleX(var(--progress, 0));
-}
-.hello:not(.scrubbed) .code-meter {
-  display: none;
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .step-nav {
   display: flex;
@@ -541,44 +706,53 @@ a[href^="http"]:not(.links a)::after,
 .step-dots button:hover {
   background: var(--ink);
 }
-.cue {
+.step-buttons {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-  transition: opacity 0.4s;
+  gap: 6px;
 }
-.hello:not(.scrubbed) .cue,
-.hello.done .cue {
-  opacity: 0;
+.step-button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--raised);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, opacity 0.15s;
 }
-/* A mouse with its wheel rolling down. */
-.wheel {
-  position: relative;
-  width: 14px;
-  height: 21px;
-  border: 1.5px solid currentColor;
-  border-radius: 8px;
+.step-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
-.wheel::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 4px;
-  width: 2px;
-  height: 5px;
-  margin-left: -1px;
-  border-radius: 2px;
-  background: var(--accent);
-  animation: wheel 1.6s ease-in-out infinite;
+.step-button .i-play path {
+  fill: currentColor;
+  stroke: none;
 }
-@keyframes wheel {
-  0% { transform: translateY(0); opacity: 0; }
-  20% { opacity: 1; }
-  80% { transform: translateY(7px); opacity: 0; }
-  100% { transform: translateY(7px); opacity: 0; }
+.step-button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.step-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.step-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.step-button .i-play,
+.hello:not(.playing) .i-pause {
+  display: none;
+}
+.hello:not(.playing) .i-play {
+  display: block;
 }
 .step-caption.swap {
   animation: caption-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -592,17 +766,53 @@ a[href^="http"]:not(.links a)::after,
 @keyframes caption-back {
   from { opacity: 0; transform: translateY(-14px); }
 }
-/* Upcoming lines breathe a little, so the code reads as unfinished. */
-.hello.scrubbed:not(.done) .code .ln[hidden] {
-  animation: upcoming 2.8s ease-in-out infinite;
+
+/* A centred section opening: a big line and a short paragraph under it. */
+.intro {
+  max-width: 820px;
+  margin: 0 auto;
+  text-align: center;
 }
-@keyframes upcoming {
-  50% { opacity: 0.32; }
+.intro h2 {
+  font-size: clamp(40px, 6vw, 84px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.intro p {
+  max-width: 34em;
+  margin: 28px auto 0;
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1.55;
+  text-wrap: pretty;
 }
 
-/* The playable demo. */
+/* The playable demo. As it scrolls into view the frame grows from a
+   smaller card to its full size, in step with the scroll. */
 .demo {
-  margin-top: 64px;
+  margin-top: 72px;
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .demo-stage {
+      animation: demo-grow linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+    @keyframes demo-grow {
+      from {
+        transform: scale(0.84);
+        border-radius: 32px;
+        filter: brightness(0.55);
+      }
+      to {
+        transform: none;
+        border-radius: 16px;
+        filter: none;
+      }
+    }
+  }
 }
 .demo-stage {
   position: relative;
@@ -613,8 +823,7 @@ a[href^="http"]:not(.links a)::after,
   background: #0a0807;
   box-shadow: 0 40px 120px -40px rgb(240 103 47 / 0.35);
 }
-.demo-stage img,
-.demo-stage iframe {
+.demo-stage img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -662,10 +871,6 @@ a[href^="http"]:not(.links a)::after,
   background: rgb(12 10 9 / 0.75);
   color: var(--text);
   font-size: 14px;
-}
-.demo-stage.running img,
-.demo-stage.running .run {
-  display: none;
 }
 
 /* The numbers under the demo, each on a small dot-matrix board. */
@@ -750,13 +955,13 @@ a[href^="http"]:not(.links a)::after,
   opacity: 0.2;
 }
 .kw {
-  color: #a3401c;
+  color: #f08a5d;
 }
 .str {
-  color: #3d7a3a;
+  color: #b9cf8a;
 }
 .fn {
-  color: #2756a8;
+  color: #f3c26b;
 }
 .ln.new {
   animation: fresh 2.4s ease-out both;
@@ -1043,7 +1248,7 @@ a[href^="http"]:not(.links a)::after,
 }
 .foot-row {
   display: grid;
-  grid-template-columns: 6fr 3fr 3fr;
+  grid-template-columns: 5fr repeat(3, 2fr);
   gap: 40px;
 }
 .foot-brand p {
@@ -1054,6 +1259,7 @@ a[href^="http"]:not(.links a)::after,
 .foot-col {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
   font-size: 16px;
 }
@@ -1084,11 +1290,81 @@ a[href^="http"]:not(.links a)::after,
   margin: 0;
   color: var(--muted);
 }
+.lost .actions {
+  justify-content: center;
+  margin-top: 8px;
+}
 
 /* Smaller screens: the dots sit above the words instead of beside them. */
 @media (max-width: 1100px) {
   .rail {
     display: none;
+  }
+}
+@media (max-width: 960px) {
+  .top-nav {
+    gap: 0;
+  }
+  .nav-link {
+    padding: 0 11px;
+  }
+}
+/* Phones and small tablets: the links fold into a menu that drops down
+   under the bar. */
+@media (max-width: 760px) {
+  .menu-button {
+    display: inline-flex;
+  }
+  .top-nav {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    max-height: calc(100dvh - 100px - env(safe-area-inset-top));
+    overflow-y: auto;
+    padding: 6px 20px 20px;
+    border: 1px solid rgb(244 233 219 / 0.1);
+    border-radius: 26px;
+    background: rgb(24 18 15 / 0.97);
+    box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.8);
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+    transform-origin: top center;
+    transition: opacity 0.2s, transform 0.3s cubic-bezier(0.32, 0.9, 0.3, 1), visibility 0s 0.3s;
+  }
+  .open .top-nav {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.2s, transform 0.3s cubic-bezier(0.32, 0.9, 0.3, 1);
+  }
+  .nav-glide {
+    display: none;
+  }
+  .nav-link {
+    height: auto;
+    min-height: 56px;
+    padding: 0;
+    border-radius: 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 22px;
+  }
+  .nav-link[aria-current] {
+    color: var(--accent);
+  }
+  .top-nav .pill {
+    margin: 20px 0 0;
+    height: 52px;
+    font-size: 17px;
+  }
+  .menu-open,
+  .menu-open body {
+    overflow: hidden;
   }
 }
 @media (max-width: 900px) {
@@ -1099,16 +1375,19 @@ a[href^="http"]:not(.links a)::after,
     align-items: end;
     padding-top: 46svh;
   }
-  .chapter {
-    align-items: start;
-    min-height: 120svh;
+  /* The dots draw in the top half of the screen and the words sit in
+     the bottom half, over a backing of night so the two never mix. */
+  .story-grid {
+    padding-top: 0;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
   }
-  /* The dots draw in the top part of the screen; the words scroll up over
-     them on a backing of night, so the two never mix. */
   .chapter-copy {
-    margin-top: 42svh;
-    padding: 28px 0 48px;
-    background: linear-gradient(transparent, var(--night) 28px);
+    align-self: end;
+    padding: 32px 0 20px;
+    background: linear-gradient(transparent, var(--night) 32px);
+  }
+  .chapter-copy .points {
+    display: none;
   }
   .hero-copy {
     background: linear-gradient(transparent, var(--night) 28px);
@@ -1141,7 +1420,8 @@ a[href^="http"]:not(.links a)::after,
     min-height: 120svh;
   }
   .foot-row {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px 24px;
   }
   .foot-brand {
     grid-column: 1 / -1;
@@ -1155,18 +1435,20 @@ a[href^="http"]:not(.links a)::after,
     font-size: 17px;
   }
   .top-row {
-    height: 64px;
-    gap: 16px;
+    height: 60px;
   }
-  .top nav {
-    gap: 16px;
+  .top.solid .top-row,
+  .top.open .top-row {
+    height: 54px;
+    margin-top: 8px;
+    padding: 0 4px 0 14px;
   }
-  .top nav a:nth-child(n + 3),
-  .top .pill.small {
-    display: none;
+  .foot-row {
+    grid-template-columns: 1fr 1fr;
   }
   .lede,
-  .chapter-body {
+  .chapter-body,
+  .intro p {
     font-size: 17px;
   }
   .step-caption {
@@ -1184,10 +1466,11 @@ a[href^="http"]:not(.links a)::after,
   :root {
     scroll-behavior: auto;
   }
+  .code-meter i {
+    transition: none;
+  }
   .ln.new,
-  .wheel::after,
   .step-caption.swap,
-  .hello .code .ln[hidden],
   .game-stage .crab,
   .game-stage .crowd i,
   .game-stage .key {

@@ -1,0 +1,17 @@
+---
+// Pages 2 and on of the blog's list. Page 1 is /blog/ itself.
+import Base from '../../../layouts/Base.astro';
+import BlogIndex from '../../../components/BlogIndex.astro';
+import { getPosts, PER_PAGE } from '../../../lib/blog';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  const pages = Math.ceil(posts.length / PER_PAGE);
+  return Array.from({ length: Math.max(0, pages - 1) }, (_, i) => ({ params: { page: String(i + 2) } }));
+}
+const page = Number(Astro.params.page);
+const posts = await getPosts();
+---
+<Base title={`Blog, page ${page} · Ponko Engine`} description="News from Ponko: releases, how the engine works inside, and games people make with it.">
+  <BlogIndex posts={posts} page={page} />
+</Base>

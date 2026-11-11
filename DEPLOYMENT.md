@@ -64,6 +64,8 @@ Use Node 26.13.0 and `npm ci`. `npm run dev` runs the Astro homepage. Run
 access and `tar`, downloads only public engine content, and caches downloads
 in ignored `.cache/`. It never reads private sibling repositories.
 
-`npm run build:site` builds only Astro for rapid layout work. Guide links need
+`npm run build:site` builds only Astro (the home page and the blog) for rapid
+layout work. Blog posts are written as described in [WRITING.md](WRITING.md);
+the RSS feed and `sitemap.xml` are generated from them on each build. Guide links need
 the full build to work. On localhost, clipboard access requires a secure
 context; the copy button also supplies a readable fallback if access fails.

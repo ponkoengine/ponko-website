@@ -1,0 +1,21 @@
+---
+// A YouTube video that loads nothing from YouTube until it's clicked:
+// <YouTube id="dQw4w9WgXcQ" title="…" />
+interface Props {
+  id: string;
+  title: string;
+  /** Start this many seconds in. */
+  start?: number;
+}
+const { id, title, start } = Astro.props;
+const src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0${start ? `&start=${start}` : ''}`;
+---
+<figure class="figure wide embed" data-embed-src={src} data-embed-title={title}>
+  <div class="embed-stage">
+    <img src={`https://i.ytimg.com/vi/${encodeURIComponent(id)}/hqdefault.jpg`} alt="" loading="lazy" decoding="async" />
+    <button type="button" class="embed-run">
+      <span class="pill">Play video</span>
+      <span class="run-note">{title}, on YouTube</span>
+    </button>
+  </div>
+</figure>

@@ -1,0 +1,29 @@
+---
+// Numbered pages under the list: previous, the page numbers (the first, the
+// last, and the ones next to this page, with gaps between), and next. Shown
+// only when there is more than one page. src/scripts/topics.ts draws the same
+// markup again in the browser; keep the two alike.
+import { pageNumbers } from '../lib/pages';
+
+interface Props {
+  page: number;
+  pages: number;
+  href: (n: number) => string;
+}
+const { page, pages, href } = Astro.props;
+---
+<nav class="pager" aria-label="Pages" hidden={pages < 2}>
+  {page > 1
+    ? <a class="pager-step" href={href(page - 1)} data-page={page - 1} rel="prev">Previous</a>
+    : <span class="pager-step" aria-disabled="true">Previous</span>}
+  <ol class="pager-pages">
+    {pageNumbers(page, pages).map((n) =>
+      n === null
+        ? <li class="pager-gap" aria-hidden="true">…</li>
+        : <li><a href={href(n)} data-page={n} aria-current={n === page ? 'page' : undefined} aria-label={`Page ${n}`}>{n}</a></li>
+    )}
+  </ol>
+  {page < pages
+    ? <a class="pager-step" href={href(page + 1)} data-page={page + 1} rel="next">Next</a>
+    : <span class="pager-step" aria-disabled="true">Next</span>}
+</nav>

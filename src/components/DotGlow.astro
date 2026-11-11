@@ -1,0 +1,13 @@
+---
+// A soft glow in a post's colours, seen through a screen of dots: big
+// blurry blobs that drift slowly behind the top of the page.
+import { glowOf, type ArtOptions } from '../lib/dot-art';
+
+interface Props {
+  id: string;
+  art?: ArtOptions;
+}
+const { id, art } = Astro.props;
+const { style } = glowOf(id, art);
+---
+<div class="dot-glow" style={style} aria-hidden="true"><i></i></div>

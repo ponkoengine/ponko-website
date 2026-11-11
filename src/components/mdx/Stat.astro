@@ -1,0 +1,22 @@
+---
+// A number on a dot-matrix board, like the ones under the demo on the home
+// page. Up to six characters of 0-9 , . M B and space. Group them:
+//   <Stats>
+//     <Stat value="12,000">units on the board</Stat>
+//     <Stat value="2.1 MB">to download</Stat>
+//   </Stats>
+interface Props {
+  value: string;
+}
+const { value } = Astro.props;
+---
+<div class="stat">
+  <canvas class="board" data-text={value} role="img" aria-label={value}></canvas>
+  <p><slot /></p>
+</div>
+
+<script>
+  import { board } from '../../scripts/board';
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll<HTMLCanvasElement>('.stat .board').forEach((el) => board(el, still));
+</script>

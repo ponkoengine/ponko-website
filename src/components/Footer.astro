@@ -1,0 +1,14 @@
+---
+import { site } from '../site';
+---
+<footer class="foot">
+  <div class="wrap foot-row">
+    <div class="foot-brand">
+      <a class="brand" href="/"><img src="/brand/ponko-face.svg" width="36" height="28" alt="" />Ponko</a>
+      <p>Free and open source under MIT or Apache 2.0.</p>
+    </div>
+    <div class="foot-col"><h3>Learn</h3><a href="/guide/getting-started.html">Get started</a><a href="/guide/">Guide</a><a href={site.api}>API reference</a></div>
+    <div class="foot-col"><h3>News</h3><a href="/blog/">Blog</a><a href="/blog/rss.xml">RSS feed</a><a href={`${site.github}/releases`}>Releases</a></div>
+    <div class="foot-col"><h3>Project</h3><a href={site.github}>GitHub</a><a href={`${site.github}/blob/main/ROADMAP.md`}>Roadmap</a><a href={site.websiteSource}>Website source</a></div>
+  </div>
+</footer>

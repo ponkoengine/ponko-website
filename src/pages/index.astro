@@ -1,7 +1,8 @@
 ---
-import '../styles/global.css';
+import Base from '../layouts/Base.astro';
+import { site } from '../site';
 
-const gh = 'https://github.com/ponkoengine/ponko';
+const gh = site.github;
 
 // The story told on the way down. Each chapter has its own picture in dots.
 const chapters = [
@@ -42,15 +43,8 @@ const chapters = [
   },
 ];
 
-// The stops on the rail at the left of the page.
-const stops = [
-  ['top', 'Start'],
-  ...chapters.map((c) => [c.id, c.tag]),
-  ['play', 'Play'],
-  ['hello', 'Code'],
-  ['early', 'Status'],
-  ['go', 'Go'],
-];
+// The stops on the rail: it only shows while the story is pinned.
+const stops = chapters.map((c) => [c.id, c.tag]);
 
 // "Hello, world" step by step: each line says in which step it appears.
 const S = (t: string) => `<span class="kw">${t}</span>`;
@@ -102,52 +96,15 @@ const crabRects = crab
   .flatMap((row, y) => [...row].map((c, x) => (c === '.' ? '' : `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${c === 'O' ? '#15100e' : '#ff7a5c'}"/>`)))
   .join('');
 ---
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#120e0c" />
-    <title>Ponko Engine</title>
-    <meta name="description" content="Ponko is a free, open-source engine for 2D and 3D games, written in Rust. You write the game as ordinary code; the engine handles the window, drawing, input, audio and physics." />
-    <link rel="canonical" href="https://ponko.dev/" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
-    <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
-    <meta property="og:title" content="Ponko Engine" />
-    <meta property="og:description" content="A free, open-source engine for 2D and 3D games, written in Rust." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://ponko.dev/" />
-    <meta property="og:image" content="https://ponko.dev/og.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Ponko's red panda logo drawn in dots, beside the line: You make the game. Ponko runs it." />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Ponko Engine" />
-    <meta name="twitter:description" content="A free, open-source engine for 2D and 3D games, written in Rust." />
-    <meta name="twitter:image" content="https://ponko.dev/og.png" />
-  </head>
-  <body>
-    <a class="skip" href="#main">Skip to content</a>
-    <canvas id="dots" class="dots" aria-hidden="true"></canvas>
+<Base
+  title="Ponko Engine"
+  description="Ponko is a free, open-source engine for 2D and 3D games, written in Rust. You write the game as ordinary code; the engine handles the window, drawing, input, audio and physics."
+  socialDescription="A free, open-source engine for 2D and 3D games, written in Rust."
+  demoHref="#play"
+>
+    <canvas id="dots" class="dots" aria-hidden="true" slot="before"></canvas>
 
-    <header class="top">
-      <div class="wrap top-row">
-        <a class="brand" href="/" aria-label="Ponko home"><img src="/brand/ponko-face.svg" width="36" height="28" alt="" />Ponko</a>
-        <nav aria-label="Main">
-          <a href="#play">Demo</a>
-          <a href="/guide/">Guide</a>
-          <a href="https://docs.rs/ponko/">API</a>
-          <a href={gh}>GitHub</a>
-        </nav>
-        <a class="pill small" href="/guide/getting-started.html">Get started</a>
-      </div>
-    </header>
-
-    <nav class="rail" id="rail" aria-label="On this page">
+    <nav class="rail" id="rail" aria-label="Chapters">
       <span class="rail-fill" aria-hidden="true"></span>
       <img class="rail-rider" src="/brand/ponko-face.svg" width="26" height="20" alt="" />
       <ol>
@@ -173,50 +130,52 @@ const crabRects = crab
         </div>
       </section>
 
-      <div class="story">
-        {chapters.map((c) => (
-          <section class="chapter" id={c.id} data-scene={c.scene} aria-labelledby={`${c.id}-title`}>
-            <div class="wrap">
-              <div class="chapter-copy">
+      <!-- Pinned: one stage holds still while the scroll moves through the
+           chapters. The empty sections after it each mark one screen of scroll:
+           a chapter's anchor and its picture in dots. -->
+      <div class="story" id="story" style={`--chapters:${chapters.length}`}>
+        <div class="story-stage">
+          <div class="wrap story-grid">
+            {chapters.map((c, i) => (
+              <article class="chapter-copy" data-chapter={i} inert={i > 0 ? true : undefined}>
                 <h2 id={`${c.id}-title`}>{c.title}</h2>
                 <p class="chapter-body">{c.body}</p>
                 <ul class="points">
                   {c.points.map(([name, text]) => <li><b>{name}</b><span>{text}</span></li>)}
                 </ul>
                 <a class="arrow" href={`/guide/${c.link[1]}`}>{c.link[0]}</a>
-              </div>
-            </div>
-          </section>
-        ))}
+              </article>
+            ))}
+          </div>
+        </div>
+        {chapters.map((c, i) => <section class="chapter" id={c.id} data-scene={c.scene} aria-labelledby={`${c.id}-title`} style={`--i:${i}`}></section>)}
       </div>
 
       <section id="play" class="section" data-scene="drift" aria-labelledby="play-title">
         <div class="wrap">
-          <div class="row">
+          <div class="intro">
             <h2 id="play-title">Don't take our word for it. Play it.</h2>
-            <div class="body">
-              <p>Tide is a small game made with Ponko and compiled to WebAssembly. Units walk from the gates to your core. Click a cell to put a tower there: it zaps anything that comes close, and every unit works out a new path around it. Space charges all the towers at once.</p>
-            </div>
+            <p>Tide is a small game made with Ponko and compiled to WebAssembly. Units walk from the gates to your core. Click a cell to put a tower there: it zaps anything that comes close, and every unit works out a new path around it. Space charges all the towers at once.</p>
           </div>
           <div class="demo" id="demo">
             <div class="demo-stage">
               <img src="/play/tide/poster.webp" alt="Tide: a grid board with towers, and streams of units walking from four gates toward a core in the middle" width="1200" height="750" loading="lazy" decoding="async" />
-              <a class="run" id="run" href="/play/tide/">
+              <a class="run" id="run" href="/play/tide/" target="_blank" rel="noopener">
                 <span class="pill">Play Tide</span>
-                <span class="run-note">2.1 MB, needs a browser with WebGPU</span>
+                <span class="run-note">Opens in a new tab. 2.1 MB, needs WebGPU</span>
               </a>
             </div>
             <dl class="boards">
               <div><dt><canvas class="board" data-text="12,000" role="img" aria-label="12,000"></canvas></dt><dd>units on the board, each one updated every frame</dd></div>
               <div><dt><canvas class="board" data-text="1" role="img" aria-label="1"></canvas></dt><dd>instanced mesh draws all of them</dd></div>
-              <div><dt><canvas class="board" data-text="2.1 MB" role="img" aria-label="2.1 MB"></canvas></dt><dd>to download, and nothing to install. <a class="arrow" href="/play/tide/">Open full screen</a></dd></div>
+              <div><dt><canvas class="board" data-text="2.1 MB" role="img" aria-label="2.1 MB"></canvas></dt><dd>to download, and nothing to install.</dd></div>
             </dl>
           </div>
         </div>
       </section>
 
-      <section id="hello" class="section pin" data-scene="drift" aria-labelledby="hello-title" style={`--steps:${steps.length}`}>
-        <div class="wrap pin-stage">
+      <section id="hello" class="section" data-scene="drift" aria-labelledby="hello-title">
+        <div class="wrap">
           <div class="row">
             <h2 id="hello-title">A whole game fits on one screen.</h2>
             <div class="body">
@@ -224,7 +183,7 @@ const crabRects = crab
               <p><a class="arrow" href="/guide/getting-started.html">Write it yourself in the tutorial</a></p>
             </div>
           </div>
-          <div class="hello" id="hello-demo" data-captions={JSON.stringify(captions)}>
+          <div class="hello" id="hello-demo" role="group" aria-roledescription="walkthrough" aria-label="Hello, world in seven steps" data-captions={JSON.stringify(captions)}>
             <div class="code" style={`--lines:${code.length}`}>
               <div class="code-bar"><span>src/main.rs</span><span class="code-meter" aria-hidden="true"><i></i></span></div>
               <pre><code>{code.map(([step, line]) => <span class="ln" data-step={step} hidden={step > 1} set:html={line || ' '} />)}</code></pre>
@@ -242,7 +201,11 @@ const crabRects = crab
                 <ol class="step-dots">
                   {steps.map(([title], i) => <li><button type="button" data-go={i + 1} aria-label={`Step ${i + 1}: ${title}`} aria-current={i === 0 ? 'step' : undefined}><span>{title}</span></button></li>)}
                 </ol>
-                <p class="cue" aria-hidden="true"><i class="wheel"></i><span>Scroll to write the next step</span></p>
+                <div class="step-buttons">
+                  <button type="button" class="step-button" data-step-back aria-label="Previous step" disabled><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg></button>
+                  <button type="button" class="step-button" data-step-play aria-label="Pause the steps" aria-pressed="false"><svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 3.5v9M10.5 3.5v9" /></svg><svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.2v9.6L12.5 8z" /></svg></button>
+                  <button type="button" class="step-button" data-step-next aria-label="Next step"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg></button>
+                </div>
               </div>
             </div>
           </div>
@@ -281,72 +244,52 @@ const crabRects = crab
       </section>
     </main>
 
-    <footer class="foot">
-      <div class="wrap foot-row">
-        <div class="foot-brand">
-          <a class="brand" href="/"><img src="/brand/ponko-face.svg" width="36" height="28" alt="" />Ponko</a>
-          <p>Free and open source under MIT or Apache 2.0.</p>
-        </div>
-        <div class="foot-col"><h3>Learn</h3><a href="/guide/getting-started.html">Get started</a><a href="/guide/">Guide</a><a href="https://docs.rs/ponko/">API reference</a></div>
-        <div class="foot-col"><h3>Project</h3><a href={gh}>GitHub</a><a href={`${gh}/blob/main/ROADMAP.md`}>Roadmap</a><a href="https://github.com/ponkoengine/ponko-website">Website source</a></div>
-      </div>
-    </footer>
 
     <script>
       import { dots } from '../scripts/dots';
       import { board } from '../scripts/board';
       import { hello } from '../scripts/hello';
-      import { smoothScroll, addStops } from '../scripts/smooth';
-      smoothScroll();
       const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      // The rail: the panda rides down it as the page scrolls, and the stops
-      // behind it stay lit. Chapter text fades in as it reaches the middle.
+      // The rail: while the story is pinned, the panda rides down it from
+      // chapter to chapter and the stops behind it stay lit. Elsewhere the
+      // page scrolls normally and the rail is hidden.
       const rail = document.querySelector<HTMLElement>('#rail');
       const stops = rail ? [...rail.querySelectorAll('li')] : [];
       const copies = [...document.querySelectorAll<HTMLElement>('.chapter-copy')];
       let lit = -1;
       const canvas = document.querySelector<HTMLCanvasElement>('#dots');
       if (canvas) {
-        dots(canvas, still, ({ index, between, count }) => {
-          rail?.style.setProperty('--at', String((index + Math.min(1, between)) / (count - 1)));
-          const now = between > 0.5 ? index + 1 : index;
+        dots(canvas, still, ({ index, between }) => {
+          // The pinned story: `at` runs from 0 at the first chapter to
+          // chapters - 1 at the last. Each chapter's words hold while its
+          // picture does, then cross over to the next at the halfway point.
+          const at = index + Math.min(1, between) - 1;
+          const last = copies.length - 1;
+          rail?.style.setProperty('--at', String(Math.max(0, Math.min(1, at / last))));
+          rail?.classList.toggle('on', at > -0.5 && at < last + 0.5);
+          const now = Math.max(0, Math.min(last, Math.round(at)));
           if (now !== lit) {
             lit = now;
             stops.forEach((el, i) => {
               el.classList.toggle('past', i <= now);
               el.classList.toggle('here', i === now);
             });
-            rail?.classList.toggle('on', now > 0);
           }
-          // On wide screens the words fade in and drift as they pass the
-          // middle. On phones they simply scroll, over their own backing.
-          const wide = innerWidth > 900;
-          for (const el of copies) {
-            if (!wide) {
-              el.style.opacity = '';
-              el.style.transform = '';
-              continue;
-            }
-            const b = el.getBoundingClientRect();
-            const off = (b.top + b.height / 2) / innerHeight - 0.5;
-            el.style.opacity = String(Math.max(0, Math.min(1, 1.5 - Math.abs(off) * 3.4)));
-            if (!still) el.style.transform = `translateY(${off * 46}px)`;
-          }
+          copies.forEach((el, i) => {
+            // Before the first chapter and after the last, the end ones hold.
+            const edge = (i === 0 && at < 0) || (i === copies.length - 1 && at > i);
+            const d = edge ? 0 : at - i;
+            const shown = Math.max(0, Math.min(1, 1 - (Math.abs(d) - 0.3) / 0.2));
+            el.style.opacity = String(shown);
+            el.style.transform = still ? '' : `translateY(${(-d * 36).toFixed(1)}px)`;
+            el.toggleAttribute('inert', shown < 0.5);
+          });
         });
       }
       document.querySelectorAll<HTMLCanvasElement>('.board').forEach((el) => board(el, still));
       const helloEl = document.querySelector<HTMLElement>('#hello-demo');
-      const helloPin = document.querySelector<HTMLElement>('#hello');
-      if (helloEl && helloPin) {
-        // On wide screens with a mouse or trackpad the section holds still
-        // while the wheel steps through the program, one step per flick.
-        // Phones and tablets scroll past it normally. Keep this query in
-        // step with the .pin rules in global.css.
-        const pinned = matchMedia('(min-width: 901px) and (hover: hover) and (pointer: fine)');
-        addStops(helloPin, Number(getComputedStyle(helloPin).getPropertyValue('--steps')) || 7, () => pinned.matches);
-        hello(helloEl, still, helloPin, pinned);
-      }
+      if (helloEl) hello(helloEl, still);
 
       // Copy the install command.
       document.querySelectorAll<HTMLButtonElement>('.copy').forEach((button) => {
@@ -361,20 +304,5 @@ const crabRects = crab
         });
       });
 
-      // The demo: on a desktop it runs in the page; on touch screens, full screen.
-      const run = document.querySelector<HTMLAnchorElement>('#run');
-      run?.addEventListener('click', (e) => {
-        if (matchMedia('(pointer: coarse)').matches || innerWidth < 760) return;
-        e.preventDefault();
-        const stage = run.parentElement!;
-        const frame = document.createElement('iframe');
-        frame.src = '/play/tide/';
-        frame.title = 'Tide, a game made with Ponko';
-        frame.allow = 'fullscreen';
-        stage.classList.add('running');
-        stage.append(frame);
-        frame.addEventListener('load', () => frame.focus());
-      });
     </script>
-  </body>
-</html>
+</Base>

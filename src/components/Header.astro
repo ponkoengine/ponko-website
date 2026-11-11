@@ -1,0 +1,101 @@
+---
+// The bar across the top. Over the top of a page it lies flat across the
+// width; once the page scrolls it becomes a floating island of frosted
+// glass. A soft highlight glides to whichever link the pointer is on. On
+// phones the links fold into a card that drops out of the island.
+import { site } from '../site';
+
+interface Props {
+  demoHref?: string;
+}
+const { demoHref = '/#play' } = Astro.props;
+const here = Astro.url.pathname;
+const links: [string, string][] = [
+  ['Demo', demoHref],
+  ['Guide', '/guide/'],
+  ['Blog', '/blog/'],
+  ['API', site.api],
+  ['GitHub', site.github],
+];
+const current = (href: string) => (href === '/blog/' && here.startsWith('/blog') ? 'page' : undefined);
+---
+<header class="top" id="top-bar">
+  <div class="top-row">
+    <a class="brand" href="/" aria-label="Ponko home"><img src="/brand/ponko-face.svg" width="36" height="28" alt="" /><span>Ponko</span></a>
+    <nav class="top-nav" id="top-nav" aria-label="Main">
+      <span class="nav-glide" aria-hidden="true"></span>
+      {links.map(([label, href]) => <a class="nav-link" href={href} aria-current={current(href)}>{label}</a>)}
+      <a class="pill small" href="/guide/getting-started.html">Get started</a>
+    </nav>
+    <button class="menu-button" type="button" aria-expanded="false" aria-controls="top-nav">
+      <span class="menu-icon" aria-hidden="true"><i></i><i></i></span>
+      <span class="menu-label">Menu</span>
+    </button>
+  </div>
+</header>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('#top-bar');
+  const button = bar?.querySelector<HTMLButtonElement>('.menu-button');
+  const nav = bar?.querySelector<HTMLElement>('#top-nav');
+  const glide = nav?.querySelector<HTMLElement>('.nav-glide');
+  if (bar && button && nav && glide) {
+    // The island forms once the page has moved.
+    const solid = () => bar.classList.toggle('solid', scrollY > 24);
+    solid();
+    addEventListener('scroll', solid, { passive: true });
+
+    // The highlight rests on the current page's link, if there is one, and
+    // follows the pointer or the keyboard focus across the others.
+    const wide = matchMedia('(min-width: 761px)');
+    const home = nav.querySelector<HTMLElement>('.nav-link[aria-current]');
+    const glideTo = (link: HTMLElement | null, instant = false) => {
+      if (!link || !wide.matches) {
+        glide.classList.remove('on');
+        return;
+      }
+      if (instant || !glide.classList.contains('on')) glide.classList.add('jump');
+      glide.style.setProperty('--x', `${link.offsetLeft}px`);
+      glide.style.setProperty('--w', `${link.offsetWidth}px`);
+      glide.classList.add('on');
+      glide.offsetWidth; // apply the jump before turning transitions back on
+      glide.classList.remove('jump');
+    };
+    nav.querySelectorAll<HTMLElement>('.nav-link').forEach((link) => {
+      link.addEventListener('pointerenter', () => glideTo(link));
+      link.addEventListener('focus', () => glideTo(link));
+    });
+    nav.addEventListener('pointerleave', () => glideTo(home));
+    nav.addEventListener('focusout', (e) => {
+      if (!nav.contains(e.relatedTarget as Node)) glideTo(home);
+    });
+    // The bar changes size as it becomes an island, so place it again after.
+    bar.addEventListener('transitionend', (e) => {
+      if (e.target === bar.firstElementChild && !nav.matches(':hover')) glideTo(home, true);
+    });
+    addEventListener('resize', () => glideTo(home, true));
+    document.fonts?.ready.then(() => glideTo(home, true));
+    glideTo(home, true);
+
+    // The menu on phones.
+    const setOpen = (open: boolean) => {
+      button.setAttribute('aria-expanded', String(open));
+      bar.classList.toggle('open', open);
+      document.documentElement.classList.toggle('menu-open', open);
+    };
+    button.addEventListener('click', () => setOpen(button.getAttribute('aria-expanded') !== 'true'));
+    nav.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) setOpen(false);
+    });
+    addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && bar.classList.contains('open')) {
+        setOpen(false);
+        button.focus();
+      }
+    });
+    wide.addEventListener('change', () => {
+      setOpen(false);
+      glideTo(home, true);
+    });
+  }
+</script>

@@ -1,0 +1,1181 @@
+/* The blog: a list of posts, and posts set in one calm reading column.
+   The only loud thing is each post's own picture in dots. */
+
+.blog,
+.post {
+  position: relative;
+  z-index: 1;
+  min-height: 70vh;
+  padding-bottom: 120px;
+}
+
+/* Index and tag pages. */
+.blog-head {
+  padding-top: 168px;
+  padding-bottom: 56px;
+}
+.blog-head h1 {
+  font-size: clamp(64px, 11vw, 148px);
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+}
+.blog-head > p {
+  max-width: 32em;
+  margin: 24px 0 0;
+  color: var(--text);
+  font-size: 21px;
+  line-height: 1.5;
+}
+.blog-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 28px;
+  margin-top: 32px;
+}
+.feed-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 16px;
+}
+.feed-link svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.feed-link:hover {
+  color: #ff8a5c;
+}
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 14px;
+  transition: border-color 0.15s, color 0.15s, background-color 0.2s;
+}
+.tag:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+/* Topics on the front page: toggles, any number at once. */
+.topics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+}
+.topics .tag {
+  min-height: 38px;
+  padding: 0 8px 0 16px;
+  border-color: #3a2e28;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 15px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.topics .tag:active {
+  transform: scale(0.96);
+}
+.tag-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--raised);
+  color: var(--text);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.2s, color 0.2s;
+}
+.tag[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: #3a1d12;
+  color: var(--ink);
+}
+.tag[aria-pressed="true"] .tag-count {
+  background: var(--accent);
+  color: var(--night);
+}
+.tag:focus-visible,
+.topics-clear:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.topics-clear {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  text-decoration: underline;
+  text-decoration-color: var(--faint);
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.topics-clear:hover {
+  color: var(--ink);
+}
+.filter-status {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.filter-status b {
+  color: var(--ink);
+  font-weight: 500;
+}
+.blog [hidden] {
+  display: none !important;
+}
+
+/* Filtering moves the posts that stay into place and fades the rest. */
+::view-transition-group(*) {
+  animation-duration: 0.38s;
+  animation-timing-function: cubic-bezier(0.32, 0.9, 0.3, 1);
+}
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: 0.25s;
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+  color: var(--muted);
+  font-size: 15px;
+  transition: color 0.15s;
+}
+.back::before {
+  content: "←";
+  transition: transform 0.15s;
+}
+.back:hover {
+  color: var(--ink);
+}
+.back:hover::before {
+  transform: translateX(-3px);
+}
+.draft-badge {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #3a2a10;
+  color: #f3c26b;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
+/* The newest post, large. */
+.lead-post {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  align-items: center;
+  gap: 56px;
+  padding: 40px 0 72px;
+  border-top: 1px solid var(--line);
+}
+.lead-art {
+  display: block;
+  aspect-ratio: 44 / 26;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: #0c0a09;
+}
+.lead-art img,
+.lead-art .dot-art,
+.post-row-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.lead-post:hover .lead-art .dot-art,
+.lead-post:hover .lead-art img {
+  transform: scale(1.03);
+}
+.lead-text {
+  display: grid;
+  gap: 16px;
+}
+.lead-kicker {
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 500;
+}
+.lead-title {
+  color: var(--ink);
+  font-size: clamp(32px, 3.6vw, 48px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  transition: color 0.15s;
+}
+.lead-post:hover .lead-title {
+  color: #fff6ea;
+}
+.lead-desc {
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.55;
+}
+.post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 22px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.blog-more h2 {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 400;
+}
+
+/* Every other post, one row each. */
+.post-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--line);
+}
+.post-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 160px;
+  align-items: center;
+  gap: 32px;
+  padding: 28px 0;
+  border-top: 1px solid var(--line);
+}
+.post-row time {
+  align-self: start;
+  padding-top: 6px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.post-row-text {
+  display: grid;
+  gap: 8px;
+}
+.post-row-title {
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  transition: color 0.15s;
+}
+.post-row:hover .post-row-title {
+  color: var(--accent);
+}
+.post-row-desc {
+  max-width: 40em;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.post-row-mark {
+  display: block;
+  aspect-ratio: 8 / 5;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #0c0a09;
+}
+.post-row.plain {
+  grid-template-columns: 180px 1fr;
+}
+.post-row:hover .post-row-mark img {
+  transform: scale(1.05);
+}
+/* Numbered pages under the list. */
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 48px;
+}
+.pager-pages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pager a,
+.pager-step,
+.pager-gap {
+  display: inline-grid;
+  place-items: center;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #3a2e28;
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+}
+.pager-step {
+  padding: 0 18px;
+}
+.pager a:hover {
+  border-color: var(--accent);
+}
+.pager a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.pager a[aria-current] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--night);
+  font-weight: 600;
+}
+.pager-step[aria-disabled] {
+  border-color: var(--line);
+  background: none;
+  color: var(--faint);
+}
+.pager-gap {
+  min-width: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+}
+.pager-step[rel="prev"]::before,
+span.pager-step:first-child::before {
+  content: "←";
+  margin-right: 8px;
+}
+.pager-step[rel="next"]::after,
+span.pager-step:last-child::after {
+  content: "→";
+  margin-left: 8px;
+}
+.pager .pager-step {
+  display: inline-flex;
+  align-items: center;
+}
+@media (max-width: 640px) {
+  .pager {
+    gap: 8px;
+  }
+  .pager-step {
+    order: 1;
+  }
+  .pager-pages {
+    flex-basis: 100%;
+    justify-content: center;
+  }
+}
+.blog-empty {
+  padding: 48px var(--gutter);
+  border-top: 1px solid var(--line);
+  color: var(--text);
+}
+
+/* A picture in dots: the still SVG, and the moving canvas over it. */
+.dot-art {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.dot-art svg,
+.dot-art canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.dot-art.live svg {
+  visibility: hidden;
+}
+
+/* The glow behind the top of a post and of the blog: two soft blobs in
+   the post's colours, seen only through a screen of dots, fading out
+   downwards. They drift slowly. */
+.dot-glow {
+  position: absolute;
+  inset: 0 0 auto;
+  height: min(920px, 110vh);
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(#000 35%, transparent);
+  mask-image: linear-gradient(#000 35%, transparent);
+}
+.dot-glow i {
+  position: absolute;
+  inset: -10%;
+  background:
+    radial-gradient(38% 46% at var(--glow-ax) var(--glow-ay), var(--glow-a), transparent 70%),
+    radial-gradient(34% 40% at var(--glow-bx) var(--glow-by), var(--glow-b), transparent 70%),
+    radial-gradient(18% 22% at calc(var(--glow-ax) - 8%) calc(var(--glow-ay) + 6%), var(--glow-c), transparent 70%),
+    radial-gradient(80% 60% at 50% 35%, color-mix(in srgb, var(--glow-b) 45%, transparent), transparent 80%);
+  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(circle at center, #000 1.7px, transparent 2.3px);
+  mask-image: radial-gradient(circle at center, #000 1.7px, transparent 2.3px);
+  -webkit-mask-size: 12px 12px;
+  mask-size: 12px 12px;
+  animation: glow-drift 26s ease-in-out infinite alternate;
+}
+@keyframes glow-drift {
+  to {
+    transform: translate(3%, 4%) scale(1.06);
+  }
+}
+.blog,
+.post {
+  isolation: isolate;
+}
+/* A post lines up on the page's grid: the hero's words and the text
+   below start at the same left edge and are as wide as each other. */
+.post {
+  --measure: 860px;
+}
+
+/* A post's hero: the words over the post's picture in dots. The picture
+   sits to the right and fades out towards the words and the text below. */
+.post-hero {
+  position: relative;
+  overflow: hidden;
+}
+/* In a post's hero, the glow fills the hero and both it and the
+   picture fade to nothing before the hero ends, so there's no edge. */
+.post-hero .dot-glow {
+  inset: 0;
+  height: auto;
+  -webkit-mask-image: linear-gradient(#000 25%, transparent 92%);
+  mask-image: linear-gradient(#000 25%, transparent 92%);
+}
+.post-hero .post-hero-art {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 0;
+  width: min(1100px, 78%);
+  height: 100%;
+  opacity: 0.7;
+  -webkit-mask-image: radial-gradient(75% 80% at 72% 40%, #000 25%, transparent 75%), linear-gradient(#000 45%, transparent 90%);
+  mask-image: radial-gradient(75% 80% at 72% 40%, #000 25%, transparent 75%), linear-gradient(#000 45%, transparent 90%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+.post-hero-grid {
+  padding-top: 168px;
+  padding-bottom: 152px;
+}
+.post-head {
+  max-width: var(--measure);
+}
+/* Small facts over the dots (date, topic, author, reading time) sit in
+   chips of frosted glass so they stay easy to read. */
+.post-kicker,
+.post-head .post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 22px;
+  font-size: 14px;
+}
+.post-head .post-meta {
+  margin: 0;
+}
+.post-kicker > *,
+.post-head .post-meta > * {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid rgb(244 233 219 / 0.1);
+  border-radius: 999px;
+  background: rgb(30 23 19 / 0.55);
+  color: var(--ink);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  backdrop-filter: blur(12px) saturate(1.3);
+}
+.post-head .post-meta > * {
+  color: var(--text);
+}
+.post-kicker a {
+  transition: border-color 0.15s, color 0.15s;
+}
+.post-kicker a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.post-head h1 {
+  font-size: clamp(40px, 5.6vw, 76px);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+.post-lede {
+  max-width: 30em;
+  margin: 28px 0 24px;
+  color: var(--text);
+  font-size: 21px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.draft-note {
+  display: inline-block;
+  margin: 0 0 20px 14px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: #3a2a10;
+  color: #f3c26b;
+  font-size: 14px;
+}
+.post-cover {
+  max-width: calc(var(--wrap) + var(--gutter) * 2);
+  margin: 0 auto 72px;
+  padding: 0 var(--gutter);
+}
+.post-cover img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+}
+
+/* The reading column. */
+.prose {
+  max-width: calc(var(--wrap) + var(--gutter) * 2);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  color: var(--text);
+  font-size: 19px;
+  line-height: 1.72;
+}
+.prose :where(p, ul, ol, blockquote, table, figure, aside, div) {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.prose > * + * {
+  margin-top: 1.15em;
+}
+.prose > * {
+  max-width: var(--measure);
+}
+.prose > .figure.wide {
+  max-width: none;
+}
+.prose h2,
+.prose h3,
+.prose h4 {
+  scroll-margin-top: 96px;
+  text-wrap: balance;
+}
+.prose h2 {
+  margin-top: 2.2em;
+  font-size: 34px;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+}
+.prose h3 {
+  margin-top: 1.9em;
+  font-size: 25px;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+.prose h4 {
+  margin-top: 1.6em;
+  font-size: 19px;
+  font-weight: 600;
+}
+.prose h2 + *,
+.prose h3 + *,
+.prose h4 + * {
+  margin-top: 0.6em;
+}
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: rgb(240 103 47 / 0.4);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color 0.15s;
+}
+.prose a:hover {
+  text-decoration-color: currentColor;
+}
+.prose strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.prose em {
+  font-style: italic;
+}
+.prose :not(pre) > code {
+  padding: 0.12em 0.38em;
+  border-radius: 5px;
+  background: var(--raised);
+  color: #f3d6b4;
+  font-size: 0.84em;
+}
+.prose kbd {
+  padding: 0.05em 0.45em;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 0.82em;
+}
+.prose ul,
+.prose ol {
+  padding-left: 1.3em;
+}
+.prose li + li {
+  margin-top: 0.4em;
+}
+.prose li::marker {
+  color: var(--accent);
+}
+.prose ol > li::marker {
+  font-family: var(--mono);
+  font-size: 0.86em;
+}
+.prose blockquote {
+  margin-left: 0;
+  margin-right: 0;
+  padding: 4px 0 4px 24px;
+  border-left: 2px solid var(--accent);
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1.5;
+}
+.prose blockquote p + p {
+  margin-top: 0.8em;
+}
+/* A break in the text: three dots. */
+.prose hr {
+  height: 6px;
+  margin: 3em auto;
+  border: 0;
+  background: radial-gradient(circle, var(--accent) 2.5px, transparent 3px) center / 22px 6px repeat-x;
+  width: 66px;
+}
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+  display: block;
+  overflow-x: auto;
+}
+.prose th,
+.prose td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+.prose th {
+  color: var(--ink);
+  font-weight: 500;
+}
+.prose .footnotes {
+  margin-top: 4em;
+  padding-top: 1.5em;
+  border-top: 1px solid var(--line);
+  font-size: 16px;
+}
+
+/* Code: runs a little wider than the text so long lines have room. */
+.code-block {
+  margin-left: 0;
+  margin-right: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.prose > .code-block {
+  margin-top: 1.6em;
+  margin-bottom: 1.6em;
+}
+.code-block-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 40px;
+  padding: 0 10px 0 18px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.code-copy {
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  padding: 4px 10px;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.code-copy:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
+.code-block pre {
+  margin: 0;
+  padding: 18px 20px;
+  overflow-x: auto;
+  font-size: 14px;
+  line-height: 1.7;
+  tab-size: 4;
+}
+.code-block pre:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Pictures, video and embeds. A wide one runs past the text column. */
+.figure {
+  margin: 2em 0;
+}
+.figure.wide {
+  width: 100%;
+}
+.figure img,
+.figure video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: #0c0a09;
+}
+.figure figcaption {
+  max-width: var(--measure);
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.embed-stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: #0a0807;
+}
+.embed.game .embed-stage {
+  aspect-ratio: 16 / 10;
+}
+.embed-stage img,
+.embed-stage iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  object-fit: cover;
+}
+.embed-run {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  border: 0;
+  background: rgb(10 8 7 / 0.35);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.embed-run:hover {
+  background: rgb(10 8 7 / 0.15);
+}
+.embed-run .pill::before {
+  content: "";
+  margin-right: 12px;
+  border-style: solid;
+  border-width: 7px 0 7px 11px;
+  border-color: transparent transparent transparent currentColor;
+}
+.embed-stage.running img,
+.embed-stage.running .embed-run {
+  display: none;
+}
+
+/* Callouts. */
+.callout {
+  --tone: var(--ink);
+  margin: 1.8em 0;
+  padding: 18px 22px 20px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--tone);
+  border-radius: 4px 14px 14px 4px;
+  background: var(--panel);
+  font-size: 17px;
+  line-height: 1.6;
+}
+.callout-tip {
+  --tone: #b9cf8a;
+}
+.callout-warning {
+  --tone: var(--accent);
+}
+.callout-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px;
+  color: var(--tone);
+  font-weight: 500;
+}
+.callout-title svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.callout-body > * + * {
+  margin-top: 0.8em;
+}
+.callout-body p {
+  margin: 0;
+}
+.callout .code-block {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Steps: a numbered list with a line joining the numbers. */
+.steps > ol {
+  counter-reset: step;
+  margin: 1.8em 0;
+  padding: 0;
+  list-style: none;
+}
+.steps > ol > li {
+  position: relative;
+  counter-increment: step;
+  padding: 0 0 1.6em 56px;
+}
+.steps > ol > li + li {
+  margin-top: 0;
+}
+.steps > ol > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  background: var(--night);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 14px;
+}
+.steps > ol > li::after {
+  content: "";
+  position: absolute;
+  left: 17px;
+  top: 40px;
+  bottom: 6px;
+  width: 1px;
+  background: var(--line);
+}
+.steps > ol > li:last-child {
+  padding-bottom: 0;
+}
+.steps > ol > li:last-child::after {
+  display: none;
+}
+.steps > ol > li > :first-child {
+  margin-top: 0;
+  padding-top: 3px;
+}
+.steps > ol > li > * + * {
+  margin-top: 0.7em;
+}
+.steps .code-block {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Numbers on dot-matrix boards. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+  margin: 2em 0;
+}
+.stat {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+.stat .board {
+  display: block;
+  width: 100%;
+}
+.stat p {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+/* After the post. */
+.post-tags {
+  max-width: calc(var(--wrap) + var(--gutter) * 2);
+  margin: 64px auto 0;
+  padding: 0 var(--gutter);
+}
+.post-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: calc(var(--wrap) + var(--gutter) * 2);
+  margin: 88px auto 0;
+  padding: 0 var(--gutter);
+}
+.post-nav-link {
+  display: grid;
+  gap: 6px;
+  padding: 24px 26px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.25;
+  transition: border-color 0.15s;
+}
+.post-nav-link span {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 400;
+}
+.post-nav-link span::before {
+  content: "← ";
+}
+.post-nav-link.newer {
+  text-align: right;
+  grid-column: 2;
+}
+.post-nav-link.newer span::before {
+  content: "";
+}
+.post-nav-link.newer span::after {
+  content: " →";
+}
+.post-nav-link:hover {
+  border-color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  /* The picture sits behind the top of the words, fainter. */
+  .post-hero-grid {
+    padding-top: 112px;
+    padding-bottom: 96px;
+  }
+  .post-hero .post-hero-art {
+    width: 100%;
+    height: 70%;
+    opacity: 0.45;
+    -webkit-mask-image: radial-gradient(90% 80% at 70% 30%, #000 20%, transparent 75%), linear-gradient(#000 40%, transparent 90%);
+    mask-image: radial-gradient(90% 80% at 70% 30%, #000 20%, transparent 75%), linear-gradient(#000 40%, transparent 90%);
+  }
+  .lead-post {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding-top: 28px;
+  }
+  .post-row {
+    grid-template-columns: 1fr 112px;
+    gap: 8px 20px;
+  }
+  .post-row time {
+    grid-column: 1 / -1;
+    padding: 0;
+    font-size: 14px;
+  }
+  .post-row.plain {
+    grid-template-columns: 1fr;
+  }
+  .post-row-mark {
+    grid-row: 2;
+    grid-column: 2;
+    align-self: start;
+  }
+}
+@media (max-width: 640px) {
+  .blog-head {
+    padding-top: 120px;
+    padding-bottom: 36px;
+  }
+  .blog-head > p,
+  .post-lede {
+    font-size: 18px;
+  }
+  .post-hero-grid {
+    padding-top: 96px;
+  }
+  .post-cover {
+    margin-bottom: 44px;
+  }
+  .post-cover img {
+    border-radius: 16px;
+  }
+  .dot-glow i {
+    -webkit-mask-size: 10px 10px;
+    mask-size: 10px 10px;
+  }
+  .prose {
+    font-size: 18px;
+    line-height: 1.68;
+  }
+  .prose h2 {
+    font-size: 28px;
+  }
+  .prose h3 {
+    font-size: 22px;
+  }
+  .prose blockquote {
+    font-size: 19px;
+  }
+  /* Code and wide pictures go edge to edge on phones. */
+  .code-block {
+    margin-left: calc(var(--gutter) * -1);
+    margin-right: calc(var(--gutter) * -1);
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+  /* Inside steps and callouts there's no edge to run to. */
+  .callout .code-block,
+  .steps .code-block {
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  .steps > ol > li {
+    padding-left: 46px;
+  }
+  .steps > ol > li::before {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+  .steps > ol > li::after {
+    left: 15px;
+    top: 36px;
+  }
+  .code-block pre {
+    font-size: 13px;
+    padding: 16px var(--gutter);
+  }
+  .steps .code-block pre,
+  .callout .code-block pre {
+    padding: 14px 16px;
+    font-size: 12.5px;
+  }
+  .figure.wide {
+    width: auto;
+    margin-left: calc(var(--gutter) * -1);
+    margin-right: calc(var(--gutter) * -1);
+  }
+  .figure.wide img,
+  .figure.wide video,
+  .figure.wide .embed-stage {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+  .post-row-title {
+    font-size: 20px;
+  }
+  .post-row-desc {
+    font-size: 15px;
+  }
+  .post-row {
+    grid-template-columns: 1fr 88px;
+  }
+  .post-nav {
+    grid-template-columns: 1fr;
+  }
+  .post-nav-link.newer {
+    grid-column: auto;
+    grid-row: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot-glow i {
+    animation: none;
+  }
+}
