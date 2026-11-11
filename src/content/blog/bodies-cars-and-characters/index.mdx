@@ -1,0 +1,86 @@
+---
+title: Bodies, cars and characters
+description: 3D physics arrived in a day, with terrain colliders, a walking character, cars on raycast wheels and ragdolls. Then skinned animation and navigation meshes, so the things in a 3D world can move on their own.
+date: 2026-11-05
+tags: [Physics, Animation, 3D]
+art: { palette: sea, shape: waves }
+---
+
+A 3D world that only draws is a diorama. On 5 November Ponko's started to
+move: physics, then animated characters, then the meshes they find their way
+around on.
+
+## Physics
+
+3D physics is built on [Rapier](https://rapier.rs/), the same library as
+Ponko's 2D physics, and lives behind the `physics3d` feature. Bodies are
+components: give an entity a rigid body and a collider, and its transform
+follows the simulation.
+
+- **Shapes**: spheres, boxes, capsules, convex hulls, triangle meshes and
+  heightfields, with friction, restitution, sensors and collision groups.
+- **A fixed 50 Hz step.** Drawn positions are interpolated between steps, so
+  motion looks smooth at any frame rate.
+- **Terrain colliders** in the exact layout of a terrain tile, and collider
+  streaming near focus points, so a big world is solid only around the player.
+- **Queries**: rays, sphere and capsule casts, and overlap tests, with a
+  filter.
+
+## A character that walks
+
+`Character3D` is a kinematic capsule for player characters and NPCs. You
+set the velocity you want, and it handles the rest: a slope limit, a step
+height for stairs and kerbs, snapping to the ground going downhill, and
+pushing light bodies out of the way. It reads back whether it's grounded.
+
+For first-person games, `ctx.set_cursor_locked` grabs the mouse and
+`ctx.mouse_motion` reads raw movement.
+
+## Cars
+
+Vehicles use **raycast wheels**, the classic wheel-collider model. Every
+physics step, each wheel casts a ray down from its mount, pushes the chassis
+up with a spring and a damper, spins from the motor and brake torque you give
+it, and pushes the chassis along through its tyre's friction curves.
+
+A vehicle takes up to 8 wheels, so cars, trucks and buggies all work, and a
+car tuned for this model in another engine keeps its numbers here. Each tick
+you set the torques and steering angle, and read back each wheel's contact,
+suspension compression, slip, rpm and pose for drawing.
+
+<Callout type="tip">
+  Give a vehicle's body a mass and a low center of mass. Without them it rolls
+  over in the first sharp turn. The `vehicle` example has a tuned car to start
+  from.
+</Callout>
+
+## Ragdolls, joints and contacts
+
+- **Joints** link bodies together.
+- **Ragdolls** hand a skinned character's skeleton over to physics. Each
+  chosen bone becomes a capsule, held to the one above it by a joint limited
+  in swing and twist. You can push the bodies in the same frame, for a hit or
+  an explosion, and they pose the skeleton from then on.
+- **Contact modification** lets a game change contacts as they happen, and
+  **one-way pushing** lets one body shove another without being pushed back.
+
+## Things that animate
+
+The same day brought skinned meshes: skeletons, glTF skins and GPU skinning.
+On top of them:
+
+- **Animation clips, state machines and layers**, so a character can run and
+  wave at the same time.
+- **Inverse kinematics**, for feet on uneven ground and hands on handles.
+- **Morph targets** (blend shapes) for faces, driven by clips too.
+- **3D audio**, with sounds placed in the world.
+
+## Finding the way
+
+Navigation meshes are baked from the level, for characters that need to walk
+somewhere on their own. Large levels bake in tiles. Crowd avoidance, which is
+opt-in, keeps agents from walking through each other. Dynamic carving cuts
+holes in the mesh where obstacles move, without baking it again.
+
+Read [3D physics](/guide/physics3d.html) and
+[3D navigation meshes](/guide/navigation3d.html) in the guide to start.

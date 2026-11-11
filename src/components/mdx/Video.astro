@@ -1,0 +1,42 @@
+---
+// A short clip, playing silently in a loop like a moving picture, or with
+// controls: <Video src="/blog/clip.mp4" poster="/blog/clip.webp" caption="…" />
+// Put the files in public/blog/. Use `controls` for anything with sound.
+interface Props {
+  src: string;
+  poster?: string;
+  caption?: string;
+  controls?: boolean;
+  wide?: boolean;
+  /** Describes the clip for people who can't see it. */
+  label?: string;
+}
+const { src, poster, caption, controls = false, wide = false, label } = Astro.props;
+const type = src.endsWith('.webm') ? 'video/webm' : 'video/mp4';
+---
+<figure class:list={['figure', 'video', { wide }]}>
+  <video
+    poster={poster}
+    controls={controls}
+    autoplay={!controls}
+    muted={!controls}
+    loop={!controls}
+    playsinline
+    preload="metadata"
+    aria-label={label ?? caption}
+  >
+    <source src={src} type={type} />
+  </video>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script>
+  // Moving pictures stop for anyone who asks for reduced motion.
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll<HTMLVideoElement>('.video video[autoplay]').forEach((v) => {
+      v.removeAttribute('autoplay');
+      v.pause();
+      v.controls = true;
+    });
+  }
+</script>

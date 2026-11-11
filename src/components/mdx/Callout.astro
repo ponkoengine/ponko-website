@@ -1,0 +1,22 @@
+---
+// A note set apart from the text: <Callout type="tip" title="…">…</Callout>
+interface Props {
+  type?: 'note' | 'tip' | 'warning';
+  title?: string;
+}
+const { type = 'note', title } = Astro.props;
+const names = { note: 'Note', tip: 'Tip', warning: 'Watch out' };
+---
+<aside class={`callout callout-${type}`} aria-label={title ?? names[type]}>
+  <p class="callout-title">
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      {type === 'warning'
+        ? <path d="M8 1.8 15 14H1zM8 6v4M8 11.8v.4" />
+        : type === 'tip'
+          ? <path d="M5.5 11.5h5M6.5 14h3M8 1.5a4.5 4.5 0 0 0-2.5 8.2v1.8h5V9.7A4.5 4.5 0 0 0 8 1.5z" />
+          : <path d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zM8 7.2V11.5M8 4.6v.4" />}
+    </svg>
+    {title ?? names[type]}
+  </p>
+  <div class="callout-body"><slot /></div>
+</aside>

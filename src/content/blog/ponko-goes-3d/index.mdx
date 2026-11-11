@@ -1,0 +1,101 @@
+---
+title: Ponko goes 3D
+description: In four days, the renderer grew from sprites to physically based 3D, with cascaded shadows, a physical sky, terrain, a thousand lights, temporal antialiasing, reflections and global illumination.
+date: 2026-11-07
+tags: [Rendering, 3D, Performance]
+art: { palette: amber, shape: sphere }
+---
+
+On the evening of 3 November Ponko drew its first 3D mesh. Three days
+later it drew physically based worlds with real-time global illumination. This is what was added, in
+roughly the order it arrived.
+
+All of it is behind the `3d` Cargo feature, so a 2D game doesn't carry it.
+3D models are components on the same ECS as everything else: a
+`Transform3D` and a `Model` on an entity, and the renderer finds them.
+
+## The foundation
+
+- **Meshes and materials**: cubes, planes and spheres, your own triangles, or
+  glTF files with their normal, occlusion, metallic-roughness and emissive
+  maps. Materials are physically based.
+- **HDR lighting** with a depth prepass, so each pixel is lit once, and
+  post-processing: exposure, bloom, white balance, ACES, AgX or neutral tone
+  mapping, colour lookup tables and vignette.
+- **Cascaded sun shadows**: up to four shadow maps, sharp near the camera and
+  reaching far, blended where they meet.
+- **A physical sky** with Rayleigh and Mie scattering, a sun that reddens as
+  it sets, stars at night, and height and distance fog that glows toward the
+  sun.
+
+## Your own shaders
+
+Materials can run shaders you write in WGSL. A shader defines `vertex` to
+move vertices, `surface` to change each pixel, or both, and the engine still
+lights and shadows the result. They hot-reload when you save the file. The
+`shaders` example has water, wind and a procedural pattern.
+
+The same goes for whole-frame effects (`fn effect(p: Pixel)`) and compute
+passes that run once per texel of a render target, for ripples, trails in snow
+or wet ground. Render targets give you mirrors, monitors and planar
+reflections.
+
+## Big worlds
+
+- **Terrain** from heightfield tiles, drawn at four levels of detail with
+  skirts that hide the cracks, and terrain materials that blend up to 8 ground
+  layers. On steep ground they're projected from the sides, so cliffs don't
+  stretch.
+- **Streaming**: `CellStreamer` says which cells of the world to load and drop
+  around a point, nearest first and a few per frame, and `Job` builds tiles
+  on worker threads.
+- **LOD groups** with dithered crossfades, and **occlusion culling** against
+  an earlier frame's depth.
+
+## Light, and a lot of it
+
+Point and spot lights are binned into clusters per camera, and each pixel
+lights only its cluster's lights. The packing works on WebGL2 too, with no
+storage buffers.
+
+<Stats>
+  <Stat value="1000">visible lights</Stat>
+  <Stat value="0.14">ms of CPU for them</Stat>
+  <Stat value="1">ms of GPU, at 720p</Stat>
+</Stats>
+
+Measured on an M4 Max with shadows off. Point and spot light shadows share one
+atlas, and decals are projected on the GPU through the same clusters.
+
+## Image quality
+
+By 6 November the renderer had the techniques modern games rely on:
+
+- **Temporal antialiasing** with per-object motion vectors, plus FXAA and SMAA.
+- **Ground-truth ambient occlusion**, with half-resolution and temporal
+  modes, and contact shadows in the same pass.
+- **Screen-space reflections**, blurred by roughness.
+- **Image-based lighting** from the sky, and reflection probes.
+- **Real-time global illumination** from probe volumes.
+- **Light shafts**, where shadows cut through the fog's glow toward the sun.
+
+## How fast
+
+The `3d` example spins N tinted cubes with PBR spheres, a sun and shadows.
+The same scene was built in Unity 6 to compare:
+
+<Stats>
+  <Stat value="402">FPS in Ponko, 100,000 spinning cubes with shadows</Stat>
+  <Stat value="54">FPS for the same scene in Unity 6</Stat>
+</Stats>
+
+That's on an M4 Max in release builds. The
+[benchmarks page](/guide/performance.html) has the workload and how to run
+it yourself. We'd like to hear what it gives on your machine.
+
+Measuring is built in too. `ctx.perf.frame_stats()` splits a frame into
+systems, rendering and waiting, with GPU time for each pass and every shadow
+cascade. There's a performance overlay (`PONKO_HUD=1`), and you can record
+Perfetto traces to find hitches.
+
+Read [Rendering in 3D](/guide/3d.html) in the guide to start.

@@ -1,0 +1,7 @@
+---
+// Every link in an MDX post. One that leaves the site opens in a new tab,
+// like the site's other links with the ↗ arrow.
+const { href = '', ...rest } = Astro.props;
+const out = /^https?:\/\//.test(href) && !href.startsWith('https://ponko.dev');
+---
+<a href={href} {...rest} target={out ? '_blank' : undefined} rel={out ? 'noopener' : undefined}><slot /></a>

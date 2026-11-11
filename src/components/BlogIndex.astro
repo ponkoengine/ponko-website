@@ -1,0 +1,111 @@
+---
+// The blog's front page, also used for each tag's page with that tag picked
+// and for /blog/page/N/. Topics are toggles: pick any number and the list
+// keeps the posts that have any of them, at once and without loading a page.
+// Past PER_PAGE posts the list is split into numbered pages. Every post is in
+// the HTML, so filtering and paging work across all of them; the server shows
+// the right slice, and the script takes over from there. The choice lives in
+// the address (/blog/page/2/, ?tags=physics,3d&page=2) so it can be shared.
+// Without JavaScript the topics and pages are plain links.
+import { Image } from 'astro:assets';
+import DotArt from './DotArt.astro';
+import DotGlow from './DotGlow.astro';
+import type { ArtOptions } from '../lib/dot-art';
+import { formatDate, pageHref, PER_PAGE, postHref, readingMinutes, tagHref, tagSlug, tagsOf, type Post } from '../lib/blog';
+import Pager from './Pager.astro';
+
+interface Props {
+  posts: Post[];
+  selected?: string[];
+  page?: number;
+}
+const { posts, selected = [], page = 1 } = Astro.props;
+const [lead, ...rest] = posts;
+const tags = tagsOf(posts);
+const slugsOf = (post: Post) => post.data.tags.map(tagSlug).join(' ');
+const shows = (post: Post) => !selected.length || post.data.tags.some((t) => selected.includes(tagSlug(t)));
+const matches = posts.filter(shows);
+const shown = matches.length;
+const pages = Math.max(1, Math.ceil(shown / PER_PAGE));
+const onPage = new Set(matches.slice((page - 1) * PER_PAGE, page * PER_PAGE));
+const visible = (post: Post) => onPage.has(post);
+---
+<main id="main" class="blog" data-blog data-page={page} data-per-page={PER_PAGE}>
+  <DotGlow id="blog" art={{ palette: 'ember' }} />
+  <header class="wrap blog-head">
+    <h1>Blog</h1>
+    <p>News from Ponko: releases, how the engine works inside, and games people make with it.</p>
+    <div class="blog-links">
+      <a class="feed-link" href="/blog/rss.xml"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13.5h.01M3 8a5 5 0 0 1 5 5.5M3 2.5a11 11 0 0 1 11 11" /></svg>RSS feed</a>
+    </div>
+    {tags.length > 0 && (
+      <div class="topics" role="group" aria-label="Filter by topic">
+        {tags.map((t) => (
+          <a class="tag" href={tagHref(t.name)} data-tag={t.slug} aria-pressed={selected.includes(t.slug) ? 'true' : 'false'}>
+            <span>{t.name}</span><span class="tag-count">{t.posts.length}</span>
+          </a>
+        ))}
+        <button class="topics-clear" type="button" hidden={!selected.length}>Clear</button>
+      </div>
+    )}
+  </header>
+
+  {lead ? (
+    <div class="wrap">
+      <p class="filter-status" aria-live="polite" hidden={!selected.length}>
+        Showing <b>{shown}</b> of {posts.length} posts.
+      </p>
+      <a class="lead-post" href={postHref(lead)} data-tags={slugsOf(lead)} hidden={!visible(lead)} style="view-transition-name: post-lead">
+        <span class="lead-art">
+          {lead.data.cover
+            ? <Image src={lead.data.cover} alt="" widths={[640, 1040]} sizes="(max-width: 900px) 100vw, 640px" />
+            : <DotArt id={lead.id} art={lead.data.art as ArtOptions} cols={44} rows={26} animate />}
+        </span>
+        <span class="lead-text">
+          <span class="lead-kicker">Latest</span>
+          <span class="lead-title">{lead.data.title}{lead.data.draft && <span class="draft-badge">Draft</span>}</span>
+          <span class="lead-desc">{lead.data.description}</span>
+          <span class="post-meta">
+            <time datetime={lead.data.date.toISOString()}>{formatDate(lead.data.date)}</time>
+            <span>{readingMinutes(lead.body)} min read</span>
+          </span>
+        </span>
+      </a>
+      {rest.length > 0 && (
+        <section class="blog-more" aria-labelledby="more-title" hidden={!rest.some(visible)}>
+          <h2 id="more-title">Earlier posts</h2>
+          <ol class="post-list">
+            {rest.map((post, i) => (
+              <li data-tags={slugsOf(post)} hidden={!visible(post)} style={`view-transition-name: post-${i}`}>
+                <a class:list={['post-row', { plain: !post.data.cover }]} href={postHref(post)}>
+                  <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+                  <span class="post-row-text">
+                    <span class="post-row-title">{post.data.title}{post.data.draft && <span class="draft-badge">Draft</span>}</span>
+                    <span class="post-row-desc">{post.data.description}</span>
+                  </span>
+                  {post.data.cover && (
+                    <span class="post-row-mark">
+                      <Image src={post.data.cover} alt="" width={240} height={150} />
+                    </span>
+                  )}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+      <Pager page={page} pages={pages} href={(n) => pageHref(n, selected)} />
+    </div>
+  ) : (
+    <div class="wrap blog-empty">
+      <p>No posts yet. The first one is on its way.</p>
+      <a class="arrow" href="/guide/">Read the guide meanwhile</a>
+    </div>
+  )}
+</main>
+
+<script>
+  import { topics } from '../scripts/topics';
+  const root = document.querySelector<HTMLElement>('[data-blog]');
+  if (root) topics(root);
+</script>

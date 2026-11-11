@@ -1,0 +1,17 @@
+---
+// A tag's own page: the blog's front page with that topic already picked,
+// so links to a tag land on the same list you can keep narrowing or widening.
+import Base from '../../../layouts/Base.astro';
+import BlogIndex from '../../../components/BlogIndex.astro';
+import { getPosts, tagsOf } from '../../../lib/blog';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return tagsOf(posts).map((t) => ({ params: { tag: t.slug }, props: { name: t.name, slug: t.slug } }));
+}
+const { name, slug } = Astro.props;
+const posts = await getPosts();
+---
+<Base title={`${name} · Ponko blog`} description={`Posts about ${name} on the Ponko blog.`}>
+  <BlogIndex posts={posts} selected={[slug]} />
+</Base>

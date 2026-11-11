@@ -1,0 +1,133 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import DotArt from '../../components/DotArt.astro';
+import DotGlow from '../../components/DotGlow.astro';
+import type { ArtOptions } from '../../lib/dot-art';
+import { components } from '../../components/mdx';
+import { formatDate, getPosts, postHref, readingMinutes, tagHref, type Post } from '../../lib/blog';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    // The list is newest first: the next post is the newer one.
+    props: { post, newer: posts[i - 1], older: posts[i + 1] },
+  }));
+}
+
+interface Props {
+  post: Post;
+  newer?: Post;
+  older?: Post;
+}
+const { post, newer, older } = Astro.props;
+const { Content } = await render(post);
+const { title, description, date, updated, authors, tags, cover, coverAlt, draft } = post.data;
+const art = post.data.art as ArtOptions;
+const minutes = readingMinutes(post.body);
+---
+<Base
+  title={`${title} · Ponko blog`}
+  socialTitle={title}
+  description={description}
+  type="article"
+  published={date.toISOString()}
+  image={cover?.src}
+  imageAlt={cover ? coverAlt ?? title : undefined}
+  noindex={draft}
+>
+  <main id="main" class="post">
+    <article>
+      <!-- The hero: the words over the post's picture in dots, which fades
+           into a soft glow in the same colours. A cover image, if the post
+           has one, goes below. -->
+      <header class="post-hero">
+        <DotGlow id={post.id} art={art} />
+        <DotArt id={post.id} art={art} cols={72} rows={40} class="post-hero-art" animate />
+        <div class="wrap post-hero-grid">
+          <div class="post-head">
+            <a class="back" href="/blog/">Blog</a>
+            {draft && <p class="draft-note">Draft: this post is left out of the built site.</p>}
+            <p class="post-kicker">
+              <time datetime={date.toISOString()}>{formatDate(date)}</time>
+              {tags[0] && <a href={tagHref(tags[0])}>{tags[0]}</a>}
+            </p>
+            <h1>{title}</h1>
+            <p class="post-lede">{description}</p>
+            <p class="post-meta">
+              <span>{authors.join(', ')}</span>
+              <span>{minutes} min read</span>
+              {updated && <span>Updated <time datetime={updated.toISOString()}>{formatDate(updated)}</time></span>}
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {cover && (
+        <div class="post-cover">
+          <Image src={cover} alt={coverAlt ?? ''} widths={[720, 1080, 1600]} sizes="(max-width: 1100px) 100vw, 1040px" loading="eager" />
+        </div>
+      )}
+
+      <div class="prose">
+        <Content components={components} />
+      </div>
+
+      {tags.length > 0 && (
+        <ul class="tag-list post-tags" aria-label="Topics">
+          {tags.map((t) => <li><a class="tag" href={tagHref(t)}>{t}</a></li>)}
+        </ul>
+      )}
+    </article>
+
+    {(older || newer) && (
+      <nav class="post-nav" aria-label="More posts">
+        {older && <a class="post-nav-link" href={postHref(older)}><span>Older</span>{older.data.title}</a>}
+        {newer && <a class="post-nav-link newer" href={postHref(newer)}><span>Newer</span>{newer.data.title}</a>}
+      </nav>
+    )}
+  </main>
+</Base>
+
+<script>
+  // Links that leave the site open in a new tab. MDX posts get this at build
+  // time (components/mdx/A.astro); this covers plain Markdown posts.
+  document.querySelectorAll<HTMLAnchorElement>('.prose a[href^="http"]:not([target])').forEach((a) => {
+    if (a.host === location.host) return;
+    a.target = '_blank';
+    a.rel = 'noopener';
+  });
+
+  // Copy buttons on code blocks.
+  document.querySelectorAll<HTMLButtonElement>('.code-copy').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const code = button.closest('.code-block')?.querySelector('pre')?.innerText ?? '';
+      try {
+        await navigator.clipboard.writeText(code.replace(/\n$/, ''));
+        button.textContent = 'Copied';
+      } catch {
+        button.textContent = 'Select it to copy';
+      }
+      setTimeout(() => (button.textContent = 'Copy'), 1800);
+    });
+  });
+
+  // YouTube loads only when asked. (Games open in their own tab instead.)
+  document.querySelectorAll<HTMLElement>('[data-embed-src]').forEach((figure) => {
+    const run = figure.querySelector<HTMLElement>('.embed-run');
+    run?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const frame = document.createElement('iframe');
+      frame.src = figure.dataset.embedSrc!;
+      frame.title = figure.dataset.embedTitle ?? '';
+      frame.allow = 'autoplay; fullscreen; picture-in-picture';
+      frame.allowFullscreen = true;
+      const stage = figure.querySelector('.embed-stage')!;
+      stage.classList.add('running');
+      stage.append(frame);
+      frame.addEventListener('load', () => frame.focus());
+    });
+  });
+</script>

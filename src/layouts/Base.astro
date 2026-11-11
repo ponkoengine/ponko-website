@@ -1,0 +1,87 @@
+---
+// The page shell every route shares: head tags, the header and the footer.
+import '../styles/global.css';
+import '../styles/blog.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  /** The full <title>. */
+  title: string;
+  description: string;
+  /** Social card title, if it should differ from the <title>. */
+  socialTitle?: string;
+  socialDescription?: string;
+  /** An absolute path or URL for the share image. */
+  image?: string;
+  imageAlt?: string;
+  type?: 'website' | 'article';
+  /** For articles: an ISO date. */
+  published?: string;
+  /** Hide the header and footer, for pages that stand on their own. */
+  bare?: boolean;
+  /** Where the "Demo" link in the header goes. */
+  demoHref?: string;
+  /** Mark the page as not for search engines. */
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  socialTitle = title,
+  socialDescription = description,
+  image = '/og.png',
+  imageAlt = "Ponko's red panda logo drawn in dots, beside the line: You make the game. Ponko runs it.",
+  type = 'website',
+  published,
+  bare = false,
+  demoHref,
+  noindex = false,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const imageUrl = new URL(image, Astro.site);
+const isDefaultImage = image === '/og.png';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#120e0c" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" type="application/rss+xml" title="Ponko blog" href="/blog/rss.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
+    <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
+    <meta property="og:site_name" content="Ponko Engine" />
+    <meta property="og:title" content={socialTitle} />
+    <meta property="og:description" content={socialDescription} />
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
+    {isDefaultImage && <meta property="og:image:width" content="1200" />}
+    {isDefaultImage && <meta property="og:image:height" content="630" />}
+    <meta property="og:image:alt" content={imageAlt} />
+    {published && <meta property="article:published_time" content={published} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={socialTitle} />
+    <meta name="twitter:description" content={socialDescription} />
+    <meta name="twitter:image" content={imageUrl} />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <slot name="before" />
+    {!bare && <Header demoHref={demoHref} />}
+    <slot />
+    {!bare && <Footer />}
+  </body>
+</html>

@@ -1,0 +1,87 @@
+---
+title: Your coding agent can play the game now
+description: Ponko comes with an MCP server. An AI agent can launch your game, read its entities, step the simulation, take screenshots and profile frames, instead of guessing from source code.
+date: 2026-11-02
+tags: [Agents, Tools]
+art: { palette: rose, shape: ripple }
+---
+
+An AI coding agent that changes a game usually works blind. It reads the
+source, makes an edit, and hopes. When something goes wrong at runtime, it
+adds print statements and asks you what happened on screen.
+
+Ponko gives it eyes. `ponko-mcp` is a
+[Model Context Protocol](https://modelcontextprotocol.io) server, which any
+MCP client can use: Claude Code, Cursor, Codex and others. It lets the agent
+start your game, look inside it while it runs, change it, and step the
+simulation one tick at a time. It arrived on the engine's first evening and
+has grown since; what follows is what it does today.
+
+## Set it up
+
+<Steps>
+
+1. Install the server.
+
+   ```sh
+   cargo install ponko_mcp
+   ```
+
+2. Add it to your agent. For Claude Code:
+
+   ```sh
+   claude mcp add ponko -- ponko-mcp
+   ```
+
+   Other clients take the same command, `ponko-mcp`, over stdio.
+
+3. Mark the components you want the agent to see as reflected.
+
+   ```rust
+   ctx.world.reflect::<Health>();
+   ```
+
+</Steps>
+
+## What the agent can do
+
+It launches games headless and paused by default, so nothing runs until it
+asks. From there it can:
+
+- **Read the world**: list entities filtered by components and conditions
+  such as `Health.current < 5`, read one entity, read game-wide resources like
+  the score, and get statistics over every match ("how many units per team,
+  and how hurt are they?").
+- **Drive time**: pause, resume, change speed, or run exactly N ticks and
+  wait. `watch` runs ticks and samples resources and entity counts as it goes.
+- **Change things**: spawn and despawn entities, set components and resources,
+  and save or load whole worlds, scenes and prefabs.
+- **See what happened**: subscribe to the game's events, read its logs, and
+  take screenshots it can look at.
+- **Measure**: per-system timings, frame-time percentiles, GPU time per render
+  pass, a Perfetto trace of the next frames, and whether the last shader edit
+  compiled, with the error's line and column.
+- **Play**: run a scripted input scenario of key, mouse and gamepad presses at
+  set ticks, with checks along the way. A failed check reports the step, the
+  tick, and what it expected.
+
+<Callout type="tip" title="Watch-only agents">
+  Start the server with `ponko-mcp --read-only` and every tool that changes the
+  game is hidden. The agent can look and measure, but can't touch.
+</Callout>
+
+## Why this matters
+
+The useful loop for an agent is the same as for a person: change something,
+run it, look at what happened, measure it. With the MCP server, every step of
+that loop is a tool call instead of a guess.
+
+We use it on the engine itself. The first thing we did with the server was
+point an agent at the boids example, and the rough edges it found became
+fixes the same day.
+
+The MCP server sits on top of two pieces you can use without it: a
+token-protected [control endpoint](/guide/control.html) on localhost, and
+[reflection](/guide/reflection.html), which reads and writes components by
+name as JSON. The guide's chapter on
+[working with agents](/guide/agents.html) has the full list of tools.

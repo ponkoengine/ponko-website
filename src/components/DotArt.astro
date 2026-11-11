@@ -1,0 +1,44 @@
+---
+// A post's picture in dots, on a faint grid of empty rings. The same post
+// always gets the same picture; see src/lib/dot-art.ts. With `animate`, it
+// moves (src/scripts/dot-art-live.ts); the still picture stays underneath
+// for anyone who asks for reduced motion.
+import { drawArt, resolveArt, type ArtOptions } from '../lib/dot-art';
+
+interface Props {
+  id: string;
+  art?: ArtOptions;
+  cols?: number;
+  rows?: number;
+  class?: string;
+  animate?: boolean;
+}
+const { id, art = {}, cols = 40, rows = 25, class: className, animate = false } = Astro.props;
+const picture = drawArt(id, art, cols, rows);
+const pattern = `rings-${id.replace(/[^a-z0-9]/gi, '')}-${cols}x${rows}`;
+const { seed, palette, shape } = resolveArt(id, art);
+---
+<span
+  class:list={['dot-art', className]}
+  data-live={animate ? '' : undefined}
+  data-id={id}
+  data-art={JSON.stringify({ seed, palette, shape })}
+  data-cols={cols}
+  data-rows={rows}
+  aria-hidden="true"
+>
+  <svg viewBox={`0 0 ${cols} ${rows}`} preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <pattern id={pattern} width="1" height="1" patternUnits="userSpaceOnUse">
+        <circle cx="0.5" cy="0.5" r="0.3" fill="none" stroke={picture.ring} stroke-width="0.06" />
+      </pattern>
+    </defs>
+    <rect width={cols} height={rows} fill={`url(#${pattern})`} />
+    {picture.groups.map((g) => <path d={g.d} stroke={g.color} stroke-width={g.width} stroke-linecap="round" fill="none" />)}
+  </svg>
+</span>
+
+<script>
+  import { liveArt } from '../scripts/dot-art-live';
+  document.querySelectorAll<HTMLElement>('.dot-art[data-live]').forEach(liveArt);
+</script>
