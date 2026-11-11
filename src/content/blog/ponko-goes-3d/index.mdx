@@ -1,62 +1,62 @@
 ---
-title: Ponko goes 3D
-description: In four days, the renderer grew from sprites to physically based 3D, with cascaded shadows, a physical sky, terrain, a thousand lights, temporal antialiasing, reflections and global illumination.
+title: Ponko's 3D renderer
+description: In four days the renderer went from sprites to physically based 3D, with cascaded shadows, a physical sky, terrain, a thousand lights, temporal antialiasing, reflections and global illumination.
 date: 2026-11-07
 tags: [Rendering, 3D, Performance]
 art: { palette: amber, shape: sphere }
 ---
 
-On the evening of 3 November Ponko drew its first 3D mesh. Three days
-later it drew physically based worlds with real-time global illumination. This is what was added, in
-roughly the order it arrived.
+Ponko drew its first 3D mesh on the evening of 3 November. Three days later
+it had physically based rendering and real-time global illumination. Below is
+everything that went in, roughly in the order we built it.
 
-All of it is behind the `3d` Cargo feature, so a 2D game doesn't carry it.
-3D models are components on the same ECS as everything else: a
-`Transform3D` and a `Model` on an entity, and the renderer finds them.
+It's all behind the `3d` Cargo feature, so 2D games don't pay for it. 3D
+models use the same ECS as everything else: put a `Transform3D` and a
+`Model` on an entity and the renderer picks it up.
 
-## The foundation
+## The basics
 
-- **Meshes and materials**: cubes, planes and spheres, your own triangles, or
-  glTF files with their normal, occlusion, metallic-roughness and emissive
-  maps. Materials are physically based.
-- **HDR lighting** with a depth prepass, so each pixel is lit once, and
+- Meshes and materials. You can use cubes, planes and spheres, your own
+  triangles, or glTF files with normal, occlusion, metallic-roughness and
+  emissive maps. Materials are PBR.
+- HDR lighting with a depth prepass, so each pixel is only shaded once. Then
   post-processing: exposure, bloom, white balance, ACES, AgX or neutral tone
-  mapping, colour lookup tables and vignette.
-- **Cascaded sun shadows**: up to four shadow maps, sharp near the camera and
-  reaching far, blended where they meet.
-- **A physical sky** with Rayleigh and Mie scattering, a sun that reddens as
-  it sets, stars at night, and height and distance fog that glows toward the
-  sun.
+  mapping, colour LUTs and vignette.
+- Cascaded shadows from the sun, with up to four shadow maps. They're sharp
+  close to the camera, reach a long way out, and blend at the seams.
+- A physical sky with Rayleigh and Mie scattering. The sun goes red as it
+  sets, stars come out at night, and height and distance fog glows toward
+  the sun.
 
-## Your own shaders
+## Custom shaders
 
-Materials can run shaders you write in WGSL. A shader defines `vertex` to
-move vertices, `surface` to change each pixel, or both, and the engine still
-lights and shadows the result. They hot-reload when you save the file. The
-`shaders` example has water, wind and a procedural pattern.
+Materials can use your own WGSL shaders. Define `vertex` to move vertices,
+`surface` to change pixels, or both, and the engine still handles lighting
+and shadows for you. Shaders hot-reload when you save. The `shaders` example
+has water, wind and a procedural pattern.
 
-The same goes for whole-frame effects (`fn effect(p: Pixel)`) and compute
-passes that run once per texel of a render target, for ripples, trails in snow
-or wet ground. Render targets give you mirrors, monitors and planar
-reflections.
+Full-screen effects (`fn effect(p: Pixel)`) work the same way, and so do
+compute passes that run once per texel of a render target, for things like
+ripples, trails in snow or wet ground. Render targets also give you mirrors,
+monitors and planar reflections.
 
-## Big worlds
+## Large worlds
 
-- **Terrain** from heightfield tiles, drawn at four levels of detail with
-  skirts that hide the cracks, and terrain materials that blend up to 8 ground
-  layers. On steep ground they're projected from the sides, so cliffs don't
-  stretch.
-- **Streaming**: `CellStreamer` says which cells of the world to load and drop
-  around a point, nearest first and a few per frame, and `Job` builds tiles
-  on worker threads.
-- **LOD groups** with dithered crossfades, and **occlusion culling** against
-  an earlier frame's depth.
+- Terrain from heightfield tiles, drawn at four levels of detail, with
+  skirts to hide the cracks between them. Terrain materials blend up to 8
+  ground layers and switch to side projection on steep slopes, so cliffs
+  don't look stretched.
+- Streaming. `CellStreamer` tells you which cells of the world to load and
+  unload around a point, closest first and a few per frame, and `Job` builds
+  tiles on worker threads.
+- LOD groups with dithered crossfades, and occlusion culling against the
+  depth of an earlier frame.
 
-## Light, and a lot of it
+## Lots of lights
 
-Point and spot lights are binned into clusters per camera, and each pixel
-lights only its cluster's lights. The packing works on WebGL2 too, with no
-storage buffers.
+Point and spot lights are sorted into clusters for each camera, and each
+pixel only looks at the lights in its cluster. This works on WebGL2 too,
+without storage buffers.
 
 <Stats>
   <Stat value="1000">visible lights</Stat>
@@ -64,38 +64,38 @@ storage buffers.
   <Stat value="1">ms of GPU, at 720p</Stat>
 </Stats>
 
-Measured on an M4 Max with shadows off. Point and spot light shadows share one
-atlas, and decals are projected on the GPU through the same clusters.
+That's on an M4 Max with shadows turned off. Point and spot light shadows
+share one atlas, and decals are projected on the GPU using the same clusters.
 
 ## Image quality
 
-By 6 November the renderer had the techniques modern games rely on:
+By 6 November we had most of what you'd expect from a current renderer:
 
-- **Temporal antialiasing** with per-object motion vectors, plus FXAA and SMAA.
-- **Ground-truth ambient occlusion**, with half-resolution and temporal
+- Temporal antialiasing with per-object motion vectors, plus FXAA and SMAA.
+- Ground-truth ambient occlusion (GTAO), with half-resolution and temporal
   modes, and contact shadows in the same pass.
-- **Screen-space reflections**, blurred by roughness.
-- **Image-based lighting** from the sky, and reflection probes.
-- **Real-time global illumination** from probe volumes.
-- **Light shafts**, where shadows cut through the fog's glow toward the sun.
+- Screen-space reflections, blurred by roughness.
+- Image-based lighting from the sky, and reflection probes.
+- Real-time global illumination from probe volumes.
+- Light shafts where shadows cut through the fog's glow around the sun.
 
-## How fast
+## Performance
 
-The `3d` example spins N tinted cubes with PBR spheres, a sun and shadows.
-The same scene was built in Unity 6 to compare:
+The `3d` example spins N tinted cubes next to some PBR spheres, with a sun
+and shadows. We built the same scene in Unity 6 to compare:
 
 <Stats>
   <Stat value="402">FPS in Ponko, 100,000 spinning cubes with shadows</Stat>
   <Stat value="54">FPS for the same scene in Unity 6</Stat>
 </Stats>
 
-That's on an M4 Max in release builds. The
-[benchmarks page](/guide/performance.html) has the workload and how to run
-it yourself. We'd like to hear what it gives on your machine.
+Both are release builds on an M4 Max. The workload and how to run it are on
+the [benchmarks page](/guide/performance.html), and we'd like to know what
+numbers you get on your own machine.
 
-Measuring is built in too. `ctx.perf.frame_stats()` splits a frame into
-systems, rendering and waiting, with GPU time for each pass and every shadow
-cascade. There's a performance overlay (`PONKO_HUD=1`), and you can record
-Perfetto traces to find hitches.
+There are profiling tools built in as well. `ctx.perf.frame_stats()` breaks a
+frame down into systems, rendering and waiting, with GPU time for every pass
+and shadow cascade. `PONKO_HUD=1` turns on a performance overlay, and you can
+record Perfetto traces to track down hitches.
 
-Read [Rendering in 3D](/guide/3d.html) in the guide to start.
+To get started, read [Rendering in 3D](/guide/3d.html) in the guide.
