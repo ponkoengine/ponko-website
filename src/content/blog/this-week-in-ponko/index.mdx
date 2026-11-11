@@ -1,25 +1,25 @@
 ---
-title: A name, a release line, and a sturdier engine
-description: Ponko got its name and a 0.0.1 release line. Then explicit phases and plugins, one error type, change detection, a parallel scheduler, asset streaming and GPU culling.
+title: "This week: the name, 0.0.1, plugins and a parallel scheduler"
+description: The engine got its name and a 0.0.1 release line, along with phases and plugins, one error type, change detection, a parallel scheduler, asset streaming and GPU culling.
 date: 2026-11-11
 tags: [Engine, ECS, Performance]
 art: { palette: dusk, shape: blobs }
 ---
 
-The first week of Ponko was about breadth: sprites, an ECS, 3D, physics,
-animation. This one was about making all of it hold up in a real game. Here
-is what changed.
+In the first week we mostly added features: sprites, an ECS, 3D, physics,
+animation. This week was more about making that work well in an actual game.
+Here's what changed.
 
-## A name and a version
+## The name and the version
 
-On 8 November the engine became **Ponko**, and its packages started a new
-release line at 0.0.1. The number is honest: the API is still moving, and
-the changelog says so whenever it does.
+The engine was renamed to **Ponko** on 8 November, and its packages restarted
+at 0.0.1. We picked a low number on purpose. The API still changes, and when
+it does, the changelog says so.
 
-## How a game is put together
+## Phases and plugins
 
-Systems now run in **explicit phases**. A system says when it runs, before
-or after the physics step, or with drawing:
+Systems now run in explicit phases. Each system says when it should run:
+before or after the physics step, or during drawing.
 
 ```rust
 Game::new("Drive", 1280, 720)
@@ -29,15 +29,16 @@ Game::new("Drive", 1280, 720)
     .run();
 ```
 
-Features come as **plugins**. A plugin registers its systems in their
-phases and can run setup once at the start. The `coin_dash` example, a
-complete game, is built from them.
+Features are packaged as plugins. A plugin adds its systems to their phases
+and can run some setup once at startup. The `coin_dash` example, a complete
+game, is put together out of plugins.
 
-## Errors you can handle
+## Error handling
 
-`ponko::Error` is one error type, with a kind to match on, the asset path,
-and a readable message. The loading calls gained `try_` twins that return it,
-for games that would rather show a message than crash:
+There's now a single error type, `ponko::Error`. It has a kind you can match
+on, the asset path, and a readable message. Every loading call now has a
+`try_` version that returns it, for games that want to show an error instead
+of crashing:
 
 ```rust
 match ctx.gfx.try_load_texture("skins/gold.png") {
@@ -47,29 +48,30 @@ match ctx.gfx.try_load_texture("skins/gold.png") {
 }
 ```
 
-Handles are now checked by generation, so a stale mesh or buffer handle can't
-reach the resource that was made in its slot after it.
+Handles are now checked by generation too. If you hold on to an old mesh or
+buffer handle after its slot was reused, it won't point at the new resource.
 
-Input actions also have ids now. Resolve a name once with
-`ctx.input.action_id("jump")`, then check the id every frame without
-looking up the name again.
+Input actions have ids now as well. Look up the name once with
+`ctx.input.action_id("jump")` and use the id every frame afterwards, without
+a string lookup each time.
 
-## Queries that say more
+## Better queries
 
-- **Typed filters**: `With<T>`, `Without<T>`, and `Or<(With<A>, With<B>)>` on
-  `query.filter::<F>()`. C and C++ have the same filters.
-- **Change detection**: `Changed<T>` and `Added<T>` match only the entities
-  whose component changed or was added since the system last ran.
-- **Parallel queries over many small archetypes** now use every core,
-  instead of finishing one archetype before starting the next. With 4,096
-  archetypes and heavy work per entity, that's about 9 times faster on
-  14 cores.
+- Typed filters: `With<T>`, `Without<T>` and `Or<(With<A>, With<B>)>` through
+  `query.filter::<F>()`. The same filters are available from C and C++.
+- Change detection. `Changed<T>` and `Added<T>` only match entities whose
+  component was changed or added since the system last ran.
+- Parallel queries now spread work over all cores even when it's split
+  across many small archetypes. Before, each archetype had to finish before
+  the next one started. With 4,096 archetypes and heavy per-entity work, it's
+  about 9x faster on 14 cores.
 
-## Systems side by side
+## Running systems in parallel
 
-`Game::parallel_systems(true)` turns on an optional scheduler. Systems that
-declare what they read and write, and don't overlap, run at the same time.
-It changes nothing unless you ask for it.
+There's an optional scheduler you turn on with
+`Game::parallel_systems(true)`. Systems that declare what they read and
+write can then run at the same time, as long as they don't overlap. If you
+don't turn it on, nothing changes.
 
 <Stats>
   <Stat value="7.15">ms for 8 heavy systems, one at a time</Stat>
@@ -77,42 +79,46 @@ It changes nothing unless you ask for it.
   <Stat value="5.71">ms for a mixed simulation that took 8.45 ms</Stat>
 </Stats>
 
-Measured on an M4 Max. It doesn't help everywhere: one big system and seven
-tiny ones take the same time either way. The guide's
-[parallel systems](/guide/parallel-systems.html) chapter has the full table.
+Measured on an M4 Max. It won't always help: one big system plus seven tiny
+ones takes the same time either way. The full table is in the guide's
+[parallel systems](/guide/parallel-systems.html) chapter.
 
-## Assets that arrive in time
+## Asset streaming
 
-- **Streaming with an upload budget**: assets go to the GPU a little each
-  frame, in the order they were asked for. A texture first shows as a small
-  stand-in, and its resolution doubles with each upload.
-- **Residency budgets**: past a memory budget, the least recently used
-  textures drop back to their stand-in and stream in again when needed.
-- **GPU tiers**: `PONKO_GPU_TIER=webgl2` or `baseline` opens the GPU with
-  that tier's limits, so you can see on a fast machine what a slow one gets.
-- **Shader errors don't stop the game.** A shader that fails to compile,
-  or that the GPU rejects, is replaced by the previous version or a stand-in,
-  and the error is reported with its line and column. Save a fix and it
-  loads.
+- Uploads have a budget. Assets go to the GPU a bit at a time each frame, in
+  the order they were requested. A texture starts out as a small placeholder
+  and doubles in resolution with each upload.
+- Residency budgets. Once a memory budget is exceeded, the least recently
+  used textures go back to their placeholder and stream in again when
+  they're needed.
+- GPU tiers. `PONKO_GPU_TIER=webgl2` or `baseline` opens the GPU with that
+  tier's limits, so you can check on a fast machine what a slow one will get.
+- Broken shaders no longer stop the game. If a shader fails to compile, or
+  the GPU rejects it, the engine keeps using the previous version or a
+  placeholder and reports the error with its line and column. Save a fix and
+  it loads.
 
-## Drawing less, uploading less
+## Less work per frame
 
-The 3D renderer now updates only what changed between frames: it finds the
-models that changed, and culls again only when a model or the view moved.
+The 3D renderer now only updates what changed since the last frame. It
+tracks which models changed, and only re-culls when a model or the camera
+moves.
 
 <Stats>
   <Stat value="25">KiB uploaded per frame at 100,000 models, down from 789</Stat>
   <Stat value="0.26">ms of GPU culling for 4,096 batches, down from 7.8</Stat>
 </Stats>
 
-The second number is from today: big static batches are now culled on the
-GPU in one compute dispatch, instead of one per batch and view. The
-renderer's CPU time for the same scene went from 9.4 ms to 1.1 ms.
+The culling number is new as of today. Big static batches are now culled on
+the GPU in a single compute dispatch, where before it took one per batch and
+view. For the same scene, the renderer's CPU time dropped from 9.4 ms to
+1.1 ms.
 
 ## A complete game
 
-`coin_dash` is our reference for a whole game rather than a feature demo. It
-has menus, a settings screen with rebindable keys and gamepad buttons,
-saved progress, and sounds made in code. It's packaged with its licences and
-tested on Linux, macOS, Windows and the web. The guide walks through it in
+`coin_dash` is our example of a whole game, as opposed to a demo of one
+feature. It has menus, a settings screen where you can rebind keys and
+gamepad buttons, saved progress, and sound effects generated in code. It's
+packaged with its licences and tested on Linux, macOS, Windows and the web.
+The guide goes through it in
 [A complete game, packaged](/guide/packaging.html).

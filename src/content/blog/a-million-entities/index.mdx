@@ -1,28 +1,26 @@
 ---
-title: From an empty window to a million entities
-description: The first two days of Ponko. A window and a game loop, our own ECS, queries on every core, and simulations of a million units that still fit in a frame.
+title: The first two days, up to a million entities
+description: What we built in Ponko's first two days. A window and a game loop, our own ECS, queries that use every core, and simulations of a million units that run in one frame.
 date: 2026-11-03
 tags: [Engine, ECS, Performance]
 art: { palette: ember, shape: blobs }
 ---
 
-Every engine starts as a window that opens and closes. Ponko's opened on
-2 November. By the end of the next day it was simulating a million units
-fighting over a map, in Rust, C and C++, in a browser, and under the control of
-an AI agent.
+Ponko's first commit opened a window and closed it again. That was on
+2 November. By the end of the 3rd it could simulate a million units fighting
+over a map, from Rust, C or C++, in a browser, with an AI agent driving it.
 
-This is how the base of the engine came together, and the numbers it reached.
+Here's the order things went in, and what we measured along the way.
 
 ## The loop, then the sprites
 
-The first pieces were the ones every game needs before anything else: a
-window, a game loop and input. Then a sprite renderer on
-[wgpu](https://wgpu.rs/), which draws with Vulkan, Metal, DirectX and
-WebGPU from the same code. Sprites are drawn in instanced batches: one draw
-call for thousands of sprites that share an image.
+We started with the stuff every game needs first: a window, a game loop and
+input. Then came a sprite renderer on [wgpu](https://wgpu.rs/), which gets us
+Vulkan, Metal, DirectX and WebGPU from one codebase. Sprites that share an
+image are drawn in instanced batches, so thousands of them cost one draw call.
 
-The shape of a game was settled here too. A game is a closure that sets
-things up and returns the closure that runs every frame:
+We also settled on what a game looks like in code. You pass a closure that
+does the setup, and it returns another closure that runs every frame:
 
 ```rust title="src/main.rs"
 use ponko::prelude::*;
@@ -41,18 +39,19 @@ fn main() {
 }
 ```
 
-## Our own ECS
+## Writing our own ECS
 
-Plain variables are enough for a small game. A big one wants an entity
-component system, where things in the world are rows of components and
-systems are functions over them.
+For a small game, plain variables like `pos` above are fine. Bigger games
+usually want an entity component system: entities are rows of components,
+and systems are functions that run over them.
 
-Before writing one, we measured. A spike compared an archetype ECS of our
-own against [bevy_ecs](https://crates.io/crates/bevy_ecs) and
-[hecs](https://crates.io/crates/hecs) on the same workload. Ours iterated
-fastest, so `ponko_ecs` became the engine's ECS: generational entity ids,
-queries, commands, resources, and components registered at runtime, so C and
-C++ can define their own.
+We didn't want to write one without a reason, so we first built a small
+archetype ECS and benchmarked it against
+[bevy_ecs](https://crates.io/crates/bevy_ecs) and
+[hecs](https://crates.io/crates/hecs) on the same workload. Ours came out
+fastest at iteration, so it stayed and became `ponko_ecs`. It has
+generational entity ids, queries, commands and resources. Components can be
+registered at runtime, which is what lets C and C++ code define its own.
 
 <Callout type="note" title="How these were measured">
   Release builds on a MacBook Pro with an M4 Max. The reproduction commands are
@@ -66,9 +65,9 @@ C++ can define their own.
   <Stat value="0.42">ms to send and read 100,000 events in a tick</Stat>
 </Stats>
 
-Then `par_for_each`, which splits a query's work across every core through
-[rayon](https://crates.io/crates/rayon). Writing a system for all cores is
-the same as writing it for one:
+Next was `par_for_each`, which spreads a query over all your cores with
+[rayon](https://crates.io/crates/rayon). The code looks the same as the
+single-threaded version:
 
 ```rust
 ctx.world.query::<(&mut Transform2D, &Speed)>().par_for_each(|(t, speed)| {
@@ -76,25 +75,25 @@ ctx.world.query::<(&mut Transform2D, &Speed)>().par_for_each(|(t, speed)| {
 });
 ```
 
-## Simulations at scale
+## Big simulations
 
-Games with huge crowds need more than a fast loop, so the next pieces were the
-tools for those:
+A fast loop isn't enough for games with huge crowds, so we added the tools
+those games end up needing:
 
-- **A fixed-rate simulation clock** that can pause, step one tick, or run at
-  1 to 64 times speed, with systems that run every N ticks.
-- **Headless runs**, with no window and no GPU, for servers, tests and long
-  batch runs.
-- **Spatial grids** for radius, rectangle and nearest-neighbour queries, and
-  spatial sorting, so entities that are neighbours on the map are neighbours
+- A fixed-rate simulation clock. It can pause, step a single tick, or run
+  anywhere from 1x to 64x, and systems can run every N ticks.
+- Headless runs with no window and no GPU, for servers, tests and long batch
+  jobs.
+- Spatial grids for radius, rectangle and nearest-neighbour queries. Entities
+  are also sorted by position, so neighbours on the map sit next to each other
   in memory.
-- **Flow-field pathfinding**, where one field steers every unit heading to the
+- Flow-field pathfinding. One field steers every unit that's heading to the
   same goal.
-- **Determinism**: randomness seeded per seed, tick, system and entity, the
-  same with parallel queries, and a whole-world save and load that keeps
-  entity ids.
+- Determinism. Random numbers are seeded per seed, tick, system and entity,
+  and stay the same with parallel queries. You can also save and load the
+  whole world with entity ids intact.
 
-Three demos push these at a million entities each:
+We wrote three demos that run a million entities each:
 
 <Stats>
   <Stat value="18.9">ms per tick: a battle of 1M units with flow fields and fighting</Stat>
@@ -102,25 +101,25 @@ Three demos push these at a million entities each:
   <Stat value="8.7">ms per tick: a headless simulation of 10M agents</Stat>
 </Stats>
 
-On the drawing side, a million moving sprites hold 120 frames a second, the
-display's cap.
+For drawing, a million moving sprites run at 120 frames a second, which is
+as high as the display goes.
 
-## Everything else on day two
+## The rest of day two
 
-By the end of 3 November the engine also had:
+A lot more landed on 3 November:
 
-- **A C API and a header-only C++17 wrapper** that cover nearly the whole
-  engine. The battle demo was rewritten in C++ and runs at the same speed as
-  the Rust one.
-- **Web builds.** The same game runs in a browser on WebGPU or WebGL2.
-- **2D physics** through [Rapier](https://rapier.rs/), with an option for
+- A C API and a header-only C++17 wrapper that cover almost all of the
+  engine. We ported the battle demo to C++ and it runs as fast as the Rust
+  one.
+- Web builds. The same game runs in the browser on WebGPU or WebGL2.
+- 2D physics with [Rapier](https://rapier.rs/), including an option for
   bit-identical results on every platform.
-- **Lockstep multiplayer** for 2 to 8 players over UDP or Steam's relays,
-  with desync checks that name the components that differ.
-- **Fast iteration**: hot reload of images, sounds, fonts and data files, and
-  hot-patching of game code while it runs.
-- **A runtime inspector** on the <kbd>`</kbd> key, and an MCP server that lets
-  AI agents start, inspect and drive a game. That one has
+- Lockstep multiplayer for 2 to 8 players over UDP or Steam's relays. When
+  clients desync, the check tells you which components differ.
+- Hot reload for images, sounds, fonts and data files, and hot-patching of
+  game code while it's running.
+- A runtime inspector on the <kbd>`</kbd> key, and an MCP server so AI agents
+  can start, inspect and drive a game. That one got
   [its own post](/blog/agents-play-the-game/).
 
-The next step was the third dimension.
+After that, we started on 3D.

@@ -1,52 +1,55 @@
 ---
-title: Bodies, cars and characters
-description: 3D physics arrived in a day, with terrain colliders, a walking character, cars on raycast wheels and ragdolls. Then skinned animation and navigation meshes, so the things in a 3D world can move on their own.
+title: 3D physics, animation and navmeshes
+description: In one day Ponko got 3D physics, with terrain colliders, a character controller, cars on raycast wheels and ragdolls. Skinned animation and navigation meshes came right after.
 date: 2026-11-05
 tags: [Physics, Animation, 3D]
 art: { palette: sea, shape: waves }
 ---
 
-A 3D world that only draws is a diorama. On 5 November Ponko's started to
-move: physics, then animated characters, then the meshes they find their way
-around on.
+By 5 November Ponko could draw 3D scenes, but nothing in them moved. That
+day we added physics, then animated characters, then navigation meshes so
+characters can find their own way around.
 
 ## Physics
 
-3D physics is built on [Rapier](https://rapier.rs/), the same library as
-Ponko's 2D physics, and lives behind the `physics3d` feature. Bodies are
-components: give an entity a rigid body and a collider, and its transform
-follows the simulation.
+3D physics uses [Rapier](https://rapier.rs/), the same library as our 2D
+physics, and is behind the `physics3d` feature. Rigid bodies and colliders
+are just components: add them to an entity and its transform follows the
+simulation.
 
-- **Shapes**: spheres, boxes, capsules, convex hulls, triangle meshes and
-  heightfields, with friction, restitution, sensors and collision groups.
-- **A fixed 50 Hz step.** Drawn positions are interpolated between steps, so
-  motion looks smooth at any frame rate.
-- **Terrain colliders** in the exact layout of a terrain tile, and collider
-  streaming near focus points, so a big world is solid only around the player.
-- **Queries**: rays, sphere and capsule casts, and overlap tests, with a
+- Shapes: spheres, boxes, capsules, convex hulls, triangle meshes and
+  heightfields. There's friction, restitution, sensors and collision groups.
+- The simulation steps at a fixed 50 Hz. Positions are interpolated between
+  steps when drawing, so movement looks smooth at any frame rate.
+- Terrain colliders match a terrain tile's layout exactly. Colliders can
+  stream in around focus points, so in a big world only the area near the
+  player needs to be solid.
+- Queries: raycasts, sphere and capsule casts, and overlap tests, all with a
   filter.
 
-## A character that walks
+## Character controller
 
-`Character3D` is a kinematic capsule for player characters and NPCs. You
-set the velocity you want, and it handles the rest: a slope limit, a step
-height for stairs and kerbs, snapping to the ground going downhill, and
-pushing light bodies out of the way. It reads back whether it's grounded.
+`Character3D` is a kinematic capsule you can use for the player or for NPCs.
+You give it the velocity you want and it deals with the rest: it has a slope
+limit and a step height for stairs and kerbs, sticks to the ground when going
+downhill, and pushes light bodies out of the way. You can ask it whether it's
+on the ground.
 
-For first-person games, `ctx.set_cursor_locked` grabs the mouse and
-`ctx.mouse_motion` reads raw movement.
+For first-person games, `ctx.set_cursor_locked` captures the mouse and
+`ctx.mouse_motion` gives you the raw movement.
 
 ## Cars
 
-Vehicles use **raycast wheels**, the classic wheel-collider model. Every
-physics step, each wheel casts a ray down from its mount, pushes the chassis
-up with a spring and a damper, spins from the motor and brake torque you give
-it, and pushes the chassis along through its tyre's friction curves.
+Vehicles use raycast wheels, the same model as most engines' wheel
+colliders. Each physics step, every wheel casts a ray down from where it's
+mounted. A spring and damper push the chassis up, the motor and brake torque
+you set spin the wheel, and the tyre's friction curves push the chassis
+forward and sideways.
 
-A vehicle takes up to 8 wheels, so cars, trucks and buggies all work, and a
-car tuned for this model in another engine keeps its numbers here. Each tick
-you set the torques and steering angle, and read back each wheel's contact,
-suspension compression, slip, rpm and pose for drawing.
+You can have up to 8 wheels, so trucks and buggies work as well as cars. If
+you tuned a car for this model in another engine, the same numbers should
+work here. Every tick you set torque and steering, and you can read back each
+wheel's contact, suspension compression, slip, rpm and pose for rendering.
 
 <Callout type="tip">
   Give a vehicle's body a mass and a low center of mass. Without them it rolls
@@ -56,31 +59,33 @@ suspension compression, slip, rpm and pose for drawing.
 
 ## Ragdolls, joints and contacts
 
-- **Joints** link bodies together.
-- **Ragdolls** hand a skinned character's skeleton over to physics. Each
-  chosen bone becomes a capsule, held to the one above it by a joint limited
-  in swing and twist. You can push the bodies in the same frame, for a hit or
-  an explosion, and they pose the skeleton from then on.
-- **Contact modification** lets a game change contacts as they happen, and
-  **one-way pushing** lets one body shove another without being pushed back.
+- Joints connect bodies to each other.
+- Ragdolls hand a skinned character's skeleton over to physics. Every bone
+  you pick becomes a capsule, attached to its parent with a joint that limits
+  swing and twist. You can apply forces in the same frame (for a hit or an
+  explosion), and from then on physics drives the pose.
+- Contact modification lets the game change contacts while they're being
+  resolved. One-way pushing lets a body push another without getting pushed
+  back.
 
-## Things that animate
+## Animation
 
-The same day brought skinned meshes: skeletons, glTF skins and GPU skinning.
-On top of them:
+Skinned meshes landed the same day: skeletons, glTF skins and GPU skinning.
+On top of that we added:
 
-- **Animation clips, state machines and layers**, so a character can run and
-  wave at the same time.
-- **Inverse kinematics**, for feet on uneven ground and hands on handles.
-- **Morph targets** (blend shapes) for faces, driven by clips too.
-- **3D audio**, with sounds placed in the world.
+- Animation clips, state machines and layers, so a character can run and wave
+  at the same time.
+- Inverse kinematics, for planting feet on uneven ground and putting hands on
+  handles.
+- Morph targets (blend shapes) for faces, which clips can drive too.
+- 3D audio, with sounds positioned in the world.
 
-## Finding the way
+## Navigation
 
-Navigation meshes are baked from the level, for characters that need to walk
-somewhere on their own. Large levels bake in tiles. Crowd avoidance, which is
-opt-in, keeps agents from walking through each other. Dynamic carving cuts
-holes in the mesh where obstacles move, without baking it again.
+For characters that walk around on their own, you can bake navigation meshes
+from the level. Large levels are baked in tiles. Crowd avoidance is optional
+and stops agents from walking through each other. When obstacles move,
+dynamic carving cuts holes in the navmesh without a full rebake.
 
-Read [3D physics](/guide/physics3d.html) and
-[3D navigation meshes](/guide/navigation3d.html) in the guide to start.
+To get started, see [3D physics](/guide/physics3d.html) and
+[3D navigation meshes](/guide/navigation3d.html) in the guide.
