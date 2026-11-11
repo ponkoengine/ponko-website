@@ -24,7 +24,10 @@ const current = (href: string) => (href === '/blog/' && here.startsWith('/blog')
     <a class="brand" href="/" aria-label="Ponko home"><img src="/brand/ponko-face.svg" width="36" height="28" alt="" /><span>Ponko</span></a>
     <nav class="top-nav" id="top-nav" aria-label="Main">
       <span class="nav-glide" aria-hidden="true"></span>
-      {links.map(([label, href]) => <a class="nav-link" href={href} aria-current={current(href)}>{label}</a>)}
+      {links.map(([label, href]) => {
+        const out = href.startsWith('http');
+        return <a class="nav-link" href={href} aria-current={current(href)} target={out ? '_blank' : undefined} rel={out ? 'noopener' : undefined}>{label}</a>;
+      })}
       <a class="pill small" href="/guide/getting-started.html">Get started</a>
     </nav>
     <button class="menu-button" type="button" aria-expanded="false" aria-controls="top-nav">

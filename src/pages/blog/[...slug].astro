@@ -92,6 +92,14 @@ const minutes = readingMinutes(post.body);
 </Base>
 
 <script>
+  // Links that leave the site open in a new tab. MDX posts get this at build
+  // time (components/mdx/A.astro); this covers plain Markdown posts.
+  document.querySelectorAll<HTMLAnchorElement>('.prose a[href^="http"]:not([target])').forEach((a) => {
+    if (a.host === location.host) return;
+    a.target = '_blank';
+    a.rel = 'noopener';
+  });
+
   // Copy buttons on code blocks.
   document.querySelectorAll<HTMLButtonElement>('.code-copy').forEach((button) => {
     button.addEventListener('click', async () => {
