@@ -323,33 +323,62 @@ const builders: Record<Shape, (kit: Kit) => Field> = {
 
   donut(kit) {
     // The spinning torus from the old ASCII demo: a ring turning on two
-    // axes, shaded by a light above and behind the viewer.
+    // axes, shaded by a light above and behind the viewer. Each dot casts a
+    // ray and finds where it meets the ring, so there are no gaps and every
+    // dot has the shade of the surface nearest to it.
     const { rand } = kit;
     const { cols, rows } = kit.grid;
     const p = rand() * TAU, spinA = 0.55 + rand() * 0.3, spinB = 0.3 + rand() * 0.25;
     const cx = cols * (0.48 + rand() * 0.1), cy = rows * 0.5;
+    // Tube radius, ring radius, distance from the eye, and the scale that
+    // puts the ring at about nine tenths of the picture's height.
     const R1 = 1, R2 = 2, K2 = 5, K1 = (rows * K2 * 0.9) / (2 * (R1 + R2));
-    const depth = new Float32Array(cols * rows);
+    const bound = R1 + R2 + 0.01;
     return perFrame(kit, (t, out) => {
-      depth.fill(0);
       const A = t * spinA + p, B = t * spinB + p * 0.7;
       const cA = Math.cos(A), sA = Math.sin(A), cB = Math.cos(B), sB = Math.sin(B);
-      for (let th = 0; th < TAU; th += 0.09) {
-        const ct = Math.cos(th), st = Math.sin(th);
-        for (let ph = 0; ph < TAU; ph += 0.035) {
-          const cp = Math.cos(ph), sp = Math.sin(ph);
-          const hx = R2 + R1 * ct, hy = R1 * st;
-          const x = hx * (cB * cp + sA * sB * sp) - hy * cA * sB;
-          const y = hx * (sB * cp - sA * cB * sp) + hy * cA * cB;
-          const z = K2 + cA * hx * sp + hy * sA;
-          const ooz = 1 / z;
-          const i = Math.floor(cx + K1 * ooz * x), j = Math.floor(cy - K1 * ooz * y);
-          if (i < 0 || j < 0 || i >= cols || j >= rows) continue;
-          const k = j * cols + i;
-          if (ooz <= depth[k]) continue;
-          depth[k] = ooz;
-          const light = cp * ct * sB - cA * ct * sp - sA * st + cB * (cA * st - ct * sA * sp);
-          out[k] = 0.14 + 0.86 * clamp01(light / Math.SQRT2) ** 0.9;
+      // The ring's own space: its axis is y. Into it: undo the turn about z
+      // (B), then the turn about x (A). Out of it: the other way round.
+      const into = (x: number, y: number, z: number): [number, number, number] => {
+        const x1 = x * cB + y * sB, y1 = -x * sB + y * cB;
+        return [x1, y1 * cA + z * sA, -y1 * sA + z * cA];
+      };
+      const outOf = (x: number, y: number, z: number): [number, number, number] => {
+        const y1 = y * cA - z * sA, z1 = y * sA + z * cA;
+        return [x * cB - y1 * sB, x * sB + y1 * cB, z1];
+      };
+      const [ox, oy, oz] = into(0, 0, -K2);
+      for (let j = 0; j < rows; j++) {
+        for (let i = 0; i < cols; i++) {
+          const wx = (i + 0.5 - cx) / K1, wy = -(j + 0.5 - cy) / K1, len = Math.hypot(wx, wy, 1);
+          const [dx, dy, dz] = into(wx / len, wy / len, 1 / len);
+          // Skip rays that miss the ring's bounding sphere; start at it.
+          const b = ox * dx + oy * dy + oz * dz, c = ox * ox + oy * oy + oz * oz - bound * bound;
+          const disc = b * b - c;
+          if (disc < 0) continue;
+          let s = -b - Math.sqrt(disc);
+          const far = -b + Math.sqrt(disc);
+          let hit = false;
+          for (let step = 0; step < 64 && s < far; step++) {
+            const px = ox + dx * s, py = oy + dy * s, pz = oz + dz * s;
+            const d = Math.hypot(Math.hypot(px, pz) - R2, py) - R1;
+            if (d < 1e-3) {
+              hit = true;
+              break;
+            }
+            s += d;
+          }
+          if (!hit) continue;
+          const px = ox + dx * s, py = oy + dy * s, pz = oz + dz * s;
+          const ring = Math.hypot(px, pz) || 1;
+          const [, ny, nz] = outOf(
+            (px - (px / ring) * R2) / R1,
+            py / R1,
+            (pz - (pz / ring) * R2) / R1,
+          );
+          // Light from above and from the viewer's side: (0, 1, -1).
+          const light = (ny - nz) / Math.SQRT2;
+          out[j * cols + i] = 0.24 + 0.76 * clamp01(light) ** 0.9;
         }
       }
     });
