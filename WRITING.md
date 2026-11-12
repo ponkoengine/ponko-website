@@ -50,9 +50,13 @@ rarely match. To choose them yourself:
 art: { palette: amber, shape: sphere }
 ```
 
-- `palette`: `ember`, `amber`, `rose`, `sage`, `dusk` or `sea`.
+- `palette`, from dark to light in one hue: `ember`, `amber`, `rose`, `sage`,
+  `dusk`, `sea`, `ice` or `ash`; or through several hues: `lava`, `synth`,
+  `sunset`, `boreal`, `neon` or `acid`.
 - `shape`: `blobs`, `ripple`, `waves`, `sphere`, `swirl`, `interference`,
-  `aurora`, `plasma` or `orbits`.
+  `aurora`, `plasma`, `orbits`, `life` (Conway's Game of Life), `donut` (a
+  spinning torus), `tunnel`, `starfield`, `rain`, `fire`, `contours`, `moire`,
+  `lissajous`, `voronoi` or `equalizer`.
 - `seed`: any word. Change it to get a different picture of the same kind.
 
 ### Cover image

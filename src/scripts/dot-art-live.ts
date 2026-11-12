@@ -9,7 +9,7 @@ export function liveArt(root: HTMLElement) {
   const cols = Number(root.dataset.cols), rows = Number(root.dataset.rows);
   const options = JSON.parse(root.dataset.art ?? '{}') as ArtOptions;
   const aspect = cols / rows;
-  const { colours, at } = artField(root.dataset.id ?? '', options, aspect);
+  const { colours, at } = artField(root.dataset.id ?? '', options, aspect, { cols, rows });
 
   const canvas = document.createElement('canvas');
   canvas.setAttribute('aria-hidden', 'true');

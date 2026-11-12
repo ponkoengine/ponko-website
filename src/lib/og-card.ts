@@ -55,7 +55,7 @@ function dots(id: string, art: ArtOptions) {
   const cell = 15;
   const cols = Math.ceil((CARD.width - ART_X) / cell), rows = Math.ceil(CARD.height / cell);
   const aspect = cols / rows;
-  const { colours, at } = artField(id, art, aspect);
+  const { colours, at } = artField(id, art, aspect, { cols, rows });
   let rings = '';
   let fills = '';
   for (let j = 0; j < rows; j++) {
