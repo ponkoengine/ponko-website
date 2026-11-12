@@ -10,6 +10,7 @@ export async function GET(context: APIContext) {
     ['/'],
     ['/guide/'],
     ['/blog/', posts[0] && day(posts[0].data.date)],
+    ['/dot-lab/'],
     ...posts.map((p): [string, string] => [postHref(p), day(p.data.updated ?? p.data.date)]),
     ...tagsOf(posts).map((t): [string] => [`/blog/tags/${t.slug}/`]),
   ];

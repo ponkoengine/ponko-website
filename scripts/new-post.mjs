@@ -3,18 +3,9 @@
 // folder of its own for pictures. See WRITING.md.
 import { mkdir, writeFile, access } from "node:fs/promises";
 import { resolve } from "node:path";
+import { slugify } from "../src/lib/slug.mjs";
 
-export function slugify(title) {
-  return title
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/['’]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60)
-    .replace(/-+$/, "");
-}
+export { slugify };
 
 export function template(title, date) {
   const quoted = JSON.stringify(title);

@@ -4,17 +4,19 @@
 // anyone who asks for reduced motion; they keep the still picture.
 import { artField, dotFor, dotWidth, SIZES, type ArtOptions } from '../lib/dot-art';
 
-export function liveArt(root: HTMLElement) {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+/** Starts the picture moving. Returns a function that stops it again. */
+export function liveArt(root: HTMLElement): () => void {
+  const none = () => {};
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return none;
   const cols = Number(root.dataset.cols), rows = Number(root.dataset.rows);
   const options = JSON.parse(root.dataset.art ?? '{}') as ArtOptions;
   const aspect = cols / rows;
-  const { colours, at } = artField(root.dataset.id ?? '', options, aspect);
+  const { colours, at } = artField(root.dataset.id ?? '', options, aspect, { cols, rows });
 
   const canvas = document.createElement('canvas');
   canvas.setAttribute('aria-hidden', 'true');
   const ctx = canvas.getContext('2d');
-  if (!ctx) return;
+  if (!ctx) return none;
   root.append(canvas);
 
   // Laid out like the SVG's "slice": cells stay square and the grid is
@@ -102,13 +104,25 @@ export function liveArt(root: HTMLElement) {
   resize();
   draw(0);
   root.classList.add('live');
-  new ResizeObserver(() => {
+  const sized = new ResizeObserver(() => {
     resize();
     draw(((performance.now() - start) / 1000) * PACE);
-  }).observe(root);
-  new IntersectionObserver(([e]) => {
+  });
+  sized.observe(root);
+  const seen = new IntersectionObserver(([e]) => {
     visible = e.isIntersecting;
     run();
-  }).observe(root);
+  });
+  seen.observe(root);
   document.addEventListener('visibilitychange', run);
+  return () => {
+    sized.disconnect();
+    seen.disconnect();
+    document.removeEventListener('visibilitychange', run);
+    cancelAnimationFrame(frame);
+    frame = 0;
+    visible = false;
+    canvas.remove();
+    root.classList.remove('live');
+  };
 }
