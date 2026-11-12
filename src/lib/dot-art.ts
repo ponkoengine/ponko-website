@@ -424,12 +424,13 @@ const builders: Record<Shape, (kit: Kit) => Field> = {
   },
 
   fire({ fbm, rand, aspect }) {
-    // Flames: turbulence that rises from the bottom, hottest at its base.
+    // Flames: turbulence that rises, hottest at its base. The base sits a
+    // little above the bottom, where a post's hero still shows it.
     const p = rand() * 16, sway = 0.3 + rand() * 0.3;
     return (x, y, t) => {
       const u = x / aspect;
       const n = fbm(x * 3.2 + Math.sin(y * 3 + t * 0.7) * sway + p, y * 2.6 + t * 1.5);
-      const heat = y * 1.55 - 0.45 + (n - 0.5) * 1.5 - Math.abs(u - 0.6) * 0.35;
+      const heat = (y + 0.28) * 1.55 - 0.45 + (n - 0.5) * 1.5 - Math.abs(u - 0.6) * 0.35;
       return clamp01(heat) ** 1.25;
     };
   },
@@ -630,6 +631,20 @@ export function drawArt(id: string, options: ArtOptions, cols: number, rows: num
       .map((b) => ({ color: b.color, width: Number(b.width.toFixed(3)), d: b.d.join('') })),
     ring: colours[0],
   };
+}
+
+/** A still picture as SVG markup: its dots over a faint grid of empty rings. */
+export function artSvg(art: Art, pattern: string) {
+  const { cols, rows } = art;
+  const dots = art.groups
+    .map((g) => `<path d="${g.d}" stroke="${g.color}" stroke-width="${g.width}" stroke-linecap="round" fill="none"/>`)
+    .join('');
+  return (
+    `<svg viewBox="0 0 ${cols} ${rows}" preserveAspectRatio="xMidYMid slice">` +
+    `<defs><pattern id="${pattern}" width="1" height="1" patternUnits="userSpaceOnUse">` +
+    `<circle cx="0.5" cy="0.5" r="0.3" fill="none" stroke="${art.ring}" stroke-width="0.06"/></pattern></defs>` +
+    `<rect width="${cols}" height="${rows}" fill="url(#${pattern})"/>${dots}</svg>`
+  );
 }
 
 /** Colours for the soft glow behind a post's hero, and where its blobs sit. */

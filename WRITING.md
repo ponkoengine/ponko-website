@@ -59,6 +59,10 @@ art: { palette: amber, shape: sphere }
   `lissajous`, `voronoi` or `equalizer`.
 - `seed`: any word. Change it to get a different picture of the same kind.
 
+To try them all, open the dot lab at [/dot-lab/](https://ponko.dev/dot-lab/)
+(`npm run dev`, then http://127.0.0.1:4321/dot-lab/). It shows your title over
+each choice as a post would look, and gives you the `art:` line to copy.
+
 ### Cover image
 
 A `cover` is optional. It's shown under the title and in the list of posts.
