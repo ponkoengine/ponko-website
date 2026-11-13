@@ -1553,12 +1553,13 @@ checksum = "bc6355899e1c9462875b6757c79f3caa011a1fdae12bbb1a2e72dd1f234f8336"
 
 [[package]]
 name = "ponko"
-version = "0.0.1"
-source = "git+https://github.com/ponkoengine/ponko?rev=96d79660e0a9a47212cfe574641990d5a264db84#96d79660e0a9a47212cfe574641990d5a264db84"
+version = "0.1.0"
+source = "git+https://github.com/ponkoengine/ponko?rev=c66d7c4f030f5e844bfacd62cc1f7b854d974d2e#c66d7c4f030f5e844bfacd62cc1f7b854d974d2e"
 dependencies = [
  "bytemuck",
  "epaint_default_fonts",
  "fontdue",
+ "getrandom 0.4.3",
  "glam",
  "gltf",
  "half",
@@ -1582,11 +1583,23 @@ dependencies = [
 
 [[package]]
 name = "ponko_ecs"
-version = "0.0.1"
-source = "git+https://github.com/ponkoengine/ponko?rev=96d79660e0a9a47212cfe574641990d5a264db84#96d79660e0a9a47212cfe574641990d5a264db84"
+version = "0.1.0"
+source = "git+https://github.com/ponkoengine/ponko?rev=c66d7c4f030f5e844bfacd62cc1f7b854d974d2e#c66d7c4f030f5e844bfacd62cc1f7b854d974d2e"
 dependencies = [
+ "ponko_macros",
  "rayon",
  "serde",
+]
+
+[[package]]
+name = "ponko_macros"
+version = "0.1.0"
+source = "git+https://github.com/ponkoengine/ponko?rev=c66d7c4f030f5e844bfacd62cc1f7b854d974d2e#c66d7c4f030f5e844bfacd62cc1f7b854d974d2e"
+dependencies = [
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
 ]
 
 [[package]]

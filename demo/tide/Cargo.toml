@@ -15,7 +15,7 @@ path = "src/main.rs"
 [dependencies]
 # Public engine, pinned to an exact commit so the demo rebuilds identically.
 # Only a window and 3D: no audio, inspector or gamepads, to keep the wasm small.
-ponko = { git = "https://github.com/ponkoengine/ponko", rev = "96d79660e0a9a47212cfe574641990d5a264db84", default-features = false, features = ["window", "3d"] }
+ponko = { git = "https://github.com/ponkoengine/ponko", rev = "c66d7c4f030f5e844bfacd62cc1f7b854d974d2e", default-features = false, features = ["window", "3d"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "=0.2.130"

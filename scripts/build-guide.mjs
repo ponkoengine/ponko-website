@@ -11,6 +11,7 @@ import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { fetchBytes } from "./fetch.mjs";
+import { engineVersions, rewriteApiLinks } from "./api-links.mjs";
 
 // Only fetch the public engine. Never read sibling checkouts during a deployment.
 const cache = resolve(".cache");
@@ -108,19 +109,16 @@ for (const name of await readdir("dist/guide")) {
     await copyFile(resolve("public", `favicon.${icon[1]}`), resolve("dist/guide", name));
 }
 await copyFile("scripts/guide-brand.css", "dist/guide/ponko-brand.css");
-// The engine book also supports local rustdoc; this deployment uses docs.rs.
+// The engine book also supports local rustdoc; this deployment uses docs.rs,
+// at the crate versions of the engine revision being built.
+const apiVersions = await engineVersions(source);
 for (const name of await readdir("dist/guide")) {
   if (!name.endsWith(".html")) continue;
   const path = resolve("dist/guide", name);
   const html = await readFile(path, "utf8");
   await writeFile(
     path,
-    html
-      .replace(
-        /href="api\/(ponko(?:_ecs|_ffi)?)\/([^"]*)"/g,
-        (_, crate, page) =>
-          `href="https://docs.rs/${crate}/0.0.1/${crate}/${page}"`,
-      )
+    rewriteApiLinks(html, apiVersions)
       .replace(
         "</head>",
         '<link rel="stylesheet" href="/guide/ponko-brand.css">\n</head>',
