@@ -38,7 +38,7 @@ const chapters = [
     id: 'ship', scene: 'globe', tag: 'Ship',
     title: 'Desktop, browser, or inside your C++.',
     body: 'Build for the web with WebGPU or WebGL2 and send people a link. Or drive the engine from native code through its C API and C++17 wrapper.',
-    points: [['A link is a release', 'The game below is a 2.1 MB web build.'], ['Bring your own code', 'Call Ponko from C and C++, or call them from Ponko.']],
+    points: [['A link is a release', 'The game below is a 2.4 MB web build.'], ['Bring your own code', 'Call Ponko from C and C++, or call them from Ponko.']],
     link: ['Building for the web', 'web.html'],
   },
 ];
@@ -59,7 +59,7 @@ const code: [number, string][] = [
   [7, `            ctx.world.query::&lt;&amp;${S('mut')} Transform2D&gt;().for_each(|t| t.rotation += dt);`],
   [7, `        })`],
   [1, `        .run(|ctx| {`],
-  [2, `            ctx.clear(Color::hex(0x2A1916));`],
+  [2, `            ctx.gfx.clear(Color::hex(0x2A1916));`],
   [3, `            ${S('let')} sprite = ctx.load_texture(${Q('"crab.png"')});`],
   [3, `            ${S('let mut')} position = vec2(400.0, 300.0);`],
   [6, `            ctx.world.spawn_batch((0..1_000).map(|i| {`],
@@ -74,14 +74,14 @@ const code: [number, string][] = [
   [5, `                ${S('if')} ctx.key_down(Key::Left) {`],
   [5, `                    position.x -= 200.0 * ctx.dt();`],
   [5, `                }`],
-  [3, `                ctx.draw(&amp;sprite, position);`],
+  [3, `                ctx.draw(sprite, position);`],
   [1, `            }`],
   [1, `        });`],
   [1, `}`],
 ];
 const steps = [
   ['A window', '<code>Game::new</code> opens an 800 × 600 window. The closure given to <code>run</code> is your setup: it runs once and returns the closure that runs every frame.'],
-  ['A colour', '<code>ctx.clear</code> fills each frame with one colour before anything else is drawn.'],
+  ['A colour', '<code>ctx.gfx.clear</code> fills each frame with one colour before anything else is drawn.'],
   ['A sprite', '<code>load_texture</code> loads <code>assets/crab.png</code>, and <code>ctx.draw</code> draws it every frame.'],
   ['Input', 'Hold <kbd>→</kbd> and the crab moves right at 200 pixels per second. Multiplying by <code>ctx.dt()</code> keeps that speed the same at any frame rate.'],
   ['Both ways', 'The same again for <kbd>←</kbd>.'],
@@ -162,13 +162,13 @@ const crabRects = crab
               <img src="/play/tide/poster.webp" alt="Tide: a grid board with towers, and streams of units walking from four gates toward a core in the middle" width="1200" height="750" loading="lazy" decoding="async" />
               <a class="run" id="run" href="/play/tide/" target="_blank" rel="noopener">
                 <span class="pill">Play Tide</span>
-                <span class="run-note">Opens in a new tab. 2.1 MB, needs WebGPU</span>
+                <span class="run-note">Opens in a new tab. 2.4 MB, needs WebGPU</span>
               </a>
             </div>
             <dl class="boards">
               <div><dt><canvas class="board" data-text="12,000" role="img" aria-label="12,000"></canvas></dt><dd>units on the board, each one updated every frame</dd></div>
               <div><dt><canvas class="board" data-text="1" role="img" aria-label="1"></canvas></dt><dd>instanced mesh draws all of them</dd></div>
-              <div><dt><canvas class="board" data-text="2.1 MB" role="img" aria-label="2.1 MB"></canvas></dt><dd>to download, and nothing to install.</dd></div>
+              <div><dt><canvas class="board" data-text="2.4 MB" role="img" aria-label="2.4 MB"></canvas></dt><dd>to download, and nothing to install.</dd></div>
             </dl>
           </div>
         </div>
@@ -217,7 +217,7 @@ const crabRects = crab
           <div class="row">
             <h2 id="early-title">It's early. That's the good part.</h2>
             <div class="body">
-              <p>Ponko is at version 0.0.1. It already runs real games, and the one further up this page is one of them. The API still changes between versions, so expect to update your code as it settles.</p>
+              <p>Ponko is at version 0.1. It already runs real games, and the one further up this page is one of them. It is still 0.x, so the API can change between versions. Each release says what changed, and the <a href="/guide/migrating-to-0.1.html">migration page</a> maps every renamed item from 0.0.1.</p>
               <p>Arrive now and you get a say in what it becomes. Bug reports, small fixes and clearer examples all change the engine.</p>
               <ul class="links">
                 <li><a href={`${gh}/blob/main/ROADMAP.md`} target="_blank" rel="noopener"><span>Roadmap</span><span>What works and what's next</span></a></li>

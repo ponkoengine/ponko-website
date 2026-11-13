@@ -14,7 +14,9 @@
 //! The page passes pointer input in through the exported functions at the
 //! bottom (mouse and touch alike). Keys: Enter starts, Space overcharges.
 
-use ponko::*;
+use ponko::d3::*;
+use ponko::perf::Instant;
+use ponko::prelude::*;
 use std::cell::{Cell, RefCell};
 
 /// Cells per side of the board; one cell is one meter.
@@ -328,6 +330,7 @@ enum Life {
     Dying,
 }
 
+#[derive(Component)]
 struct Unit {
     life: Life,
     kind: Kind,
@@ -340,12 +343,19 @@ struct Unit {
     zapped: bool,
 }
 
+#[derive(Component)]
 struct Rising(f32);
+#[derive(Component)]
 struct Core;
+#[derive(Component)]
 struct Ghost;
+#[derive(Component)]
 struct GhostRing;
+#[derive(Component)]
 struct Spark(usize);
+#[derive(Component)]
 struct Route(usize);
+#[derive(Component)]
 struct GateMark(usize);
 
 #[derive(Clone, Copy)]
@@ -478,9 +488,9 @@ fn place_tower(ctx: &mut Ctx, c: usize) {
     ));
     let bolt = ctx.world.spawn((
         Transform3D::default(),
-        Line3D {
-            blend: ParticleBlend3D::Additive,
-            ..Line3D::new(Vec::new(), 0.06, Color::WHITE)
+        Line {
+            blend: ParticleBlend::Additive,
+            ..Line::new(Vec::new(), 0.06, Color::WHITE)
         },
     ));
     let board = ctx.world.resource_mut::<Board>();
@@ -542,7 +552,7 @@ fn reset(ctx: &mut Ctx) {
 /// Which cell the page's pointer is over.
 fn pointed_cell(ctx: &Ctx, at: Vec2) -> Option<usize> {
     let size = ctx.window_size();
-    let (from, dir) = ctx.camera3d.screen_ray(at * size);
+    let (from, dir) = ctx.scene3d.camera.screen_ray(at * size);
     if dir.y >= -1e-4 {
         return None;
     }
@@ -592,11 +602,11 @@ fn control(ctx: &mut Ctx) {
     let size = ctx.window_size();
     let aspect = (size.x / size.y.max(1.0)).max(0.3);
     let target = vec3(0.0, 0.0, 1.0);
-    let distance = fit_distance(target, aspect, ctx.camera3d.fov_y);
-    ctx.camera3d.position = target + vec3(0.0, 0.84, 0.54).normalize() * distance;
-    ctx.camera3d.look_at(target);
-    ctx.sky.fog_start = distance + 8.0;
-    ctx.sky.fog_end = distance + 60.0;
+    let distance = fit_distance(target, aspect, ctx.scene3d.camera.fov_y);
+    ctx.scene3d.camera.position = target + vec3(0.0, 0.84, 0.54).normalize() * distance;
+    ctx.scene3d.camera.look_at(target);
+    ctx.scene3d.sky.fog_start = distance + 8.0;
+    ctx.scene3d.sky.fog_end = distance + 60.0;
 
     let start = START.with(|s| s.replace(false)) || ctx.key_pressed(Key::Enter);
     let overcharge = OVERCHARGE.with(|s| s.replace(false)) || ctx.key_pressed(Key::Space);
@@ -651,7 +661,7 @@ fn control(ctx: &mut Ctx) {
     };
     for (t, line, _) in ctx
         .world
-        .query::<(&mut Transform3D, &mut Line3D, &Ghost)>()
+        .query::<(&mut Transform3D, &mut Line, &Ghost)>()
         .iter()
     {
         match (hover, can) {
@@ -735,7 +745,7 @@ fn waves(ctx: &mut Ctx) {
 fn tide(ctx: &mut Ctx) {
     let started = Instant::now();
     let dt = ctx.dt().min(0.05);
-    let now = ctx.time() as f32;
+    let now = ctx.time.elapsed() as f32;
     let s = ctx.world.resource_mut::<State>();
     let playing = s.phase == Phase::Playing;
     let mut to_spawn = 0u32;
@@ -749,7 +759,7 @@ fn tide(ctx: &mut Ctx) {
     }
     let (gates, hp_scale, runners, brutes) = (s.gates, s.hp_scale, s.runners, s.brutes);
     let gate_list: Vec<usize> = (0..4).filter(|g| gates & (1 << g) != 0).collect();
-    let mut rng = Rng::new(ctx.frame() ^ 0x5EED_1234);
+    let mut rng = Rng::new(ctx.time.frame() ^ 0x5EED_1234);
 
     // A copy of the board's maps (a few kilobytes), so the query can borrow the world.
     let board = ctx.world.resource::<Board>();
@@ -902,7 +912,7 @@ fn tide(ctx: &mut Ctx) {
 /// Each tower's lightning jumps between the nearest units in its range.
 fn towers(ctx: &mut Ctx) {
     let dt = ctx.dt().min(0.05);
-    let now = ctx.time() as f32;
+    let now = ctx.time.elapsed() as f32;
     let s = ctx.world.resource::<State>();
     let over = s.overcharge > 0.0;
     let (chain, dps) = if over {
@@ -934,7 +944,7 @@ fn towers(ctx: &mut Ctx) {
         }
         picked.sort_unstable_by(|a, b| a.0.total_cmp(&b.0));
         picked.truncate(chain);
-        let Some(line) = ctx.world.get_mut::<Line3D>(bolt) else {
+        let Some(line) = ctx.world.get_mut::<Line>(bolt) else {
             continue;
         };
         line.points.clear();
@@ -969,8 +979,8 @@ fn towers(ctx: &mut Ctx) {
 
 /// Sparks, routes, gates, the core, the towers' glow and the HUD.
 fn present(ctx: &mut Ctx) {
-    let fps = ctx.fps();
-    let now = ctx.time() as f32;
+    let fps = ctx.time.fps();
+    let now = ctx.time.elapsed() as f32;
 
     // Sparks where units died or broke through.
     let crowd = std::mem::take(ctx.world.resource_mut::<Crowd>());
@@ -990,7 +1000,7 @@ fn present(ctx: &mut Ctx) {
             next += 1;
         }
         ctx.world
-            .query::<(&mut Transform3D, &mut ParticleEmitter3D, &Spark)>()
+            .query::<(&mut Transform3D, &mut ParticleEmitter, &Spark)>()
             .for_each(|(t, emitter, spark)| {
                 if let Some((p, count)) = slots[spark.0] {
                     t.position = p;
@@ -1029,7 +1039,7 @@ fn present(ctx: &mut Ctx) {
         })
     });
     let blink = 0.5 + 0.5 * (now * 6.0).sin();
-    for (line, g) in ctx.world.query::<(&mut Line3D, &GateMark)>().iter() {
+    for (line, g) in ctx.world.query::<(&mut Line, &GateMark)>().iter() {
         let bit = 1 << g.0;
         line.color = if open & bit != 0 {
             Color::rgba(2.4, 0.7, 0.5, 1.0)
@@ -1057,7 +1067,7 @@ fn present(ctx: &mut Ctx) {
             }
         })
         .collect();
-    for (line, r) in ctx.world.query::<(&mut Line3D, &Route)>().iter() {
+    for (line, r) in ctx.world.query::<(&mut Line, &Route)>().iter() {
         line.points.clone_from(&routes[r.0]);
         let a = if soon != 0 { 0.35 + 0.35 * blink } else { 0.28 };
         line.color = Color::rgba(1.6 * a, 0.5 * a, 0.35 * a, 1.0);
@@ -1079,7 +1089,7 @@ fn present(ctx: &mut Ctx) {
     let look = *ctx.world.resource::<Look>();
     let strength = if over { 9.0 } else { 3.0 };
     if (look.cap_desc_strength - strength).abs() > 0.01 {
-        ctx.update_material(
+        ctx.gfx.update_material(
             look.cap_material,
             cap_desc(
                 if over {
@@ -1095,16 +1105,15 @@ fn present(ctx: &mut Ctx) {
 }
 
 fn cap_desc(color: Color, strength: f32) -> MaterialDesc {
-    MaterialDesc {
-        shader: GLOW_SHADER.with(|s| s.get()),
-        custom: [
-            Vec4::new(strength, 0.0, 0.0, 0.0),
-            Vec4::ZERO,
-            Vec4::ZERO,
-            Vec4::ZERO,
-        ],
-        ..MaterialDesc::color(color)
-    }
+    let mut desc = MaterialDesc::color(color);
+    desc.shader = GLOW_SHADER.with(|s| s.get());
+    desc.custom = [
+        Vec4::new(strength, 0.0, 0.0, 0.0),
+        Vec4::ZERO,
+        Vec4::ZERO,
+        Vec4::ZERO,
+    ];
+    desc
 }
 
 thread_local! {
@@ -1142,33 +1151,34 @@ fn circle(segments: usize) -> Vec<Vec3> {
 }
 
 fn setup(ctx: &mut Ctx, pool: usize) {
-    ctx.clear(Color::hex(0x0B0E0B));
-    ctx.sky.atmosphere = false;
-    ctx.sky.fog_color = Color::hex(0x0B0E0B);
-    ctx.lighting.sun_direction = vec3(-0.45, -1.0, -0.3);
-    ctx.lighting.sun_intensity = 1.2;
-    ctx.lighting.sun_color = Color::hex(0xDDE8CF);
-    ctx.lighting.ambient_intensity = 0.5;
-    ctx.lighting.sky_color = Color::hex(0x2A3326);
-    ctx.lighting.ground_color = Color::hex(0x0B0E0B);
-    ctx.post.bloom = 0.7;
-    ctx.post.bloom_threshold = 0.9;
-    ctx.post.vignette = 0.3;
-    ctx.camera3d.far = 300.0;
-    ctx.camera3d.fov_y = 0.62;
+    ctx.gfx.clear(Color::hex(0x0B0E0B));
+    ctx.scene3d.sky.atmosphere = false;
+    ctx.scene3d.sky.fog_color = Color::hex(0x0B0E0B);
+    ctx.scene3d.lighting.sun_direction = vec3(-0.45, -1.0, -0.3);
+    ctx.scene3d.lighting.sun_intensity = 1.2;
+    ctx.scene3d.lighting.sun_color = Color::hex(0xDDE8CF);
+    ctx.scene3d.lighting.ambient_intensity = 0.5;
+    ctx.scene3d.sky.sky_color = Color::hex(0x2A3326);
+    ctx.scene3d.sky.ground_color = Color::hex(0x0B0E0B);
+    ctx.scene3d.post.bloom = 0.7;
+    ctx.scene3d.post.bloom_threshold = 0.9;
+    ctx.scene3d.post.vignette = 0.3;
+    ctx.scene3d.camera.far = 300.0;
+    ctx.scene3d.camera.fov_y = 0.62;
 
-    let glow = ctx.create_shader("glow", GLOW);
+    let glow = ctx.gfx.create_shader("glow", GLOW);
     GLOW_SHADER.with(|s| s.set(Some(glow)));
-    let glowing =
-        |ctx: &mut Ctx, color: Color, strength: f32| ctx.create_material(cap_desc(color, strength));
+    let glowing = |ctx: &mut Ctx, color: Color, strength: f32| {
+        ctx.gfx.create_material(cap_desc(color, strength))
+    };
 
-    let floor_shader = ctx.create_shader("floor", FLOOR);
-    let floor_material = ctx.create_material(MaterialDesc {
-        shader: Some(floor_shader),
-        roughness: 0.6,
-        ..MaterialDesc::color(Color::hex(0x161B15))
+    let floor_shader = ctx.gfx.create_shader("floor", FLOOR);
+    let floor_material = ctx.gfx.create_material({
+        let mut desc = MaterialDesc::color(Color::hex(0x161B15)).with_roughness(0.6);
+        desc.shader = Some(floor_shader);
+        desc
     });
-    let floor = ctx.create_mesh(&MeshData::plane(200.0), floor_material);
+    let floor = ctx.gfx.create_mesh(&MeshData::plane(200.0), floor_material);
     ctx.world.spawn((Transform3D::default(), Model::new(floor)));
 
     // The board's frame, the four gates and their routes.
@@ -1181,9 +1191,9 @@ fn setup(ctx: &mut Ctx, pool: usize) {
     ];
     ctx.world.spawn((
         Transform3D::at(Vec3::Y * 0.02).scaled(HALF),
-        Line3D {
-            blend: ParticleBlend3D::Additive,
-            ..Line3D::new(
+        Line {
+            blend: ParticleBlend::Additive,
+            ..Line::new(
                 square.clone(),
                 0.06 / HALF,
                 Color::rgba(0.4, 0.6, 0.25, 0.8),
@@ -1202,17 +1212,17 @@ fn setup(ctx: &mut Ctx, pool: usize) {
     {
         ctx.world.spawn((
             Transform3D::at(Vec3::Y * 0.05),
-            Line3D {
-                blend: ParticleBlend3D::Additive,
-                ..Line3D::new(vec![from, to], 0.22, Color::WHITE)
+            Line {
+                blend: ParticleBlend::Additive,
+                ..Line::new(vec![from, to], 0.22, Color::WHITE)
             },
             GateMark(g),
         ));
         ctx.world.spawn((
             Transform3D::default(),
-            Line3D {
-                blend: ParticleBlend3D::Additive,
-                ..Line3D::new(Vec::new(), 0.07, Color::WHITE)
+            Line {
+                blend: ParticleBlend::Additive,
+                ..Line::new(Vec::new(), 0.07, Color::WHITE)
             },
             Route(g),
         ));
@@ -1220,24 +1230,24 @@ fn setup(ctx: &mut Ctx, pool: usize) {
 
     // The core.
     let core_material = glowing(ctx, Color::hex(0xC0FA73), 4.0);
-    let core = ctx.create_mesh(&MeshData::cube(1.1), core_material);
+    let core = ctx.gfx.create_mesh(&MeshData::cube(1.1), core_material);
     ctx.world.spawn((
         Transform3D::at(vec3(0.0, 1.0, 0.0)),
         Model::new(core),
         Core,
-        PointLight3D {
+        PointLight {
             color: Color::hex(0xC0FA73),
             intensity: 50.0,
             range: 9.0,
             ..Default::default()
         },
     ));
-    let pad = ctx.create_material(MaterialDesc {
-        roughness: 0.5,
-        metallic: 0.6,
-        ..MaterialDesc::color(Color::hex(0x2B3428))
-    });
-    let base = ctx.create_mesh(&MeshData::cube(1.0), pad);
+    let pad = ctx.gfx.create_material(
+        MaterialDesc::color(Color::hex(0x2B3428))
+            .with_roughness(0.5)
+            .with_metallic(0.6),
+    );
+    let base = ctx.gfx.create_mesh(&MeshData::cube(1.0), pad);
     ctx.world.spawn((
         Transform3D {
             scale: vec3(1.9, 0.16, 1.9),
@@ -1247,14 +1257,14 @@ fn setup(ctx: &mut Ctx, pool: usize) {
     ));
 
     // Towers: a dark pillar with a glowing cap.
-    let stone = ctx.create_material(MaterialDesc {
-        roughness: 0.45,
-        metallic: 0.3,
-        ..MaterialDesc::color(Color::hex(0x2E372B))
-    });
-    let pillar = ctx.create_mesh(&MeshData::cube(1.0), stone);
+    let stone = ctx.gfx.create_material(
+        MaterialDesc::color(Color::hex(0x2E372B))
+            .with_roughness(0.45)
+            .with_metallic(0.3),
+    );
+    let pillar = ctx.gfx.create_mesh(&MeshData::cube(1.0), stone);
     let cap_material = glowing(ctx, Color::hex(0xC0FA73), 3.0);
-    let cap = ctx.create_mesh(&MeshData::cube(1.0), cap_material);
+    let cap = ctx.gfx.create_mesh(&MeshData::cube(1.0), cap_material);
     ctx.world.insert_resource(Look {
         pillar,
         cap,
@@ -1266,17 +1276,17 @@ fn setup(ctx: &mut Ctx, pool: usize) {
     let ghost: Vec<Vec3> = square.iter().map(|p| *p * 0.46).collect();
     ctx.world.spawn((
         Transform3D::default().scaled(0.0),
-        Line3D {
-            blend: ParticleBlend3D::Additive,
-            ..Line3D::new(ghost, 0.05, Color::WHITE)
+        Line {
+            blend: ParticleBlend::Additive,
+            ..Line::new(ghost, 0.05, Color::WHITE)
         },
         Ghost,
     ));
     ctx.world.spawn((
         Transform3D::default().scaled(0.0),
-        Line3D {
-            blend: ParticleBlend3D::Additive,
-            ..Line3D::new(
+        Line {
+            blend: ParticleBlend::Additive,
+            ..Line::new(
                 circle(64),
                 0.035 / TOWER_RANGE,
                 Color::rgba(0.5, 0.8, 0.3, 0.6),
@@ -1287,25 +1297,24 @@ fn setup(ctx: &mut Ctx, pool: usize) {
 
     // A pool of spark emitters, reused round robin.
     for i in 0..SPARKS {
-        let emitter = ParticleEmitter3D::new(ParticleSettings3D {
-            rate: 0.0,
-            burst: 0,
-            lifetime: (0.25, 0.6),
-            speed: (1.5, 4.5),
-            shape: ParticleShape3D::Sphere { radius: 0.1 },
-            gravity: vec3(0.0, -6.0, 0.0),
-            drag: 1.5,
-            size: (0.05, 0.12),
-            size_over_life: ParticleCurve::new(vec![(0.0, 1.0), (1.0, 0.0)]),
-            color_over_life: ParticleGradient::new(vec![
+        let mut settings = ParticleSettings::default()
+            .with_rate(0.0)
+            .with_burst(0)
+            .with_shape(ParticleShape::Sphere { radius: 0.1 })
+            .with_gravity(vec3(0.0, -6.0, 0.0))
+            .with_drag(1.5)
+            .with_size_over_life(ParticleCurve::new(vec![(0.0, 1.0), (1.0, 0.0)]))
+            .with_color_over_life(ParticleGradient::new(vec![
                 (0.0, Color::rgba(3.0, 2.2, 1.2, 1.0)),
                 (1.0, Color::rgba(1.2, 0.3, 0.1, 0.0)),
-            ]),
-            blend: ParticleBlend3D::Additive,
-            max_particles: 64,
-            seed: i as u64 + 1,
-            ..Default::default()
-        });
+            ]))
+            .with_blend(ParticleBlend::Additive)
+            .with_max_particles(64)
+            .with_seed(i as u64 + 1);
+        settings.lifetime = (0.25, 0.6);
+        settings.speed = (1.5, 4.5);
+        settings.size = (0.05, 0.12);
+        let emitter = ParticleEmitter::new(settings);
         ctx.world
             .spawn((Transform3D::at(PARKED), emitter, Spark(i)));
     }
@@ -1316,8 +1325,8 @@ fn setup(ctx: &mut Ctx, pool: usize) {
     for p in &mut shape.positions {
         p.y *= 0.75;
     }
-    let unit = ctx.create_mesh(&shape, unit_material);
-    ctx.set_mesh_shadows(unit, false);
+    let unit = ctx.gfx.create_mesh(&shape, unit_material);
+    ctx.gfx.set_mesh_shadows(unit, false);
     let batch: Vec<_> = (0..pool)
         .map(|_| {
             (
