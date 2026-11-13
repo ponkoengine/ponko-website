@@ -1,0 +1,215 @@
+---
+title: "Ponko 0.1.0: the API in its intended shape"
+description: The first release with Ponko's API in the shape we meant it to have. Services on Ctx, one prelude, #[derive(Component)], one way to add a system, a complete C++ API and docs for every public item.
+date: 2026-11-13
+tags: [Release, Engine, C++]
+art: { palette: neon, shape: life }
+---
+
+Ponko 0.0.1 came out five days ago. 0.1.0 is out today, and it's the release
+where the API has the shape we meant it to have.
+
+0.0.1 still carried the scaffolding from the rename: old names, aliases,
+around 180 `Ctx` methods that only forwarded to somewhere else, and three
+ways to add a system. 0.1.0 removes all of it. There is now one name and one
+path for each thing, and the compiler tells you when you use an old one.
+
+<Stats>
+  <Stat value="143">commits since 0.0.1</Stat>
+  <Stat value="781">of 794 C functions with a C++ wrapper</Stat>
+  <Stat value="51">chapters in the guide</Stat>
+</Stats>
+
+<Steps>
+
+1. Add it to a project.
+
+   ```sh
+   cargo add ponko
+   ```
+
+2. Or, in `Cargo.toml`:
+
+   ```toml
+   [dependencies]
+   ponko = "0.1"
+   ```
+
+</Steps>
+
+## What a game looks like now
+
+Here is a whole program: 100,000 crabs drifting outward, a system that moves
+them on every core, and one that draws labels.
+
+```rust title="src/main.rs"
+use ponko::prelude::*;
+use ponko::d2::{Sprite, Transform};
+
+#[derive(Component)]
+struct Velocity(Vec2);
+
+#[derive(Component)]
+struct Label(String);
+
+fn main() {
+    Game::new("Drift", 1280, 720)
+        .add(Phase::AfterPhysics, drift)
+        .add(Phase::Draw, labels)
+        .setup(|ctx| {
+            let crab = ctx.load_texture("crab.png");
+            ctx.world.spawn_batch((0..100_000).map(|i| {
+                let a = i as f32 * 0.001;
+                (
+                    Transform::at(vec2(640.0, 360.0)),
+                    Sprite::new(crab),
+                    Velocity(vec2(a.cos(), a.sin()) * 80.0),
+                )
+            }));
+        })
+        .run();
+}
+
+fn drift(ctx: &mut Ctx) {
+    let dt = ctx.dt();
+    ctx.world
+        .query::<(&mut Transform, &Velocity)>()
+        .par_for_each(|(t, v)| t.position += v.0 * dt);
+}
+
+fn labels(ctx: &mut Ctx) {
+    ctx.world.query::<(&Transform, &Label)>().for_each(|(t, label)| {
+        ctx.gfx.draw_text(&label.0, t.position, 16.0, Color::WHITE);
+    });
+}
+```
+
+Four things in it are new in 0.1.0.
+
+### One import
+
+`use ponko::prelude::*;` brings in what a typical game needs: `Game`, `Ctx`,
+the math types, the ECS and the common components. `ponko::d2` and
+`ponko::d3` hold the names for each dimension, so the 3D collider is
+`d3::Collider` and not `Collider3D`. Everything else has a single documented
+home in its module (`ponko::net`, `ponko::render`, `ponko::ui`, ...).
+
+### Components say so
+
+A type becomes a component with `#[derive(Component)]`. Before, any type
+could be one, so it was easy to insert a bare `f32` or an `Entity` by
+mistake and then fail to find it in a query. Now that doesn't compile, and
+the error tells you to add the derive or wrap the value in a type that says
+what it means.
+
+### Services on `Ctx`
+
+`Ctx` is split into fields: `ctx.time`, `ctx.input`, `ctx.gfx`,
+`ctx.audio`, `ctx.ui`, `ctx.assets`, `ctx.perf`, `ctx.net` and
+`ctx.scene3d`. Because they're separate fields, Rust lets you borrow them
+separately. That's why `labels` above can draw with `ctx.gfx` while it's in
+the middle of a `ctx.world` query, which used to be a borrow error.
+
+`Ctx` keeps the calls you use every frame (`dt`, `key_down`, `draw`,
+`load_texture`, `play_sound`, `quit`, ...), so a small game still reads like
+a small game.
+
+### One way to add a system
+
+`Game::add(phase, system)` replaces `late_system`, `sim_system_every`,
+`add_with_access`, `add_view` and the hidden `named_*` versions. Options go
+on the system itself:
+
+```rust
+Game::new("Drive", 1280, 720)
+    .add(Phase::BeforePhysics, steer.named("steer"))
+    .add(Phase::AfterPhysics, spawn_traffic.every(30))
+```
+
+`.named()` gives the system a name for profiles and error messages, and
+`.every(n)` runs it every nth tick. `.access()` declares what a system reads
+and writes, so the optional
+[parallel scheduler](/guide/parallel-systems.html) can run it next to other
+systems. The scheduler gives the same results with any number of threads.
+
+## Also in 0.1.0
+
+The [0.0.1 post](/blog/ponko-0-0-1-and-a-parallel-scheduler/) covered phases,
+plugins, the parallel scheduler and asset streaming. Since then:
+
+- **Change detection you opt into.** Call
+  `world.track_changes::<T>()` once, then filter on `Added<T>` and
+  `Changed<T>`. Components you don't track cost nothing, and filtering on
+  one of them panics with a message saying what to call, instead of quietly
+  starting to track it.
+- **A retained UI** with builders, layout presets, themes, nodes you can
+  find by name, and screen reader support (VoiceOver on macOS with the
+  `accessibility` feature).
+- **GPU tiers and quality presets** fitted to the GPU the game runs on, and
+  optional automatic tuning that adjusts render scale and shadow resolution
+  as GPU load changes.
+- **Tools for agents and tests**: ECS and render inspectors, scripted input
+  scenarios, validation bundles, new MCP tools, and a hardened control
+  endpoint.
+- **A complete game**: `coin_dash`, with menus, rebindable controls, saves
+  and sound, packaged for the desktop and the web and smoke-tested on each.
+
+## C and C++, all the way through
+
+The C ABI didn't change in 0.1.0. It's still version 2, with the same
+`ponko_*` functions and layouts, so native code written against 0.0.1 keeps
+working.
+
+The C++ side is now complete:
+
+- **781 of the 794 C functions have a C++ wrapper.** The other 13 are listed
+  with a reason each; most already have a C++ equivalent (the newer
+  `try_load` loaders, or operators for quaternions).
+- **Every public declaration in `ponko.hpp` is documented**, including units,
+  ownership and what it throws. Editors and Doxygen pick these comments up.
+- **CI keeps it that way.** A check fails the build when a C function has no
+  C++ wrapper, a C++ declaration has no comment, or a C or C++ example in the
+  guide isn't compiled.
+
+Every C and C++ example in the guide is now taken from a file that CI
+compiles, so the examples can't drift from the API.
+
+## Docs for everything
+
+Every public item in the six crates has documentation, and CI fails if a new
+one doesn't. On docs.rs, items behind a Cargo feature are labelled with it
+("Available on crate feature `3d` only"), so you can see what each feature
+turns on.
+
+## What 0.x means from here
+
+The rules are in
+[STABILITY.md](https://github.com/ponkoengine/ponko/blob/main/STABILITY.md):
+
+- **0.1.x patch releases** only add things and fix bugs. `ponko = "0.1"`
+  picks up the newest one, and your code keeps compiling.
+- **0.2.0 and later minor releases** may break things. Each break is listed
+  in the changelog with what to use instead.
+- **1.0** comes when the API stops moving.
+
+<Callout type="tip" title="Upgrading from 0.0.1">
+
+Most code needs three changes: `use ponko::prelude::*;`,
+`#[derive(Component)]` on your components, and the service in front of
+`Ctx` calls (`ctx.input.mouse_down(..)` instead of `ctx.mouse_down(..)`).
+The compiler points out the rest, and the
+[migration table](/guide/migrating-to-0.1.html) lists every old name with its
+replacement.
+
+</Callout>
+
+## Try it
+
+The demo on the home page is now built on 0.1.0:
+
+<Play src="/play/tide/" poster="/play/tide/poster.webp" title="Tide" note="2.4 MB, needs WebGPU" />
+
+Then start with the [guide](/guide/), the
+[API reference](https://docs.rs/ponko/0.1.0/ponko/), or the
+[C and C++ chapter](/guide/c-cpp.html). Bugs and rough edges go in
+[the issue tracker](https://github.com/ponkoengine/ponko/issues).
