@@ -183,7 +183,7 @@ const crabRects = crab
               <p><a class="arrow" href="/guide/getting-started.html">Write it yourself in the tutorial</a></p>
             </div>
           </div>
-          <div class="hello" id="hello-demo" role="group" aria-roledescription="walkthrough" aria-label="Hello, world in seven steps" data-captions={JSON.stringify(captions)}>
+          <div class="hello" id="hello-demo" role="group" aria-roledescription="walkthrough" aria-label="Hello, world in seven steps">
             <div class="code" style={`--lines:${code.length}`}>
               <div class="code-bar"><span>src/main.rs</span><span class="code-meter" aria-hidden="true"><i></i></span></div>
               <pre><code>{code.map(([step, line]) => <span class="ln" data-step={step} hidden={step > 1} set:html={line || ' '} />)}</code></pre>
@@ -196,7 +196,9 @@ const crabRects = crab
                 <svg class="crab" viewBox="0 0 13 8" aria-hidden="true" set:html={crabRects}></svg>
                 <span class="keys" aria-hidden="true"><kbd class="key key-left">←</kbd><kbd class="key key-right">→</kbd></span>
               </div>
-              <p class="step-caption" id="step-caption" set:html={captions[0]}></p>
+              <div class="step-caption" id="step-caption">
+                {captions.map((text, i) => <p class:list={['step-text', { on: i === 0 }]} set:html={text} />)}
+              </div>
               <div class="step-nav">
                 <ol class="step-dots">
                   {steps.map(([title], i) => <li><button type="button" data-go={i + 1} aria-label={`Step ${i + 1}: ${title}`} aria-current={i === 0 ? 'step' : undefined}><span>{title}</span></button></li>)}

@@ -10,12 +10,13 @@ export function hello(root: HTMLElement, still: boolean) {
   const lines = [...root.querySelectorAll<HTMLElement>('.ln')];
   const preview = root.querySelector<HTMLElement>('.game-stage')!;
   const crowd = root.querySelector<HTMLElement>('.crowd');
-  const caption = root.querySelector<HTMLElement>('#step-caption');
   const dots = [...root.querySelectorAll<HTMLButtonElement>('[data-go]')];
   const back = root.querySelector<HTMLButtonElement>('[data-step-back]');
   const ahead = root.querySelector<HTMLButtonElement>('[data-step-next]');
   const play = root.querySelector<HTMLButtonElement>('[data-step-play]');
-  const texts = JSON.parse(root.dataset.captions ?? '[]') as string[];
+  // Every step's caption is in the page, stacked in one place, so the
+  // caption is always as tall as the longest and the buttons never move.
+  const texts = [...root.querySelectorAll<HTMLElement>('.step-text')];
   const last = texts.length;
   let step = 0;
 
@@ -50,14 +51,14 @@ export function hello(root: HTMLElement, still: boolean) {
     root.dataset.step = String(n);
     root.classList.toggle('done', n === last);
     root.style.setProperty('--progress', String(n / last));
-    if (caption) {
-      caption.innerHTML = texts[n - 1] ?? '';
-      if (animate) {
-        caption.classList.remove('swap', 'back');
-        void caption.offsetWidth;
-        caption.classList.add('swap');
-        caption.classList.toggle('back', n < before);
-      }
+    texts.forEach((text, i) => {
+      text.classList.toggle('on', i === n - 1);
+      text.classList.remove('swap', 'swap-back');
+    });
+    const shown = texts[n - 1];
+    if (shown && animate) {
+      void shown.offsetWidth;
+      shown.classList.add(n < before ? 'swap-back' : 'swap');
     }
     dots.forEach((dot, i) => {
       dot.classList.toggle('past', i < n);
