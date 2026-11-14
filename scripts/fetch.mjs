@@ -23,3 +23,11 @@ export async function fetchBytes(url, { fetchImpl = fetch, pause = delay, header
     await pause(1000 * 2 ** (attempt - 1));
   }
 }
+
+// The commit of refs/heads/main in a Git smart-HTTP ref advertisement
+// (`info/refs?service=git-upload-pack`), or undefined. Each ref line is
+// "<sha> <ref>", optionally followed by a NUL and capabilities.
+export function parseMainRef(advertisement) {
+  const match = /([0-9a-f]{40}) refs\/heads\/main(?:\0|\n|$)/.exec(advertisement);
+  return match?.[1];
+}
