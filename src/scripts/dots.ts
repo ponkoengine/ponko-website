@@ -232,16 +232,58 @@ export function dots(canvas: HTMLCanvasElement, still: boolean, onFrame?: (f: Fr
     }
   };
 
-  // Ship: a turning globe.
+  // Ship: a turning Earth. The land is a 2-degree grid (180 x 90, one bit per
+  // cell, row 0 at 90N, column 0 at 180W) rasterised from Natural Earth's
+  // 1:110m land polygons (public domain).
+  const MW = 180, MH = 90;
+  const MASK = Uint8Array.from(atob(
+    'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' +
+    'AOA/gP8DAAAAAAAAAAAAAAAAAAAAAAD8/////wcAAAAGAAAHAAAAAAAAAAAArP////8fAPgDAAAA4AMAAAAAAAAA4ADNx///' +
+    '/wAABgAACADwAQAAAAAAAADw2T8A/v8PAAAAABwA/n8AOAAAAAAA+LPvD8D/fwAAAAAwIPz//wMDABDAAwD5w/4H/P8HAAAc' +
+    'AIP//////z8AgP///3+/+YH/HwAA/B8A///////////w/////x9++B8AAOD/9///////////zP//////+QM/wAeA3+//////' +
+    '/////w/w/////xE88AEAAP7+////////////gP////8HeAAcAADw5////////////AHgAf//f4AvAAAAAH78/////////8YA' +
+    'ACyA//8/+AcAAIBB4/////////8ADwAQAPD//9//AQAAPFz/////////A3AAAAAA/v///T8AAGD3//////////8DAwAAAMD/' +
+    '////AwAA+P//////////PwAAAAAA+P///2MAAAD///////////8CAAAAAAD///8/DAAA4P//////////LwAAAAAA8P///wcA' +
+    'AAD+/+nz/////38CAAAAAAD///8HAAAA/tkPPP//////cQAAAAAA8P//PwAAAOBH/v/n/////wcBAAAAAAD///8BAAAAPkT7' +
+    'f/7///8xEAAAAAAA4P//DwAAAMB5Iv//////f8YBAAAAAAD+//8AAAAA+AcA//////8jDwAAAAAAgP//AwAAAOD/Afj/////' +
+    'fxgAAAAAAADw/z8AAAAA/v////////8HAAAAAAAAAP8XAwAAAPD////7////fwAAAAAAAACgPyAAAACA//9/f/////8DAAAA' +
+    'AAAAAPQBAAAAAPz///9v////fwAAAAAAAAAAHjAAAADA/////g////8EAAAAAAAAAOBjGAAAAP7//9//4D//AgAAAAAAAAAA' +
+    'PAMOAADA/////Qf84RcAAAAAAAAAAIA/AAAAAPz//78/wAf+QAAAAAAAAAAAgA8AAADg////+wA4gB8EAAAAAAAAAADgAAAA' +
+    'AP7///8BgAP4wQAAAAAAAAAAAAgfAADA////7wAwgA4YAAAAAAAAAAAA/w8AAPj///8HAAcIgAEAAAAAAAAAAID/AQAA////' +
+    'fwBAAAEYAAAAAAAAAAAA+P8AAODj//8DAAA0GAAAAAAAAAAAAID/HwAAAPj/PwAAwMMBAAAAAAAAAAAA/P8BAACA//8AAAA4' +
+    '3wAAAAAAAAAAAOD/fwAAAPz/BwAAAOMFAQAAAAAAAAAA/P8/AACA/z8AAABgbvABAAAAAAAAAOD//w8AAPD/AwAAAAQIfAIA' +
+    'AAAAAAAA/P//AQAA/z8AAACAA4APAAAAAAAAAMD//x8AAPD/AwAAAAAUsAEAAAAAAAAA+P//AAAA/j8AAAAAAAAAAAAAAAAA' +
+    'AID//wcAAPD/QwAAAACAIwAAAAAAAAAA8P9/AAAA/z8GAAAAAD8GAAAAAAAAAAD8/wcAAPD/cwAAAAD4fwAAAAAAAAAAgP8/' +
+    'AAAA/w8HAAAAwP8PAAAAAAAAAAD4/wMAAOD/MAAAAAD//wEBAAAAAAAAgP8fAAAA/g8DAAAA+P8/AAAAAAAAAAD4PwAAAOB/' +
+    'MAAAAID//wMAAAAAAAAAwP8DAAAA/gcAAAAA+P9/AAAAAAAAAAD8HwAAAMA/AAAAAID//wcAAAAAAAAAwP8BAAAA+AEAAAAA' +
+    '+P9/AAAAAAAAAAD8DwAAAIAPAAAAAAAP/gMAAAAAAAAAwH8AAAAAAAAAAAAAEIA/AAAAAAAAAAD+AwAAAAAAAAAAAAAA8AEg' +
+    'AAAAAAAA4A8AAAAAAAAAAAAAAAAAAAYAAAAAAAB+AAAAAAAAAAAAAAAAwAAwAAAAAAAA4AMAAAAAAAAAAAAAAAAIgAEAAAAA' +
+    'AAAeAAAAAAAAAAAAAAAAAAAOAAAAAAAA8AEAAAAAAAAAAAAAAAAAAAAAAAAAAAAfAAAAAAAAAAABAAAAAAAAAAAAAAAA8AAA' +
+    'AAAAAAAAAAAAAAAAAAAAAAAAAAAOAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' +
+    'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' +
+    'AAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAD8APj///8HAAAAAAAAAAA0AAAAAADA/f/h/////x8A' +
+    'AAAAAAAA4AcAAMD7////z///////fwAAAAAAvAf+AADA//////////////8HAAD4/////wMAAP7/////////////HwCA////' +
+    '//8DAID///////////////8AAPP/////DwAO////////////////HwAA/v//////ePz//////////////38AAOD/////////' +
+    '////////////////P/D/////////////////////////////////////////////////////////////////////////////' +
+    '////////////',
+  ), (ch) => ch.charCodeAt(0));
+  const isLand = (c: number, r: number) => {
+    c = ((c % MW) + MW) % MW, r = Math.min(MH - 1, Math.max(0, r));
+    const k = r * MW + c;
+    return (MASK[k >> 3] >> (k & 7)) & 1;
+  };
   const GX = new Float32Array(N), GY = new Float32Array(N), GZ = new Float32Array(N), GC = new Uint8Array(N);
   for (let i = 0; i < N; i++) {
     const y = 1 - (2 * (i + 0.5)) / N, r = Math.sqrt(1 - y * y), a = i * 2.39996323;
     GX[i] = Math.cos(a) * r, GY[i] = y, GZ[i] = Math.sin(a) * r;
-    const land = fbm(Math.atan2(GZ[i], GX[i]) * 1.3 + 20, y * 2.4 + 20);
-    GC[i] = land > 0.5 ? ORANGE : land > 0.46 ? DEEP : CREAM;
+    // Longitude grows to the east as seen from the front (-z), so the map is not mirrored.
+    const lon = Math.atan2(GZ[i], GX[i]), lat = Math.asin(y);
+    const c = Math.floor(((lon + Math.PI) / (2 * Math.PI)) * MW), row = Math.floor(((Math.PI / 2 - lat) / Math.PI) * MH);
+    if (!isLand(c, row)) GC[i] = CREAM;
+    else GC[i] = isLand(c - 1, row) && isLand(c + 1, row) && isLand(c, row - 1) && isLand(c, row + 1) ? ORANGE : DEEP;
   }
   const globe: Fill = (t, X, Y, S, C) => {
-    const yaw = t * 0.25, cy = Math.cos(yaw), sy = Math.sin(yaw), ct = Math.cos(0.35), st = Math.sin(0.35);
+    const yaw = t * 0.25, cy = Math.cos(yaw), sy = Math.sin(yaw), ct = Math.cos(0.35), st = Math.sin(-0.35);
     for (let i = 0; i < N; i++) {
       const x1 = GX[i] * cy - GZ[i] * sy, z1 = GX[i] * sy + GZ[i] * cy;
       const y2 = GY[i] * ct - z1 * st, z2 = GY[i] * st + z1 * ct;
