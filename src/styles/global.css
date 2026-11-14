@@ -754,11 +754,11 @@ a[href^="http"]:not(.links a)::after,
 .hello:not(.playing) .i-play {
   display: block;
 }
-.step-caption.swap {
+.step-text.swap {
   animation: caption-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.step-caption.swap.back {
-  animation-name: caption-back;
+.step-text.swap-back {
+  animation: caption-back 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 @keyframes caption-in {
   from { opacity: 0; transform: translateY(14px); }
@@ -1154,14 +1154,23 @@ a[href^="http"]:not(.links a)::after,
     color: #fff;
   }
 }
+/* All seven captions sit in the same grid cell, so the caption is as tall
+   as the longest one on every step and the buttons below it stay put. Only
+   the current one is visible. */
 .step-caption {
-  min-height: 112px;
-  margin: 0;
+  display: grid;
   padding: 18px 20px 20px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 16px;
   line-height: 1.55;
+}
+.step-text {
+  grid-area: 1 / 1;
+  margin: 0;
+}
+.step-text:not(.on) {
+  visibility: hidden;
 }
 .step-caption b {
   color: var(--ink);
@@ -1451,9 +1460,6 @@ a[href^="http"]:not(.links a)::after,
   .intro p {
     font-size: 17px;
   }
-  .step-caption {
-    min-height: 150px;
-  }
   .links a {
     flex-direction: column;
     gap: 2px;
@@ -1470,7 +1476,8 @@ a[href^="http"]:not(.links a)::after,
     transition: none;
   }
   .ln.new,
-  .step-caption.swap,
+  .step-text.swap,
+  .step-text.swap-back,
   .game-stage .crab,
   .game-stage .crowd i,
   .game-stage .key {
