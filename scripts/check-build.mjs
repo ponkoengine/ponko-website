@@ -27,4 +27,10 @@ async function walk(directory) {
   }
 }
 await walk(root);
+// The engine draws into the page's <canvas id="ponko">; without one it adds
+// its own canvas below the page, where the game can't be seen.
+const tide = await readFile(resolve(root, "play/tide/index.html"), "utf8");
+if (!tide.includes('<canvas id="ponko"')) {
+  throw new Error('play/tide/index.html has no <canvas id="ponko"> for the engine to draw into');
+}
 console.log(`Checked local links and assets in ${count} HTML pages.`);

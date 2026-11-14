@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fetchBytes } from './fetch.mjs';
+import { fetchBytes, parseMainRef } from './fetch.mjs';
 const pause = async () => {};
 test('recovers from the observed GitHub 504 timeout', async () => {
   let calls = 0;
@@ -44,4 +44,15 @@ test('forwards binary asset negotiation headers', async () => {
       return new Response('archive');
     },
   });
+});
+
+test('reads the main commit from a Git ref advertisement', () => {
+  const head = 'a'.repeat(40), main = 'b'.repeat(40), other = 'c'.repeat(40);
+  const refs = `001e# service=git-upload-pack\n0000` +
+    `0159${head} HEAD\0multi_ack symref=HEAD:refs/heads/main\n` +
+    `003f${other} refs/heads/feature\n003f${main} refs/heads/main\n0000`;
+  assert.equal(parseMainRef(refs), main);
+  // main as the first ref, carrying the capabilities after a NUL.
+  assert.equal(parseMainRef(`0000015c${main} refs/heads/main\0multi_ack\n0000`), main);
+  assert.equal(parseMainRef(`003f${other} refs/heads/mainline\n0000`), undefined);
 });

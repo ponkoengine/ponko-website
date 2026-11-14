@@ -16,7 +16,7 @@
     html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); overflow: hidden;
                  font-size: 12px; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
                  -webkit-tap-highlight-color: transparent; }
-    canvas#crabby { display: block; width: 100vw !important; height: 100vh !important; height: 100dvh !important;
+    canvas#ponko { display: block; width: 100vw !important; height: 100vh !important; height: 100dvh !important;
                     outline: none; touch-action: none; cursor: crosshair; }
     button { font: inherit; }
 
@@ -110,7 +110,7 @@
   </style>
 </head>
 <body>
-  <canvas id="crabby" tabindex="0" aria-label="Tide game board"></canvas>
+  <canvas id="ponko" tabindex="0" aria-label="Tide game board"></canvas>
 
   <div class="boot" id="boot" role="status" aria-live="polite">
     <pre id="log"><span class="brand"><span>[p]</span> ponko · tide</span></pre>
@@ -215,7 +215,7 @@
     $("stats").hidden = false;
 
     // Pointer: mouse hover previews a tower; a click or tap builds or takes one back.
-    const canvas = $("crabby");
+    const canvas = $("ponko");
     const at = (e) => { const r = canvas.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; };
     let down = null, clearHover = 0;
     canvas.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") hover(...at(e)); });
