@@ -42,15 +42,31 @@ The hook URL is a secret. Never put it in source or build output. This hook is
 optional for launching the website; until connected, guide changes arrive on
 the next website deployment or a manual retry in Cloudflare.
 
-## The playable demo
+## The playable demos
 
-`/play/tide/` is a small game built with the engine (source in `demo/tide`,
-pinned to an exact public engine commit in its `Cargo.toml`). Its compiled
-WebAssembly is committed under `public/play/tide/`, so deployments need no
-Rust toolchain. After changing the demo or bumping its engine revision,
-rebuild it with `scripts/build-demo.sh` (it needs the `wasm32-unknown-unknown`
-target and `wasm-bindgen-cli` 0.2.130) and commit the output. The game needs
-WebGPU and says so on browsers without it.
+The home page runs `/play/hole/`, a black hole whose disk is up to 600,000
+particles simulated every frame (source in `demo/hole`). `/play/tide/`, a
+small tower defence (source in `demo/tide`), is no longer on the home page but
+stays for the blog posts that link to it. Each demo is pinned to an exact
+public engine commit in its `Cargo.toml`, and its compiled WebAssembly is
+committed under `public/play/<name>/`, so deployments need no Rust toolchain.
+After changing a demo or bumping its engine revision, rebuild it with
+`scripts/build-demo.sh hole` (or `tide`; it needs the `wasm32-unknown-unknown`
+target and `wasm-bindgen-cli` 0.2.130) and commit the output. It prints the
+module's size raw, gzipped and, where `brotli` is installed, as Brotli.
+It optimizes Tide's module with Binaryen's `wasm-opt` when available
+(`brew install binaryen`). Use the printed Brotli size for the home page's
+download figure.
+
+Both need WebGPU and say so on browsers without it. The black hole traces
+every pixel's light in one full-screen shader (`demo/hole/src/trace.wgsl`);
+its simulated particles are added into a small texture of the disk each frame,
+which the shader reads where a ray crosses the disk. It draws its traced
+picture below the window's resolution on large or slow screens. On the home
+page it is a poster (`public/play/hole/poster.webp`, a screenshot of the demo)
+and a button that opens the demo in its own tab. `build-demo.sh` skips
+`wasm-opt` for it: the optimized module compresses worse (Brotli 2.75 MB
+against 2.59 MB).
 
 ## Local development
 

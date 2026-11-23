@@ -1,0 +1,28 @@
+[package]
+name = "hole"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "The ponko.dev browser demo: a black hole whose disk is hundreds of thousands of simulated particles."
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "hole"
+path = "src/main.rs"
+
+[dependencies]
+# Public engine, pinned to an exact commit so the demo rebuilds identically.
+# Only a window and 3D: no audio, inspector or gamepads, to keep the wasm small.
+ponko = { git = "https://github.com/ponkoengine/ponko", rev = "90589dfbe3c49b833f2c962a2c2acc86404f5afe", default-features = false, features = ["window", "3d"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "=0.2.130"
+
+[profile.release]
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "debuginfo"

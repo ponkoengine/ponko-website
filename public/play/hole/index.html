@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en" data-wasm-bytes="10814976">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <title>Hole · ponko</title>
+  <meta name="description" content="A black hole made with the Ponko engine: its accretion disk is hundreds of thousands of particles, each one simulated every frame in your browser.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
+  <style>
+    :root { --ink: #f4e9db; --muted: #9c8f84; --accent: #f0672f;
+            --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; color-scheme: dark; }
+    [hidden] { display: none !important; }
+    html, body { margin: 0; height: 100%; background: #000; color: var(--ink); overflow: hidden;
+                 font: 12px/1.5 var(--mono); -webkit-user-select: none; user-select: none;
+                 -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+    canvas#ponko { display: block; width: 100vw !important; height: 100vh !important; height: 100dvh !important;
+                   outline: none; touch-action: none; cursor: grab; }
+    canvas#ponko:active { cursor: grabbing; }
+    .poster { position: fixed; inset: 0; background: #000 url("poster.webp") center / cover no-repeat;
+              transition: opacity .6s, visibility 0s .6s; pointer-events: none; }
+    .poster.gone { opacity: 0; visibility: hidden; }
+    .readout { position: fixed; left: max(14px, env(safe-area-inset-left)); bottom: max(12px, env(safe-area-inset-bottom));
+               color: var(--muted); font-size: 11px; letter-spacing: .02em; pointer-events: none; white-space: nowrap;
+               text-shadow: 0 0 8px #000; }
+    .readout b { color: var(--ink); font-weight: 500; }
+    .hint { position: fixed; right: max(14px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom));
+            color: var(--muted); font-size: 11px; pointer-events: none; text-align: right; text-shadow: 0 0 8px #000;
+            transition: opacity 1s; }
+    .hint.faded { opacity: 0; }
+    .note { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; }
+    .note p { max-width: 34ch; margin: 0; padding: 10px 16px; border-radius: 10px; background: rgb(0 0 0 / .7);
+              color: var(--ink); font-size: 13px; line-height: 1.6; }
+    .note a { color: var(--accent); }
+    @media (max-width: 560px) { .hint { top: max(12px, env(safe-area-inset-top)); bottom: auto; left: 14px; text-align: left; } }
+    .touch { display: none; }
+    @media (pointer: coarse) { .touch { display: inline; } .mouse { display: none; } }
+  </style>
+</head>
+<body>
+  <canvas id="ponko" tabindex="-1" aria-label="A black hole: a shadow ringed by light, and a glowing disk of gas around it"></canvas>
+  <div class="poster" id="poster"></div>
+  <div class="readout" id="readout" hidden><b id="count">0</b> particles · <b id="fps">0</b> fps</div>
+  <div class="hint" id="hint" hidden><span class="mouse">drag to turn · scroll to zoom · click to throw a star</span><span class="touch">drag to turn · pinch to zoom · tap to throw a star</span></div>
+  <div class="note" id="note" hidden><p id="note-text"></p></div>
+
+  <script type="module">
+    const $ = (id) => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const testing = params.has("test");
+    const stop = (text) => {
+      $("note-text").textContent = text; $("note").hidden = false;
+      throw new Error(text);
+    };
+
+    // The demo needs no GPU timings, and reading timestamps back crashes
+    // Safari on iOS, so the engine never sees the "timestamp-query" feature.
+    if (window.GPUAdapter) {
+      const real = Object.getOwnPropertyDescriptor(GPUAdapter.prototype, "features");
+      Object.defineProperty(GPUAdapter.prototype, "features", {
+        get() { const f = new Set(real.get.call(this)); f.delete("timestamp-query"); return f; },
+      });
+    }
+    const NEEDS = "This demo traces the light of every pixel on the GPU, which needs WebGPU: a current Chrome or Edge, Safari 26, or Firefox on Windows.";
+    const adapter = navigator.gpu && await navigator.gpu.requestAdapter().catch(() => null);
+    if (!adapter) stop(NEEDS);
+
+    const { default: init, start, drag, zoom, throw_star, pause, stats, shader } = await import("./game.js");
+    try { await init({ module_or_path: "./game_bg.wasm" }); }
+    catch (e) { stop("This browser could not run the demo's WebAssembly."); }
+
+    // Measure the browser's frame cadence before putting any load on it.
+    const refresh = await new Promise((resolve) => {
+      const samples = [];
+      let previous;
+      const sample = (now) => {
+        if (previous !== undefined) samples.push(now - previous);
+        previous = now;
+        if (samples.length < 12) requestAnimationFrame(sample);
+        else resolve(samples.sort((a, b) => a - b)[3]);
+      };
+      requestAnimationFrame(sample);
+    });
+    const requested = Number(params.get("particles"));
+    const asked = Number.isFinite(requested) && requested > 0 ? Math.min(requested, 600000) : 50000;
+    // The light is traced per pixel of the canvas (one per CSS pixel): start
+    // with at most about 1.2 million (the demo lowers this if the GPU can't
+    // keep up).
+    const pixels = innerWidth * innerHeight;
+    const askedScale = Number(params.get("scale"));
+    const scale = testing && askedScale > 0 ? askedScale : Math.min(1, Math.sqrt(1.2e6 / Math.max(pixels, 1)));
+    try { start(asked, refresh, testing && params.has("fixed"), scale); } catch (e) {
+      // winit leaves its startup function by throwing; that's not an error.
+      if (!String(e).includes("Using exceptions for control flow")) stop("The demo could not start: " + e);
+    }
+
+    // A hidden tab holds the simulation still and traces nothing.
+    document.addEventListener("visibilitychange", () => pause(document.hidden));
+
+    // Wait for the first drawn frame, then show the live picture.
+    await new Promise((resolve) => {
+      const wait = () => {
+        const [, , , frames, problem] = stats();
+        if (problem || frames > 2) resolve();
+        else requestAnimationFrame(wait);
+      };
+      requestAnimationFrame(wait);
+    });
+    if (stats()[4] === 1) stop(NEEDS);
+    const fmt = new Intl.NumberFormat("en-US");
+    const updateReadout = () => {
+      const [count, fps] = stats();
+      $("count").textContent = fmt.format(Math.round(count / 1000) * 1000);
+      $("fps").textContent = Math.round(fps);
+    };
+    updateReadout();
+    setInterval(updateReadout, 500);
+    $("poster").classList.add("gone");
+    $("readout").hidden = false;
+    $("hint").hidden = false;
+    setTimeout(() => $("hint").classList.add("faded"), 9000);
+    if (testing) window.hole = { drag, zoom, throw_star, stats, refresh, shader };
+
+    // Drag to turn, wheel or pinch to zoom, click or tap to throw a star.
+    const canvas = $("ponko");
+    function bindGestures(surface) {
+      const pointers = new Map();
+      let pinch = 0, downAt = null;
+      surface.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        surface.setPointerCapture(e.pointerId);
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (pointers.size === 1) downAt = { t: performance.now(), moved: 0 };
+        else downAt = null;
+        if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); }
+      });
+      surface.addEventListener("pointermove", (e) => {
+        const p = pointers.get(e.pointerId);
+        if (!p) return;
+        const dx = e.clientX - p.x, dy = e.clientY - p.y;
+        p.x = e.clientX; p.y = e.clientY;
+        if (pointers.size === 1 && downAt) {
+          const height = surface.clientHeight;
+          downAt.moved += Math.hypot(dx, dy);
+          drag(dx / height, dy / height);
+        } else if (pointers.size === 2) {
+          const [a, b] = [...pointers.values()];
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (pinch > 0 && d > 0) zoom(pinch / d);
+          pinch = d;
+        }
+      });
+      const up = (e) => {
+        if (!pointers.delete(e.pointerId)) return;
+        if (downAt && pointers.size === 0 && downAt.moved < 10 && performance.now() - downAt.t < 500 && e.type === "pointerup") {
+          const box = surface.getBoundingClientRect();
+          throw_star((e.clientX - box.left) / box.width, (e.clientY - box.top) / box.height);
+        }
+        if (pointers.size < 2) pinch = 0;
+        if (pointers.size === 0) downAt = null;
+      };
+      surface.addEventListener("pointerup", up);
+      surface.addEventListener("pointercancel", up);
+      surface.addEventListener("lostpointercapture", up);
+    }
+    bindGestures(canvas);
+    canvas.addEventListener("wheel", (e) => { e.preventDefault(); zoom(Math.exp(e.deltaY * 0.0012)); }, { passive: false });
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+  </script>
+</body>
+</html>
