@@ -1,0 +1,125 @@
+---
+title: "We ran so much CI that GitHub suspended us"
+description: On 14 November our GitHub account was suspended for a surge in Actions use, and the Ponko repository vanished for nine days. What happened, where we worked in the meantime, and why Ponko has no CI for now.
+date: 2026-11-23
+tags: [Project, Engine]
+art: { palette: ember, shape: fire }
+draft: false
+---
+
+On the evening of 14 November, the Ponko repository started returning 404.
+So did the organization page, the issues and every pull request. We had not
+deleted anything. GitHub had suspended the account that owns the project.
+
+It took nine days to get it back. This post is the whole story: what we did
+wrong, what we did while we waited, and what is different now.
+
+<Stats>
+  <Stat value="9">days without the repository</Stat>
+  <Stat value="931">commits made elsewhere</Stat>
+  <Stat value="225">issues closed in that time</Stat>
+  <Stat value="0">CI jobs today</Stat>
+</Stats>
+
+## What we did wrong
+
+The short version: we used far too much GitHub Actions in one day.
+
+Ponko is built quickly, and much of it by coding agents working side by
+side. The commit we released as 0.1.0 ran 49 CI jobs, and a full run covered
+Linux, macOS, Windows, the web, Miri, fuzzing and benchmarks. On
+14 November several agents were pushing branches, opening pull requests and
+re-running checks at the same time. That added up to about fifteen hours of
+CI in a single day, from one account, with a steady stream of pushes,
+comments and merges on top.
+
+From the outside that looks exactly like abuse. An automated system flagged
+it and the account was restricted.
+
+There were warning signs before the 404. Issue lists came back empty. CI
+runs sat in the queue or were cancelled. We took them for a glitch and kept
+going, which was the wrong call. If a service you depend on starts acting
+strangely while you are hammering it, stop and look.
+
+<Callout type="note" title="GitHub was fair about it">
+  Support looked at the account, saw a surge in Actions compute and nothing
+  worse, and restored it. They also told us that near-continuous bulk runs
+  could bring the restriction back. We think that is reasonable. The mistake
+  was ours.
+</Callout>
+
+## Nine days somewhere else
+
+Waiting was not an option we liked, so on 15 November we pushed a private
+copy of the repository to GitLab and carried on there. It was meant as a
+stopgap, and after five days without news we started to treat it as
+permanent.
+
+We set one rule for the new home: no CI. Having just lost an account to it,
+we were not going to set up pipelines on a second service. Every check ran
+on our own machines instead.
+
+That changed how we worked more than we expected:
+
+- **One check run per batch, not per branch.** Finished branches were merged
+  into one integration branch. The full list ran there once: formatting,
+  lints in every feature set, the whole test suite, the C and C++ programs,
+  the guide's code snippets. Whatever broke was fixed there, and only then
+  did the batch go to `main`.
+- **Small checks while working.** Each change ran the tests for what it
+  touched and nothing else. Twelve copies of the full test suite running at
+  once had been making every one of them slow.
+- **The check list became a file.** What CI used to run is now written down
+  in `scripts/checks.yml`. Nothing executes it. People do, and a script
+  still checks that every cargo feature has its line in it.
+
+The engine did not stand still. In those nine days it got game states and an
+entity hierarchy, HDR output, threads on the web, rollback netcode, code
+mods that run as WebAssembly, an editor that runs in the browser, terrain in
+scenes, a forged-packet defence for UDP hosts, and a first
+[scoreboard against Bevy](/guide/performance.html) that includes the row we
+lose.
+
+## Coming back
+
+On 23 November GitHub restored the account, and we moved everything back
+the same day. GitHub is Ponko's home again, and the GitLab copy is retired.
+
+Three things are different.
+
+**There is no CI for now.** GitHub Actions is switched off for every Ponko
+repository and the workflow files are deleted. That is not a protest, and it
+is not forever. The local routine from the last nine days works and suits
+how we build, so we are in no hurry. Contributors run the checks for what
+they changed, and maintainers run the full list before a merge. `AGENTS.md`
+and `CONTRIBUTING.md` in the repository say exactly which commands.
+
+CI will come back, set up differently. Releases come first: a release should
+be built and tested by a machine that is not one of ours, on every platform
+we ship for. What will not come back is 49 jobs on every push.
+
+**Some issue numbers are wrong.** The work done on GitLab had its own issue
+numbers, starting again from 1. Commit messages and changelog notes from
+15 to 23 November cite those numbers, and on GitHub the same numbers belong
+to older, unrelated issues. We can't fix that without rewriting history, so
+we are leaving it. The issues that were still open have been filed again on
+GitHub as #474 to #497.
+
+**There is no green tick.** A pull request no longer shows that its tests
+passed on three operating systems. Until CI returns you are trusting that we
+ran them. We know that is a real loss for a project that asks people to
+depend on it, and it is the part of this we are least happy with.
+
+## What we'd tell someone else
+
+- A CI bill of zero does not mean your usage is free of consequences.
+  Free-tier compute is still someone's compute.
+- If many agents share one account, count what they do together. Each of
+  ours was behaving sensibly. The sum was not.
+- Run the expensive checks once per batch of work, not once per push.
+- Keep a second remote you can push to. Ours did not exist until we needed
+  it, and we were lucky that every checkout had the full history.
+
+Ponko 0.2.0 was nearly ready when this started and still is. The workflow
+that used to build releases went with the rest, so the release waits until
+we have decided how it gets built and checked.
