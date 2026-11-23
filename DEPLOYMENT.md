@@ -19,8 +19,8 @@ Every push to website `main` then builds and deploys production. Other branches
 and pull requests get preview deployments. No runtime, database, paid service,
 or Cloudflare API token is required in this repository.
 
-GitHub Actions also builds and checks local links on each PR. Configure the
-`build` check as required in the repository rules before merging changes.
+There is no CI: run `npm ci`, `npm test`, `npm run build` and `npm run check`
+locally before opening a pull request.
 
 ## Guide updates from the engine
 
@@ -31,15 +31,11 @@ Each full build resolves public engine `main` once and records the exact SHA in
 
 A push to the engine repository alone does **not** trigger the website's Git
 integration. To deploy guide changes immediately, create a Cloudflare Pages
-**deploy hook** for `main`, save its URL as an engine Actions secret named
-`PONKO_WEBSITE_DEPLOY_HOOK`, and add this step to an engine workflow triggered
-by pushes to `main` that change `book/**`, `examples/**`, or `tests/**`:
+**deploy hook** for `main`, keep its URL out of the repository, and call it by
+hand after the engine change has merged:
 
-```yaml
-- name: Rebuild ponko.dev guide
-  env:
-    DEPLOY_HOOK: ${{ secrets.PONKO_WEBSITE_DEPLOY_HOOK }}
-  run: curl --fail --silent --show-error --request POST "$DEPLOY_HOOK"
+```sh
+curl --fail --silent --show-error --request POST "$DEPLOY_HOOK"
 ```
 
 The hook URL is a secret. Never put it in source or build output. This hook is
