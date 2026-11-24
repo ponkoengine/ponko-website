@@ -1,0 +1,101 @@
+---
+title: "Fewer releases, better ones"
+description: Ponko's main branch is more than 900 commits past 0.1.0, and we are not releasing it yet. Why the next release waits for proof instead of features, what that proof is, and how to follow along in the meantime.
+date: 2026-11-24
+tags: [Project, Release]
+art: { palette: sea, shape: ripple }
+draft: false
+---
+
+Ponko 0.1.0 came out on 13 November. Since then `main` has moved more than
+900 commits past it: game states, an entity hierarchy, rollback netcode, an
+editor that runs in the browser, HDR output, and a lot more. None of that is
+on crates.io.
+
+We could release it tomorrow. We are not going to, and this post says why.
+
+<Stats>
+  <Stat value="946">commits on main since 0.1.0</Stat>
+  <Stat value="1">machine the benchmarks ran on</Stat>
+  <Stat value="11">render tests failing on DirectX 12</Stat>
+  <Stat value="0">games shipped by someone else</Stat>
+</Stats>
+
+## Features are not what is missing
+
+Ponko has grown fast, and the list of what it can do is long. The list of
+what we have *proven* is much shorter.
+
+On 23 November the render tests ran on a Windows machine for the first time
+since we lost our CI. DirectX 12 failed 11 of them, and a fresh clone with
+Git's default settings failed about 20 other tests. All of that code had
+been marked done.
+
+That is the pattern we want to break. Some honest examples:
+
+- Every number in our comparison with Bevy was measured on one Apple laptop.
+- There is no recorded run of the full test list on Linux since CI went away.
+- The render tests draw scenes we built ourselves. Nothing loads content
+  that someone else made in a real tool.
+- Every guide chapter was written and checked by people who already knew the
+  engine.
+- The reference games use art drawn by scripts.
+
+An engine is good when a stranger can install it on their own machine, follow
+the guide, and ship something. We have not shown that yet.
+
+## What a release means from now on
+
+A release is a promise that what is in it works. So the next one waits for
+proof, not for more features:
+
+1. **It passes on three systems.** The full list of checks runs on real
+   Windows, macOS and Linux machines, and the result is published.
+2. **The numbers hold elsewhere.** The scoreboard runs on a desktop GPU and
+   on integrated graphics, not only on the machine it was written on. Rows
+   we lose stay in the table.
+3. **Real content draws correctly.** The Khronos glTF sample assets and a
+   couple of well-known scenes, compared against reference pictures.
+4. **Newcomers get through the guide.** People who have never seen Ponko
+   follow it without help, and every place they get stuck is fixed.
+5. **Each feature says how proven it is.** Proven in a game on three
+   systems, tested on one, or experimental. No more chapters that all read
+   alike.
+
+All of this is in the open as issues #499 to #515.
+
+<Callout type="note" title="So how often?">
+  A few releases a year, each when its list is done. No dates. Fixes for
+  serious problems in the current release still go out as patch releases
+  within days.
+</Callout>
+
+## Why not release more often instead?
+
+We thought about it. Frequent releases get new work to people sooner, and
+they keep a project looking alive.
+
+But every release that breaks your game costs you an afternoon, and a common
+complaint about young engines is exactly that: upgrades that never stop. We
+would sooner give you a version you can stay on for months.
+There is also a practical reason. Without CI, checking a release on three
+systems is work done by hand, and we want to do it properly a few times a
+year instead of badly every two weeks.
+
+## Following along
+
+Slow releases do not mean a slow project. `main` moves every day, and you can
+use it:
+
+```toml
+[dependencies]
+ponko = { git = "https://github.com/ponkoengine/ponko" }
+```
+
+`main` can break between two commits. Every change that breaks something has
+a note in `changelog.d/`, and the migration guide for the next release is
+built from those notes.
+
+If you try Ponko and something is rough, confusing or slow, that is what we
+most want to hear right now. Open an issue. A report from a machine that is
+not ours is worth more to us than another feature.
