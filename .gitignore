@@ -4,3 +4,5 @@ dist/
 .cache/
 .env
 .env.*
+# Cargo build output of the demos
+target/

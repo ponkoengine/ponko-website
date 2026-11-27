@@ -1,0 +1,28 @@
+[package]
+name = "wildfire"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "The ponko.dev browser demo: hold a wildfire back from the villages of a valley."
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "wildfire"
+path = "src/main.rs"
+
+[dependencies]
+# Public engine, pinned to an exact commit so the demo rebuilds identically.
+# Only a window and 3D: no audio, inspector or gamepads, to keep the wasm small.
+ponko = { git = "https://github.com/ponkoengine/ponko", rev = "15c1114313a3a79b24e7498fe5a8556eabb8045c", default-features = false, features = ["window", "3d"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "=0.2.130"
+
+[profile.release]
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "debuginfo"
