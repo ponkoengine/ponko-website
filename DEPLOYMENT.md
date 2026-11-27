@@ -44,12 +44,14 @@ the next website deployment or a manual retry in Cloudflare.
 
 ## The playable demo
 
-`/play/tide/` is a small game built with the engine (source in `demo/tide`,
-pinned to an exact public engine commit in its `Cargo.toml`). Its compiled
-WebAssembly is committed under `public/play/tide/`, so deployments need no
-Rust toolchain. After changing the demo or bumping its engine revision,
-rebuild it with `scripts/build-demo.sh` (it needs the `wasm32-unknown-unknown`
-target and `wasm-bindgen-cli` 0.2.130) and commit the output. The game needs
+`/play/wildfire/` is the game the homepage links to, and `/play/tide/` an
+older, smaller one. Each is built with the engine (source in `demo/<name>`,
+pinned to an exact public engine commit in its `Cargo.toml`). Their compiled
+WebAssembly is committed under `public/play/<name>/`, so deployments need no
+Rust toolchain. After changing a demo or bumping its engine revision, rebuild
+it with `scripts/build-demo.sh [name]` (Wildfire by default; it needs the
+`wasm32-unknown-unknown` target and `wasm-bindgen-cli` 0.2.130, and uses
+`wasm-opt` from binaryen when installed) and commit the output. The game needs
 WebGPU and says so on browsers without it.
 
 ## Local development
