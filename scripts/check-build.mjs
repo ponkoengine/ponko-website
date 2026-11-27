@@ -12,8 +12,10 @@ async function walk(directory) {
     if (!name.name.endsWith(".html")) continue;
     count++;
     const html = await readFile(path, "utf8");
+    // Only attributes inside a real tag: code samples in the guide show
+    // markup as text (`&lt;script src="..."&gt;`), which links nowhere.
     for (const match of html.matchAll(
-      /(?:href|src)="([^"#?]+)(?:[?#][^"]*)?"/g,
+      /<[a-z][^<>]*?\s(?:href|src)="([^"#?]+)(?:[?#][^"]*)?"/gi,
     )) {
       const url = match[1];
       if (/^(?:[a-z]+:|\/\/)/i.test(url)) continue;
@@ -29,8 +31,10 @@ async function walk(directory) {
 await walk(root);
 // The engine draws into the page's <canvas id="ponko">; without one it adds
 // its own canvas below the page, where the game can't be seen.
-const tide = await readFile(resolve(root, "play/tide/index.html"), "utf8");
-if (!tide.includes('<canvas id="ponko"')) {
-  throw new Error('play/tide/index.html has no <canvas id="ponko"> for the engine to draw into');
+for (const game of ["tide", "wildfire"]) {
+  const page = await readFile(resolve(root, `play/${game}/index.html`), "utf8");
+  if (!page.includes('<canvas id="ponko"')) {
+    throw new Error(`play/${game}/index.html has no <canvas id="ponko"> for the engine to draw into`);
+  }
 }
 console.log(`Checked local links and assets in ${count} HTML pages.`);

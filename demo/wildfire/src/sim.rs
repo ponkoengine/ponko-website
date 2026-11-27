@@ -293,7 +293,7 @@ impl Sim {
                 let slope = (((self.height[n] - h) / dist) * 0.45).exp().clamp(0.3, 4.0);
                 let dry = (1.0 - self.moisture[n]).max(0.0);
                 let rate = self.kind[n].spread() * heat * wind * slope * dry * dry / dist;
-                if self.rng.f32() < 1.0 - (-rate * dt * 0.6).exp() {
+                if self.rng.f32() < 1.0 - (-rate * dt * 0.5).exp() {
                     self.ignite.push(n);
                 }
             }
@@ -621,5 +621,66 @@ mod tests {
         assert_eq!(villages.len(), 5);
         assert!(villages.iter().all(|v| v.len() >= 5), "{:?}", villages.iter().map(Vec::len).collect::<Vec<_>>());
         assert!(height.iter().all(|h| h.is_finite()));
+    }
+}
+
+#[cfg(test)]
+mod pacing {
+    use super::*;
+
+    /// Not a check: prints how a fire nobody fights plays out
+    /// (`cargo test pacing -- --ignored --nocapture`).
+    #[test]
+    #[ignore]
+    fn an_unfought_fire() {
+        let (kind, height, moisture, villages) = valley::generate();
+        for seed in [1u32, 2, 3] {
+            let mut sim = Sim::new(kind.clone(), height.clone(), moisture.clone(), seed);
+            let start = sim.clone();
+            let mut rng = Rng::new(seed * 77);
+            let forest: Vec<usize> = (0..N * N)
+                .filter(|&c| {
+                    let (x, z) = cell_center(c);
+                    sim.kind[c] == Fuel::Forest
+                        && villages.iter().flatten().all(|&h| {
+                            let (hx, hz) = cell_center(h);
+                            (hx - x).hypot(hz - z) > 30.0
+                        })
+                })
+                .collect();
+            let mut first_house = None;
+            let mut t = 0.0;
+            let mut lost_at = Vec::new();
+            for step in 0..(300.0 / STEP) as usize {
+                t = step as f32 * STEP;
+                for at in [0.5, 45.0, 95.0] {
+                    if (t - at).abs() < STEP / 2.0 {
+                        let c = forest[rng.below(forest.len() as u32) as usize];
+                        sim.strike(c);
+                    }
+                }
+                sim.step();
+                for h in sim.happenings.drain(..) {
+                    if let Happening::HouseCaught(_) = h {
+                        first_house.get_or_insert(t);
+                    }
+                }
+                for (v, cells) in villages.iter().enumerate() {
+                    let gone = cells.iter().filter(|&&c| sim.fuel[c] < 0.6).count();
+                    if gone * 2 >= cells.len() && !lost_at.iter().any(|&(w, _)| w == v) {
+                        lost_at.push((v, t));
+                    }
+                }
+                if t > 96.0 && sim.burning_count == 0 {
+                    break;
+                }
+            }
+            println!(
+                "seed {seed}: first house {first_house:?} s, villages lost {:?}, out at {t:.0} s, green left {:.0}%, max burning {}",
+                lost_at.iter().map(|&(v, t)| (v, t as u32)).collect::<Vec<_>>(),
+                sim.green_left(&start) * 100.0,
+                sim.burning_count
+            );
+        }
     }
 }

@@ -352,7 +352,7 @@ fn strike_spot(s: &mut State, start: &Start) -> usize {
         // Upwind of the middle, and far enough from houses to give a chance.
         let upwind = -(x * wx + z * wz) / HALF;
         let score = upwind * 20.0 + near_village.min(30.0) + s.rng.f32() * 8.0;
-        if near_village > 18.0 && score > best.0 {
+        if near_village > 30.0 && score > best.0 {
             best = (score, c);
         }
     }
