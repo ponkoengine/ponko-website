@@ -134,6 +134,8 @@ struct Bomber {
 
 struct State {
     start: Arc<Start>,
+    /// How far back the camera sits; eases toward the framing it wants.
+    camera_distance: f32,
     phase: Phase,
     sim: Sim,
     time: f32,
@@ -166,6 +168,7 @@ struct State {
 impl State {
     fn new(start: Arc<Start>, houses: Vec<House>) -> Self {
         State {
+            camera_distance: 0.0,
             phase: Phase::Title,
             sim: start.sim.clone(),
             time: 0.0,
@@ -266,6 +269,14 @@ fn pointed(ctx: &Ctx, sim: &Sim, at: Vec2) -> Option<Vec2> {
     None
 }
 
+/// How far the title view turns either way, in radians.
+const SWAY: f32 = 0.12;
+
+/// The direction from the valley to the camera, turned by `sway`.
+fn view_dir(sway: f32) -> Vec3 {
+    vec3(sway.sin() * 0.72, 0.7, sway.cos() * 0.72).normalize()
+}
+
 /// How far back the camera must sit to see the whole valley.
 fn fit_distance(target: Vec3, dir: Vec3, aspect: f32, fov_y: f32) -> f32 {
     let forward = -dir;
@@ -281,20 +292,26 @@ fn fit_distance(target: Vec3, dir: Vec3, aspect: f32, fov_y: f32) -> f32 {
         vec3(-e, 14.0, -e),
         vec3(e, 14.0, -e),
     ];
-    let mut d = 40.0;
-    while d < 600.0 {
+    let fits = |d: f32| {
         let eye = target + dir * d;
-        let fits = corners.iter().all(|&c| {
+        corners.iter().all(|&c| {
             let v = c - eye;
             let z = v.dot(forward);
-            (v.dot(right) / z).abs() < tx && (v.dot(up) / z).abs() < ty
-        });
-        if fits {
-            return d;
+            z > 0.0 && (v.dot(right) / z).abs() < tx && (v.dot(up) / z).abs() < ty
+        })
+    };
+    // Halve the gap until it is tiny: a whole-step search makes the camera
+    // jump a step at a time while the title view sways.
+    let (mut near, mut far) = (10.0, 600.0);
+    for _ in 0..30 {
+        let mid = (near + far) * 0.5;
+        if fits(mid) {
+            far = mid;
+        } else {
+            near = mid;
         }
-        d += 1.0;
     }
-    d
+    far
 }
 
 fn reset(ctx: &mut Ctx) {
@@ -367,10 +384,27 @@ fn control(ctx: &mut Ctx) {
     let aspect = (size.x / size.y.max(1.0)).max(0.3);
     let phase = ctx.world.resource::<State>().phase;
     let now = ctx.time.elapsed() as f32;
-    let sway = if phase == Phase::Title { (now * 0.05).sin() * 0.12 } else { 0.0 };
-    let dir = vec3(sway.sin() * 0.72, 0.7, sway.cos() * 0.72).normalize();
+    let title = phase == Phase::Title;
+    let sway = if title { (now * 0.05).sin() * SWAY } else { 0.0 };
     let target = vec3(0.0, 0.0, 4.0);
-    let distance = fit_distance(target, dir, aspect, ctx.scene3d.camera.fov_y);
+    let fov = ctx.scene3d.camera.fov_y;
+    // The title view turns without moving in and out: it keeps the distance
+    // that fits the valley at either end of its sway.
+    let want = if title {
+        fit_distance(target, view_dir(SWAY), aspect, fov).max(fit_distance(target, view_dir(-SWAY), aspect, fov))
+    } else {
+        fit_distance(target, view_dir(0.0), aspect, fov)
+    };
+    let distance = {
+        let s = ctx.world.resource_mut::<State>();
+        s.camera_distance = if s.camera_distance == 0.0 {
+            want
+        } else {
+            s.camera_distance + (want - s.camera_distance) * (dt * 3.0).min(1.0)
+        };
+        s.camera_distance
+    };
+    let dir = view_dir(sway);
     ctx.scene3d.camera.position = target + dir * distance;
     ctx.scene3d.camera.look_at(target);
     ctx.scene3d.sky.fog_start = distance + 40.0;
@@ -1463,5 +1497,29 @@ mod web {
             h.best as f32,
             h.trees as f32,
         ]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_title_camera_glides_without_jumps() {
+        let target = vec3(0.0, 0.0, 4.0);
+        // The fit itself is smooth: a small turn moves it a little.
+        let mut last = fit_distance(target, view_dir(-SWAY), 16.0 / 9.0, 0.55);
+        for i in 1..=2400 {
+            let d = fit_distance(target, view_dir(-SWAY + SWAY * 2.0 * i as f32 / 2400.0), 16.0 / 9.0, 0.55);
+            assert!((d - last).abs() < 0.1, "jumped {last} -> {d} at step {i}");
+            last = d;
+        }
+        // And the swaying view still fits at the distance the title uses.
+        let wide = fit_distance(target, view_dir(SWAY), 16.0 / 9.0, 0.55)
+            .max(fit_distance(target, view_dir(-SWAY), 16.0 / 9.0, 0.55));
+        for i in 0..=100 {
+            let sway = -SWAY + SWAY * 2.0 * i as f32 / 100.0;
+            assert!(fit_distance(target, view_dir(sway), 16.0 / 9.0, 0.55) <= wide + 0.01);
+        }
     }
 }
