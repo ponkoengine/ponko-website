@@ -163,6 +163,26 @@
         get() { const f = new Set(real.get.call(this)); f.delete("timestamp-query"); return f; },
       });
     }
+    // Safari on iOS sometimes hands back an empty range for a buffer made
+    // mapped (getMappedRange gives 0 bytes) and the game stops. So buffers
+    // aren't made mapped here: each is made empty, and what the game writes
+    // into its mapped range goes in with queue.writeBuffer when it unmaps.
+    // (A MAP_WRITE buffer can't take COPY_DST, so it's left as it is.)
+    if (window.GPUDevice) {
+      const create = GPUDevice.prototype.createBuffer;
+      GPUDevice.prototype.createBuffer = function (desc) {
+        if (!desc.mappedAtCreation || (desc.usage & GPUBufferUsage.MAP_WRITE)) return create.call(this, desc);
+        const buffer = create.call(this, { ...desc, mappedAtCreation: false, usage: desc.usage | GPUBufferUsage.COPY_DST });
+        const queue = this.queue, ranges = [];
+        buffer.getMappedRange = (offset = 0, size = buffer.size - offset) => {
+          const range = new ArrayBuffer(size);
+          ranges.push([offset, range]);
+          return range;
+        };
+        buffer.unmap = () => { for (const [offset, range] of ranges.splice(0)) queue.writeBuffer(buffer, offset, range); };
+        return buffer;
+      };
+    }
     // 0. The game draws with WebGPU; check for it before downloading anything.
     const adapter = navigator.gpu && await navigator.gpu.requestAdapter().catch(() => null);
     if (!adapter) {
