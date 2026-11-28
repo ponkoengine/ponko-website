@@ -81,6 +81,82 @@ opening its address on the dev server.
 The build checks all of this. A missing description or a misspelled field
 stops `npm run build` with a message saying which post and which field.
 
+## Writing style
+
+Release posts are written in the style of Bevy's release posts and Godot's
+release-candidate posts: warm, concrete, and generous with links and code.
+Other posts follow the same voice.
+
+### Voice
+
+- "We" is the people making Ponko, "you" is the person using it. Talk to
+  them, not about them.
+- Warm and a little excited, never salesy. Short bits of humour are welcome
+  inside technical prose; jokes are not a section of their own.
+- Plain about limits. Say what doesn't work yet, on which platform, in one
+  flat sentence ("Mesh shaders are not supported on the web."). Explain a
+  trade-off when you make one ("We think this is worth it, because ...").
+- Sentences mostly of 12 to 25 words, paragraphs of one to four sentences.
+  Follow a long explanation with a short line.
+- Introduce a name the first time with what it is: "Feathers, our
+  editor-first UI toolkit, now has more widgets".
+- Link generously: the guide chapter, docs.rs, the example, the pull request.
+- Use _italics_ for the odd intensifier, bold only for the names in lists.
+
+### A release post
+
+1. **The opening.** Who made it and how much ("Thanks to N contributors and
+   M pull requests, we're happy to announce Ponko 0.3 on crates.io!"), then
+   two sentences on what Ponko is with links to the guide, the source and
+   the examples. End with "It's free and open source forever!" Point to the
+   migration guide in one sentence.
+2. **Highlights.** "There's a _lot_ in this release, but here are some of
+   the highlights:" and a bullet list of five to eight items, each a bold
+   name, a colon and one sentence.
+3. **One section per feature**, as `##` headings in Title Case, plain noun
+   phrases ("Compute Readback", "Game States"). Under the heading, a credit
+   line with the authors' GitHub handles and the pull requests:
+
+   ```md
+   Authors: @someone, @someone-else · PRs: #702, #710
+   ```
+
+   Then: what was hard or missing before (one short paragraph), what you can
+   do now, and code. Show changes to existing APIs as a before and after
+   (`// Before` and `// After`, or two titled blocks). Sub-features get `###`
+   headings. End with where to see it: "Check out the `compute` example to
+   see it in action!" A section can be three sentences or a page; size it to
+   the feature.
+4. **Breaking changes** are explained where they happen, inside the
+   feature's section, with before and after code. The migration guide is
+   linked once at the top and once at the end.
+5. **What's next**, a few lines on what we're working on.
+6. **Thanks**, with the number of contributors and a link to the full
+   changelog.
+
+### A release-candidate post
+
+The same voice, in Godot's order:
+
+1. What a candidate is (features locked, only fixes for regressions from now
+   on, the final release when a week passes without one) and why testing
+   matters. Ask people to back up or use version control.
+2. Highlights, or a link to the post that had them.
+3. What changed since the last candidate or preview, in the section
+   style above, as a short list for small fixes.
+4. The commit and tag it's built from, and the changelog.
+5. Downloads: the exact `cargo add` and `cargo install` lines (Cargo never
+   picks a pre-release by itself) and the C library downloads.
+6. Known issues, each linked to its issue.
+7. Bug reports: where, and what is most useful.
+8. Thanks.
+
+### Credits
+
+Posts are signed by the people who made the work (`authors`) or by the
+Ponko team. Commits and pull requests for posts carry no tool attribution:
+no co-author lines and no "generated with" footers.
+
 ## Markdown
 
 Everything in ordinary Markdown works: headings (start at `##`, as the title
