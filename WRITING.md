@@ -350,6 +350,21 @@ characters from `0-9 , . M B` and space.
 </Stats>
 ```
 
+### Bars
+
+Two bars in dots for each thing measured: our time and theirs. The longer
+bar of a pair fills the width, so each pair shows a ratio; say so near the
+chart, and give the full table too.
+
+```mdx
+<Bars unit="ms" rows={[
+  ['100,000 moving sprites', 1.10, 11.6],
+  ['One million moving sprites', 8.32, 105.7],
+]} />
+```
+
+`ours` and `theirs` rename the two sides (they default to Ponko and Bevy).
+
 ### Keys
 
 Use `<kbd>` for keys: `<kbd>Space</kbd>`.

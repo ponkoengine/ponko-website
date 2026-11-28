@@ -1,0 +1,26 @@
+---
+// Pairs of bars drawn in dots, one pair per row: how long each side took.
+// The longer bar of a pair fills the width, so a pair shows a ratio; bars
+// in different rows are not on one scale.
+//   <Bars unit="ms" rows={[['100,000 sprites', 1.1, 11.6], ['1M sprites', 8.32, 105.7]]} />
+// `ours` and `theirs` name the two sides; they default to Ponko and Bevy.
+interface Props {
+  /** Each row: what was measured, our time, their time. */
+  rows: [string, number, number][];
+  unit?: string;
+  ours?: string;
+  theirs?: string;
+}
+const { rows, unit = 'ms', ours = 'Ponko', theirs = 'Bevy' } = Astro.props;
+const shown = (n: number) => (n >= 100 ? n.toFixed(0) : n >= 10 ? n.toFixed(1) : n >= 1 ? n.toFixed(2) : n.toFixed(3));
+const width = (n: number, other: number) => `--w:${((n / Math.max(n, other)) * 100).toFixed(1)}%`;
+---
+<ul class="bench bars" aria-label={`Time taken in ${unit}; shorter is faster`}>
+  {rows.map(([what, a, b]) => (
+    <li>
+      <p class="bars-what">{what}</p>
+      <div class="bar ours" style={width(a, b)}><span>{ours}</span><i aria-hidden="true"></i><b>{shown(a)} {unit}</b></div>
+      <div class="bar theirs" style={width(b, a)}><span>{theirs}</span><i aria-hidden="true"></i><b>{shown(b)} {unit}</b></div>
+    </li>
+  ))}
+</ul>
