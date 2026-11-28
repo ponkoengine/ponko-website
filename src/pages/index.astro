@@ -1,50 +1,101 @@
 ---
+import { Code } from 'astro:components';
+import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import { site } from '../site';
+import Install from '../components/Install.astro';
+import Games from '../components/Games.astro';
+import DotArt from '../components/DotArt.astro';
+import type { ArtOptions } from '../lib/dot-art';
+import { site, release } from '../site';
+import { ponkoNight } from '../lib/shiki-ponko.mjs';
+import { formatDate, getPosts, postHref } from '../lib/blog';
+import emberHop from '../assets/home/ember-hop.jpg';
+import lights from '../assets/home/lights.jpg';
+import shaders from '../assets/home/shaders.jpg';
+import battle from '../assets/home/battle.jpg';
+import flow from '../assets/home/flow.jpg';
+import inspector from '../assets/home/inspector.jpg';
 
 const gh = site.github;
+const released = formatDate(new Date(release.date));
+const posts = (await getPosts()).filter((p) => !p.data.draft).slice(0, 3);
 
-// The story told on the way down. Each chapter has its own picture in dots.
-const chapters = [
-  {
-    id: 'entities', scene: 'swarm', tag: 'Entities',
-    title: 'Twelve thousand units. One loop.',
-    body: 'Start with plain variables in a closure. When the game outgrows them, move to an archetype ECS and its queries spread across every core you have.',
-    points: [['Systems are functions', 'Write one, add it, and it runs every frame.'], ['Parallel by default', 'Queries split their work across threads for you.']],
-    link: ['Entities and systems', 'ecs.html'],
-  },
-  {
-    id: 'rendering', scene: 'terrain', tag: 'Rendering',
-    title: '2D and 3D, on one renderer.',
-    body: 'Sprites, tilemaps and text sit beside PBR meshes, glTF, animation, shadows and terrain. When the game needs a look of its own, you write the material.',
-    points: [['Built on wgpu', 'Vulkan, Metal, DirectX and WebGPU from the same code.'], ['Your own shaders', 'Materials are WGSL files you can open and change.']],
-    link: ['Rendering in 3D', '3d.html'],
-  },
-  {
-    id: 'physics', scene: 'stack', tag: 'Physics, audio, UI',
-    title: 'Everything a game needs is already in the box.',
-    body: 'Rapier physics in 2D and 3D, audio, UI, input action maps, scenes, prefabs and save files. One crate, and Cargo features switch off whatever you leave out.',
-    points: [['No plugin hunt', 'The parts are made to work with each other.'], ['Pay for what you use', 'A 2D game does not carry the 3D renderer.']],
-    link: ['Physics', 'physics.html'],
-  },
-  {
-    id: 'inspect', scene: 'report', tag: 'Inspect',
-    title: 'See inside the game while it runs.',
-    body: 'A runtime inspector, traces and profiling come with the engine. Run the simulation headless at a fixed tick, with no window and no GPU, for servers, tests and long batch runs.',
-    points: [['Made for agents too', 'An MCP server lets AI tools start, step and screenshot your game.'], ['Reload as you work', 'Assets update when the file changes on disk.']],
-    link: ['Working with agents', 'agents.html'],
-  },
-  {
-    id: 'ship', scene: 'globe', tag: 'Ship',
-    title: 'Desktop, browser, or inside your C++.',
-    body: 'Build for the web with WebGPU or WebGL2 and send people a link. Or drive the engine from native code through its C API and C++17 wrapper.',
-    points: [['A link is a release', 'The game below is a 2.4 MB web build.'], ['Bring your own code', 'Call Ponko from C and C++, or call them from Ponko.']],
-    link: ['Building for the web', 'web.html'],
-  },
+// The whole first program, in both languages. The Rust one is the guide's
+// first game; the C++ one is the same game from examples/cpp/guide.cpp.
+const rust = `use ponko::prelude::*;
+
+fn main() {
+    Game::new("My Game", 800, 600).run(|ctx| {
+        let crab = ctx.gfx.load_texture("crab.png");
+        let mut pos = vec2(400.0, 300.0);
+
+        move |ctx: &mut Ctx| {
+            let dt = ctx.time.dt();
+            if ctx.input.key_down(Key::Right) { pos.x += 200.0 * dt; }
+            if ctx.input.key_down(Key::Left)  { pos.x -= 200.0 * dt; }
+            if ctx.input.key_pressed(Key::Escape) { ctx.quit(); }
+            ctx.gfx.draw(crab, pos);
+        }
+    });
+}`;
+const cpp = `#include "ponko.hpp"
+
+int main() {
+    ponko::texture crab{};
+    ponko::vec2 pos{400, 300};
+    ponko::game("My Game", 800, 600)
+        .system([&](ponko::ctx& ctx) {
+            if (ctx.key_down(PONKO_KEY_RIGHT)) pos.x += 200 * ctx.dt();
+            if (ctx.key_down(PONKO_KEY_LEFT))  pos.x -= 200 * ctx.dt();
+            if (ctx.key_pressed(PONKO_KEY_ESCAPE)) ctx.quit();
+            ctx.draw(crab, pos);
+        })
+        .run([&](ponko::ctx& ctx) { crab = ctx.load_texture("crab.png"); });
+}`;
+
+// What comes with the crate, in pictures. Each level is the one the guide
+// gives the feature (see the maturity page).
+const tiles = [
+  { name: '2D', level: 'proven', image: emberHop, href: '/guide/drawing.html', link: 'Drawing in 2D',
+    alt: 'A platformer level drawn with tiles, sprites, lights and text',
+    text: 'Sprites, sprite sheets, Tiled tilemaps, text, particles and a camera.' },
+  { name: '3D', level: 'tested', image: lights, href: '/guide/3d.html', link: 'Meshes, materials and the sun',
+    alt: 'A dark floor of small cubes lit by dozens of coloured point lights',
+    text: 'PBR meshes, glTF, skeletal animation, shadows, clustered lights, terrain and water, on wgpu.' },
+  { name: 'Your own shaders', level: 'tested', image: shaders, href: '/guide/3d.html', link: 'Custom materials',
+    alt: 'A pond with waves, a field of grass blades and a checkered ball, each drawn by its own shader',
+    text: 'A material is a WGSL file you can open and change. This water and this grass are two of them.' },
+  { name: 'Many entities', level: 'proven', image: battle, href: '/guide/ecs.html', link: 'Entities, components, queries',
+    alt: 'Two armies of ten thousand units each, red and blue, meeting in two long fronts between rocks and mud',
+    text: 'An archetype ECS with queries that can run across all cores. Here two armies of 10,000 units fight; one tick of the simulation takes under a millisecond.' },
+  { name: 'Pathfinding', level: 'tested', image: flow, href: '/guide/pathfinding.html', link: 'Flow fields',
+    alt: 'Twenty thousand agents streaming along shared paths around obstacles toward one goal',
+    text: 'Flow fields move crowds with one field for everyone. Here 20,000 agents share one.' },
+  { name: 'An inspector', level: 'tested', image: inspector, href: '/guide/inspector.html', link: 'The inspector',
+    alt: 'A running game with a panel beside it listing entities, their components and the time each system takes',
+    text: 'A panel in the running game: entities, components, the time each system takes, pause and single-step.' },
+];
+const more: [string, string, string, string][] = [
+  ['Physics', 'proven in 2D, tested in 3D', 'Rapier bodies, joints, characters and vehicles.', '/guide/physics.html'],
+  ['UI', 'proven', 'Retained widgets, layout, animation and screen-reader records.', '/guide/ui.html'],
+  ['Sound', 'tested', 'Music, effects and 3D positioning.', '/guide/audio.html'],
+  ['Multiplayer', 'tested', 'Lockstep, rollback, replication and dedicated servers.', '/guide/multiplayer.html'],
+  ['Scenes and saves', 'proven', 'Scenes, prefabs, save slots and settings.', '/guide/storage.html'],
+  ['Runs without a window', 'proven', 'The same game at a fixed tick, for tests and servers.', '/guide/headless.html'],
+  ['The web', 'tested', 'WebGPU and WebGL2 builds from the same code.', '/guide/web.html'],
+  ['C and C++', 'tested', 'A C API and a C++17 wrapper over the same engine.', '/guide/c-cpp.html'],
+  ['Tools for coding agents', 'tested', 'An MCP server that starts, steps and inspects a game.', '/guide/agents.html'],
 ];
 
-// The stops on the rail: it only shows while the story is pinned.
-const stops = chapters.map((c) => [c.id, c.tag]);
+// Measured against Bevy 0.20.1. Every number is from the guide's benchmark
+// page, which gives the method, the ranges and the commands to run it again.
+const measured: { what: string; ponko: number; bevy: number; unit: string; digits: number }[] = [
+  { what: 'Visit one million entities', ponko: 0.165, bevy: 0.39, unit: 'ms', digits: 3 },
+  { what: 'Draw 100,000 moving sprites', ponko: 1.1, bevy: 11.6, unit: 'ms', digits: 2 },
+  { what: 'Draw 100,000 moving 3D meshes with a sun shadow', ponko: 4.65, bevy: 15.9, unit: 'ms', digits: 2 },
+  { what: 'Build a small game from nothing, debug', ponko: 45.2, bevy: 118, unit: 's', digits: 1 },
+];
+const shown = (n: number, digits: number) => (n >= 100 ? n.toFixed(0) : n >= 10 ? n.toFixed(1) : n.toFixed(digits));
 
 // "Hello, world" step by step: each line says in which step it appears.
 const S = (t: string) => `<span class="kw">${t}</span>`;
@@ -55,26 +106,26 @@ const code: [number, string][] = [
   [1, `${S('fn')} <span class="fn">main</span>() {`],
   [1, `    Game::new(${Q('"My Game"')}, 800, 600)`],
   [7, `        .system(|ctx| {`],
-  [7, `            ${S('let')} dt = ctx.dt();`],
-  [7, `            ctx.world.query::&lt;&amp;${S('mut')} Transform2D&gt;().for_each(|t| t.rotation += dt);`],
+  [7, `            ${S('let')} dt = ctx.time.dt();`],
+  [7, `            ctx.world.query::&lt;&amp;${S('mut')} d2::Transform&gt;().for_each(|t| t.rotation += dt);`],
   [7, `        })`],
   [1, `        .run(|ctx| {`],
   [2, `            ctx.gfx.clear(Color::hex(0x2A1916));`],
-  [3, `            ${S('let')} sprite = ctx.load_texture(${Q('"crab.png"')});`],
+  [3, `            ${S('let')} sprite = ctx.gfx.load_texture(${Q('"crab.png"')});`],
   [3, `            ${S('let mut')} position = vec2(400.0, 300.0);`],
   [6, `            ctx.world.spawn_batch((0..1_000).map(|i| {`],
   [6, `                ${S('let')} at = vec2((i % 40) ${S('as')} f32 * 20.0, (i / 40) ${S('as')} f32 * 24.0);`],
-  [6, `                (Transform2D::at(at), Sprite::new(sprite))`],
+  [6, `                (d2::Transform::at(at), Sprite::new(sprite))`],
   [6, `            }));`],
   [1, ''],
   [1, `            ${S('move')} |ctx: &amp;${S('mut')} Ctx| {`],
-  [4, `                ${S('if')} ctx.key_down(Key::Right) {`],
-  [4, `                    position.x += 200.0 * ctx.dt();`],
+  [4, `                ${S('if')} ctx.input.key_down(Key::Right) {`],
+  [4, `                    position.x += 200.0 * ctx.time.dt();`],
   [4, `                }`],
-  [5, `                ${S('if')} ctx.key_down(Key::Left) {`],
-  [5, `                    position.x -= 200.0 * ctx.dt();`],
+  [5, `                ${S('if')} ctx.input.key_down(Key::Left) {`],
+  [5, `                    position.x -= 200.0 * ctx.time.dt();`],
   [5, `                }`],
-  [3, `                ctx.draw(sprite, position);`],
+  [3, `                ctx.gfx.draw(sprite, position);`],
   [1, `            }`],
   [1, `        });`],
   [1, `}`],
@@ -82,11 +133,11 @@ const code: [number, string][] = [
 const steps = [
   ['A window', '<code>Game::new</code> opens an 800 × 600 window. The closure given to <code>run</code> is your setup: it runs once and returns the closure that runs every frame.'],
   ['A colour', '<code>ctx.gfx.clear</code> fills each frame with one colour before anything else is drawn.'],
-  ['A sprite', '<code>load_texture</code> loads <code>assets/crab.png</code>, and <code>ctx.draw</code> draws it every frame.'],
-  ['Input', 'Hold <kbd>→</kbd> and the crab moves right at 200 pixels per second. Multiplying by <code>ctx.dt()</code> keeps that speed the same at any frame rate.'],
+  ['A sprite', '<code>load_texture</code> loads <code>assets/crab.png</code>, and <code>ctx.gfx.draw</code> draws it every frame.'],
+  ['Input', 'Hold <kbd>→</kbd> and the crab moves right at 200 pixels per second. Multiplying by <code>ctx.time.dt()</code> keeps that speed the same at any frame rate.'],
   ['Both ways', 'The same again for <kbd>←</kbd>.'],
   ['Entities', '<code>spawn_batch</code> creates a thousand entities, each with a position and a sprite. The engine draws them all for you.'],
-  ['A system', 'A system is a function that runs every frame. This one turns every entity that has a <code>Transform2D</code>.'],
+  ['A system', 'A system is a function that runs every frame. This one turns every entity that has a <code>d2::Transform</code>.'],
 ];
 const captions = steps.map(([title, text], i) => `<span class="step-n">${i + 1} / ${steps.length}</span><b>${title}.</b> ${text}`);
 
@@ -97,93 +148,176 @@ const crabRects = crab
   .join('');
 ---
 <Base
-  title="Ponko Engine"
-  description="Ponko is a free, open-source engine for 2D and 3D games, written in Rust. You write the game as ordinary code; the engine handles the window, drawing, input, audio and physics."
-  socialDescription="A free, open-source engine for 2D and 3D games, written in Rust."
-  demoHref="#play"
+  title="Ponko: a Rust game engine you write as plain code"
+  description="Ponko is a free, open-source Rust engine for 2D and 3D games that you write as plain code, with rendering, physics, UI, audio and networking in one crate."
+  socialTitle="Ponko Engine"
+  socialDescription="A free, open-source Rust engine for 2D and 3D games that you write as plain code."
 >
-    <canvas id="dots" class="dots" aria-hidden="true" slot="before"></canvas>
-
-    <nav class="rail" id="rail" aria-label="Chapters">
-      <span class="rail-fill" aria-hidden="true"></span>
-      <img class="rail-rider" src="/brand/ponko-face.svg" width="26" height="20" alt="" />
-      <ol>
-        {stops.map(([id, label], i) => (
-          <li style={`top:${(i / (stops.length - 1)) * 100}%`}><a href={`#${id}`}><i aria-hidden="true"></i><span>{label}</span></a></li>
-        ))}
-      </ol>
-    </nav>
-
     <main id="main">
-      <section class="hero wrap" id="top" data-scene="logo" aria-labelledby="hero-title">
+      <section class="hero wrap" id="top" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <h1 id="hero-title">You make the game.<br />Ponko runs it<span class="stop">.</span></h1>
-          <p class="lede">A free, open-source engine for 2D and 3D games in Rust. Your game is ordinary code you can read from top to bottom. The window, the renderer, input, audio and physics are already there.</p>
+          <h1 id="hero-title">A Rust game engine you write as plain code<span class="stop">.</span></h1>
+          <p class="lede">Ponko is a free, open-source engine for 2D and 3D games. Rendering, physics, UI, audio and networking come in one crate, and your game is ordinary Rust you can read from top to bottom.</p>
           <div class="actions">
             <a class="pill" href="/guide/getting-started.html">Get started</a>
-            <a class="pill ghost" href="#play">Play the demo</a>
+            <a class="pill ghost" href="/examples/">Run the examples</a>
           </div>
-          <div class="install">
-            <code><span class="prompt" aria-hidden="true">$</span> cargo add ponko</code>
-            <button class="copy" type="button" aria-label="Copy the command cargo add ponko">Copy</button>
+          <Install />
+          <p class="status">Version {release.version}, released {released}. For Windows, macOS, Linux and the web: <a href="#today">what has been tested where</a>.</p>
+        </div>
+        <div class="code hero-code" id="hero-code">
+          <div class="code-bar">
+            <div class="tabs" role="tablist" aria-label="Language">
+              <button type="button" role="tab" id="tab-rust" aria-controls="code-rust" aria-selected="true">Rust</button>
+              <button type="button" role="tab" id="tab-cpp" aria-controls="code-cpp" aria-selected="false" tabindex="-1">C++</button>
+            </div>
+            <span>the whole program</span>
           </div>
+          <div class="panels">
+            <div class="panel" id="code-rust" role="tabpanel" aria-labelledby="tab-rust"><Code code={rust} lang="rust" theme={ponkoNight} /></div>
+            <div class="panel" id="code-cpp" role="tabpanel" aria-labelledby="tab-cpp" hidden><Code code={cpp} lang="cpp" theme={ponkoNight} /></div>
+          </div>
+          <p class="code-note">A window, a sprite, and the arrow keys to move it. <a class="arrow" href="/guide/getting-started.html">Build it</a></p>
         </div>
       </section>
 
-      <!-- Pinned: one stage holds still while the scroll moves through the
-           chapters. The empty sections after it each mark one screen of scroll:
-           a chapter's anchor and its picture in dots. -->
-      <div class="story" id="story" style={`--chapters:${chapters.length}`}>
-        <div class="story-stage">
-          <div class="wrap story-grid">
-            {chapters.map((c, i) => (
-              <article class="chapter-copy" data-chapter={i} inert={i > 0 ? true : undefined}>
-                <h2 id={`${c.id}-title`}>{c.title}</h2>
-                <p class="chapter-body">{c.body}</p>
-                <ul class="points">
-                  {c.points.map(([name, text]) => <li><b>{name}</b><span>{text}</span></li>)}
-                </ul>
-                <a class="arrow" href={`/guide/${c.link[1]}`}>{c.link[0]}</a>
-              </article>
-            ))}
-          </div>
-        </div>
-        {chapters.map((c, i) => <section class="chapter" id={c.id} data-scene={c.scene} aria-labelledby={`${c.id}-title`} style={`--i:${i}`}></section>)}
-      </div>
-
-      <section id="play" class="section" data-scene="drift" aria-labelledby="play-title">
+      <section id="play" class="section" aria-labelledby="play-title">
         <div class="wrap">
-          <div class="intro">
-            <h2 id="play-title">Don't take our word for it. Play it.</h2>
-            <p>Wildfire is a game made with Ponko and compiled to WebAssembly. Lightning sets a valley alight, and the fire runs with the wind and up the slopes, and throws embers far ahead. Drag to dig firebreaks and click to call water bombers, and keep it away from five villages.</p>
+          <div class="row">
+            <h2 id="play-title">See it run.</h2>
+            <div class="body">
+              <p>Wildfire is a game made with Ponko and compiled to WebAssembly. Lightning sets a valley alight, and the fire runs with the wind and up the slopes. Dig firebreaks, call water bombers, and keep it away from five villages.</p>
+              <p class="aside">Everything on this page was made by the people who build Ponko. Nobody else has released a game made with it yet.</p>
+            </div>
           </div>
-          <div class="demo" id="demo">
+          <div class="demo demo-split" id="demo">
             <div class="demo-stage">
               <img src="/play/wildfire/poster.webp" alt="Wildfire: a forested valley at night with a river through it, and a wide front of fire burning through the trees toward a village" width="1200" height="750" loading="lazy" decoding="async" />
               <a class="run" id="run" href="/play/wildfire/" target="_blank" rel="noopener">
                 <span class="pill">Play Wildfire</span>
-                <span class="run-note">Opens in a new tab. 3.7 MB, needs WebGPU</span>
+                <span class="run-note">Opens in a new tab. 3.8 MB, needs WebGPU</span>
               </a>
             </div>
             <dl class="boards">
               <div><dt><canvas class="board" data-text="16,384" role="img" aria-label="16,384"></canvas></dt><dd>cells of fuel, heat and wind, stepped twenty times a second</dd></div>
-              <div><dt><canvas class="board" data-text="30,000" role="img" aria-label="30,000"></canvas></dt><dd>trees drawn by the GPU, each one burning with its cell</dd></div>
-              <div><dt><canvas class="board" data-text="3.7 MB" role="img" aria-label="3.7 MB"></canvas></dt><dd>to download, and nothing to install.</dd></div>
+              <div><dt><canvas class="board" data-text="3.8 MB" role="img" aria-label="3.8 MB"></canvas></dt><dd>to download, and nothing to install. <a class="arrow" href={`${site.websiteSource}/tree/main/demo/wildfire`}>Its source</a></dd></div>
             </dl>
+          </div>
+
+          <h3 class="sub">Three complete games in the repository</h3>
+          <Games />
+        </div>
+      </section>
+
+      <section id="features" class="section" aria-labelledby="features-title">
+        <div class="wrap">
+          <div class="row">
+            <h2 id="features-title">One crate, and what is in it.</h2>
+            <div class="body">
+              <p><code>cargo add ponko</code> brings all of this, and Cargo features switch off what a game leaves out. Each part carries a level that says how far it has been proven: <a href="/guide/maturity.html">what the levels mean</a>.</p>
+            </div>
+          </div>
+          <ul class="tiles">
+            {tiles.map((t) => (
+              <li>
+                <a href={t.href}>
+                  <Image src={t.image} alt={t.alt} widths={[480, 800]} sizes="(max-width: 700px) 100vw, (max-width: 1000px) 50vw, 400px" loading="lazy" />
+                  <h3>{t.name}<span class="level">{t.level}</span></h3>
+                  <p>{t.text}</p>
+                  <span class="arrow">{t.link}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <ul class="more">
+            {more.map(([name, level, text, href]) => (
+              <li><a href={href}><b>{name}</b><span class="level">{level}</span><span class="more-text">{text}</span></a></li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section id="measured" class="section" aria-labelledby="measured-title">
+        <div class="wrap">
+          <div class="row">
+            <h2 id="measured-title">Measured, with the method.</h2>
+            <div class="body">
+              <p>Sixteen workloads, written for both engines and run on the same machine. Four of them are below; the guide has all sixteen, the ranges, a second machine and the commands to run them yourself.</p>
+            </div>
+          </div>
+          <ul class="bench" aria-label="Time taken, shorter is faster">
+            {measured.map((m) => (
+              <li>
+                <h3>{m.what}</h3>
+                <div class="bar ours" style={`--w:${((m.ponko / m.bevy) * 100).toFixed(1)}%`}><span>Ponko</span><i aria-hidden="true"></i><b>{shown(m.ponko, m.digits)} {m.unit}</b></div>
+                <div class="bar theirs" style="--w:100%"><span>Bevy 0.20.1</span><i aria-hidden="true"></i><b>{shown(m.bevy, m.digits)} {m.unit}</b></div>
+              </li>
+            ))}
+          </ul>
+          <p class="bench-key">Each bar is the time taken. Shorter is faster.</p>
+          <div class="fine">
+            <p>Apple M4 Max, macOS, Metal, release builds, the median of three runs, measured between 22 and 26 November 2026. Each engine is set up the way a new project starts.</p>
+            <p>With both engines tuned for shipping, which turns on Bevy's pipelined rendering (Ponko has no pipelined renderer), the sprite row is 1.02 ms against 6.74 ms and the 3D row 4.66 ms against 13.7 ms. On a Windows desktop with Vulkan, Bevy draws 1,000 skinned characters faster than Ponko: 8.35 ms against 8.72 ms.</p>
+            <p>These are specific workloads on two machines. They are not a ranking of the engines. <a class="arrow" href="/guide/performance.html">The full tables and the method</a></p>
           </div>
         </div>
       </section>
 
-      <section id="hello" class="section" data-scene="drift" aria-labelledby="hello-title">
+      <section id="fit" class="section" aria-labelledby="fit-title">
         <div class="wrap">
           <div class="row">
-            <h2 id="hello-title">A whole game fits on one screen.</h2>
+            <h2 id="fit-title">Is it for you?</h2>
             <div class="body">
-              <p>This is a complete program. It opens a window, draws a sprite and moves it with the arrow keys. The last two steps add a thousand entities and one system that turns them all.</p>
-              <p><a class="arrow" href="/guide/getting-started.html">Write it yourself in the tutorial</a></p>
+              <p>Ponko is for programmers who would rather read a game's code than assemble it in an editor or out of plugins. It fits 2D games, simulations with many entities, and games you want to test like software.</p>
             </div>
           </div>
-          <div class="hello" id="hello-demo" role="group" aria-roledescription="walkthrough" aria-label="Hello, world in seven steps">
+          <div class="fit">
+            <div>
+              <h3>Pick Ponko if</h3>
+              <ul>
+                <li>you want the game to be plain Rust, with no editor and no list of plugins to put together;</li>
+                <li>your game moves many things at once, or has to run without a window for tests and servers;</li>
+                <li>you can live with an API that still changes between releases.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Pick Bevy if</h3>
+              <ul>
+                <li>you want the largest Rust game-engine community, with plugins and tutorials for most things;</li>
+                <li>you want the whole game built as ECS systems that the engine schedules in parallel.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Pick Godot if</h3>
+              <ul>
+                <li>you want a visual editor and a scene tree;</li>
+                <li>you want to script in GDScript or C#.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="not-yet">
+            <h3>Ponko is the wrong choice today if</h3>
+            <ul>
+              <li><b>you need the API to stay put.</b> Ponko is 0.x. Each of its three releases so far broke something, and more will.</li>
+              <li><b>you are shipping on consoles or phones.</b> Consoles are not supported. iOS and Android are experimental: they run on the simulator and the emulator, and have not been run on a device.</li>
+              <li><b>you need Linux to be a tested target.</b> The code supports it, but no full run of the checks is recorded on Linux yet.</li>
+              <li><b>you need an engine with released games and several maintainers behind it.</b> Ponko has neither yet.</li>
+            </ul>
+            <p><a class="arrow" href="/guide/comparison.html">Ponko next to Bevy and Unity, in detail</a> <a class="arrow" href="/guide/from-bevy.html">Coming from Bevy</a></p>
+          </div>
+        </div>
+      </section>
+
+      <section id="hello" class="section" aria-labelledby="hello-title">
+        <div class="wrap">
+          <div class="row">
+            <h2 id="hello-title">Your first game, a few lines at a time.</h2>
+            <div class="body">
+              <p>The program from the top of this page, grown in seven steps: a window, a colour, a sprite, input, then a thousand entities and one system that turns them all. The panel beside the code is a drawing of what each step does, not the engine running.</p>
+              <p><a class="arrow" href="/guide/getting-started.html">Write it yourself in the guide</a></p>
+            </div>
+          </div>
+          <div class="hello" id="hello-demo" role="group" aria-roledescription="walkthrough" aria-label="A first game in seven steps">
             <div class="code" style={`--lines:${code.length}`}>
               <div class="code-bar"><span>src/main.rs</span><span class="code-meter" aria-hidden="true"><i></i></span></div>
               <pre><code>{code.map(([step, line]) => <span class="ln" data-step={step} hidden={step > 1} set:html={line || ' '} />)}</code></pre>
@@ -191,7 +325,7 @@ const crabRects = crab
             <div class="game">
               <div class="game-bar"><span>My Game</span><span>800 × 600</span></div>
               <div class="game-stage" data-step="1">
-                <span class="empty-note">An empty window, 60 frames a second</span>
+                <span class="empty-note">An empty window</span>
                 <div class="crowd" aria-hidden="true" style={`--crab:url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 8' shape-rendering='crispEdges'>${crabRects.replaceAll('"', "'")}</svg>`)}")`}></div>
                 <svg class="crab" viewBox="0 0 13 8" aria-hidden="true" set:html={crabRects}></svg>
                 <span class="keys" aria-hidden="true"><kbd class="key key-left">←</kbd><kbd class="key key-right">→</kbd></span>
@@ -214,97 +348,101 @@ const crabRects = crab
         </div>
       </section>
 
-      <section id="early" class="section" data-scene="drift" aria-labelledby="early-title">
+      <section id="today" class="section" aria-labelledby="today-title">
         <div class="wrap">
           <div class="row">
-            <h2 id="early-title">It's early. That's the good part.</h2>
-            <div class="body">
-              <p>Ponko is at version 0.1, and <a href="/blog/ponko-0-2-0-rc-1/">0.2 is in release candidate</a> (<code>cargo add ponko@0.2.0-rc.1</code>). It already runs real games, and the one further up this page is one of them. It is still 0.x, so the API can change between versions. Each release says what changed, and the <a href="/guide/migrating-to-0.2.html">migration guide</a> shows every breaking change from 0.1 with the code before and after.</p>
-              <p>Arrive now and you get a say in what it becomes. Bug reports, small fixes and clearer examples all change the engine.</p>
+            <div class="today-side">
+              <h2 id="today-title">Where Ponko is today.</h2>
+              <h3>How it is built</h3>
+              <p>One person directs and reviews Ponko. Much of its code is written by AI coding agents working under that direction. Whoever writes a change, it has to pass the same checks before it is merged: the test suite, Clippy, and the three reference games played by tests without a window. Changes to unsafe ECS code also run under Miri, and changes to the C API under AddressSanitizer and UndefinedBehaviorSanitizer.</p>
               <ul class="links">
                 <li><a href={`${gh}/blob/main/ROADMAP.md`} target="_blank" rel="noopener"><span>Roadmap</span><span>What works and what's next</span></a></li>
-                <li><a href={`${gh}/blob/main/CONTRIBUTING.md`} target="_blank" rel="noopener"><span>Contributing</span><span>How to send a change</span></a></li>
-                <li><a href={`${gh}/issues`} target="_blank" rel="noopener"><span>Issues</span><span>Bugs, questions and ideas</span></a></li>
+                <li><a href={`${gh}/blob/main/STABILITY.md`} target="_blank" rel="noopener"><span>Stability</span><span>What a release may and may not change</span></a></li>
+                <li><a href={`${gh}/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22`} target="_blank" rel="noopener"><span>Good first issues</span><span>Small, scoped, kept for newcomers</span></a></li>
                 <li><a href={gh} target="_blank" rel="noopener"><span>Source</span><span>github.com/ponkoengine/ponko</span></a></li>
               </ul>
+            </div>
+            <div class="body">
+              <dl class="facts">
+                <div><dt>Version</dt><dd>{release.version}, released {released}. Until 0.2.0 is out, <code>cargo add ponko</code> without a version installs {release.stable}. Ponko is 0.x: a release can break the API, and each one lists every break with the code before and after (<a href="/guide/migrating-to-0.2.html">from 0.1 to 0.2</a>).</dd></div>
+                <div><dt>Age</dt><dd>Public since 2 November 2026.</dd></div>
+                <div><dt>People</dt><dd>One maintainer, Leon Mamic, and one other contributor so far.</dd></div>
+                <div><dt>macOS</dt><dd>The whole list of checks has run on Apple silicon with Metal, and the result is <a href="/guide/check-results/macos.html">recorded in the guide</a>.</dd></div>
+                <div><dt>Windows</dt><dd>Rendering fixes, a frame-time baseline and the benchmarks were done on Windows 11 with DirectX 12 and Vulkan. A run of the whole list is not recorded yet.</dd></div>
+                <div><dt>Linux</dt><dd>Supported in the code. Nothing is recorded yet (<a href={`${gh}/issues/500`}>issue 500</a>).</dd></div>
+                <div><dt>The web</dt><dd>WebGL2 is checked in headless Chromium, Firefox and WebKit, and WebGPU on a real GPU, on a Mac.</dd></div>
+                <div><dt>Testing</dt><dd>There is no CI service. Maintainers run the list of checks on their own machines before a change is merged, and record the full runs.</dd></div>
+              </dl>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="finale" id="go" data-scene="finale" aria-labelledby="go-title">
-        <div class="finale-copy">
-          <h2 id="go-title">The game in your head is ready when you are.</h2>
+      <section id="news" class="section" aria-labelledby="news-title">
+        <div class="wrap">
+          <div class="news-head">
+            <h2 id="news-title">News.</h2>
+            <a class="arrow" href="/blog/">All posts</a>
+          </div>
+          <ul class="news">
+            {posts.map((p) => (
+              <li>
+                <a href={postHref(p)}>
+                  <span class="news-art">
+                    {p.data.cover
+                      ? <Image src={p.data.cover} alt="" widths={[400, 800]} sizes="(max-width: 900px) 100vw, 380px" />
+                      : <DotArt id={p.id} art={p.data.art as ArtOptions} cols={40} rows={22} />}
+                  </span>
+                  <time datetime={p.data.date.toISOString().slice(0, 10)}>{formatDate(p.data.date)}</time>
+                  <b>{p.data.title}</b>
+                  <span>{p.data.description}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section class="closing" id="go" aria-labelledby="go-title">
+        <div class="wrap">
+          <h2 id="go-title">Try it.</h2>
+          <p>The guide takes you from an empty folder to a sprite that moves.</p>
           <div class="actions">
-            <a class="pill" href="/guide/getting-started.html">Start your first game</a>
+            <a class="pill" href="/guide/getting-started.html">Get started</a>
+            <a class="pill ghost" href="/learn/">Everything to learn from</a>
           </div>
-          <div class="install">
-            <code><span class="prompt" aria-hidden="true">$</span> cargo add ponko</code>
-            <button class="copy" type="button" aria-label="Copy the command cargo add ponko">Copy</button>
-          </div>
+          <Install />
         </div>
       </section>
     </main>
 
-
     <script>
-      import { dots } from '../scripts/dots';
       import { board } from '../scripts/board';
       import { hello } from '../scripts/hello';
       const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      // The rail: while the story is pinned, the panda rides down it from
-      // chapter to chapter and the stops behind it stay lit. Elsewhere the
-      // page scrolls normally and the rail is hidden.
-      const rail = document.querySelector<HTMLElement>('#rail');
-      const stops = rail ? [...rail.querySelectorAll('li')] : [];
-      const copies = [...document.querySelectorAll<HTMLElement>('.chapter-copy')];
-      let lit = -1;
-      const canvas = document.querySelector<HTMLCanvasElement>('#dots');
-      if (canvas) {
-        dots(canvas, still, ({ index, between }) => {
-          // The pinned story: `at` runs from 0 at the first chapter to
-          // chapters - 1 at the last. Each chapter's words hold while its
-          // picture does, then cross over to the next at the halfway point.
-          const at = index + Math.min(1, between) - 1;
-          const last = copies.length - 1;
-          rail?.style.setProperty('--at', String(Math.max(0, Math.min(1, at / last))));
-          rail?.classList.toggle('on', at > -0.5 && at < last + 0.5);
-          const now = Math.max(0, Math.min(last, Math.round(at)));
-          if (now !== lit) {
-            lit = now;
-            stops.forEach((el, i) => {
-              el.classList.toggle('past', i <= now);
-              el.classList.toggle('here', i === now);
-            });
-          }
-          copies.forEach((el, i) => {
-            // Before the first chapter and after the last, the end ones hold.
-            const edge = (i === 0 && at < 0) || (i === copies.length - 1 && at > i);
-            const d = edge ? 0 : at - i;
-            const shown = Math.max(0, Math.min(1, 1 - (Math.abs(d) - 0.3) / 0.2));
-            el.style.opacity = String(shown);
-            el.style.transform = still ? '' : `translateY(${(-d * 36).toFixed(1)}px)`;
-            el.toggleAttribute('inert', shown < 0.5);
-          });
-        });
-      }
       document.querySelectorAll<HTMLCanvasElement>('.board').forEach((el) => board(el, still));
       const helloEl = document.querySelector<HTMLElement>('#hello-demo');
       if (helloEl) hello(helloEl, still);
 
-      // Copy the install command.
-      document.querySelectorAll<HTMLButtonElement>('.copy').forEach((button) => {
-        button.addEventListener('click', async () => {
-          try {
-            await navigator.clipboard.writeText('cargo add ponko');
-            button.textContent = 'Copied';
-          } catch {
-            button.textContent = 'Select it to copy';
-          }
-          setTimeout(() => (button.textContent = 'Copy'), 1800);
+      // The language tabs over the first program.
+      const tabs = [...document.querySelectorAll<HTMLButtonElement>('#hero-code [role="tab"]')];
+      const pick = (tab: HTMLButtonElement) => {
+        for (const t of tabs) {
+          const on = t === tab;
+          t.setAttribute('aria-selected', String(on));
+          t.tabIndex = on ? 0 : -1;
+          document.getElementById(t.getAttribute('aria-controls')!)!.hidden = !on;
+        }
+      };
+      tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => pick(tab));
+        tab.addEventListener('keydown', (e) => {
+          if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+          const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+          pick(next);
+          next.focus();
         });
       });
-
     </script>
 </Base>

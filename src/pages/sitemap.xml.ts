@@ -8,9 +8,11 @@ export async function GET(context: APIContext) {
   const day = (d: Date) => d.toISOString().slice(0, 10);
   const urls: [string, string?][] = [
     ['/'],
+    ['/learn/'],
+    ['/examples/'],
+    ['/community/'],
     ['/guide/'],
     ['/blog/', posts[0] && day(posts[0].data.date)],
-    ['/dot-lab/'],
     ...posts.map((p): [string, string] => [postHref(p), day(p.data.updated ?? p.data.date)]),
     ...tagsOf(posts).map((t): [string] => [`/blog/tags/${t.slug}/`]),
   ];

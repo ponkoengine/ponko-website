@@ -1,0 +1,62 @@
+---
+import Base from '../layouts/Base.astro';
+import Games from '../components/Games.astro';
+import { site } from '../site';
+
+const gh = site.github;
+---
+<Base title="Examples · Ponko Engine" description="Games and examples made with Ponko: two you can play in the browser, three complete games with their source, and the examples in the engine repository.">
+  <main id="main" class="page">
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Examples</h1>
+        <p>Things made with Ponko that you can play, read and run. All of them were made by the people who build Ponko; nobody else has released a game made with it yet.</p>
+      </header>
+
+      <section class="group" aria-labelledby="browser-title">
+        <h2 id="browser-title">Play in the browser</h2>
+        <p>Both are Ponko games compiled to WebAssembly. They need a browser with WebGPU.</p>
+        <div class="demo">
+          <div class="demo-stage">
+            <img src="/play/wildfire/poster.webp" alt="Wildfire: a forested valley at night with a river through it, and a wide front of fire burning through the trees toward a village" width="1200" height="750" decoding="async" />
+            <a class="run" href="/play/wildfire/" target="_blank" rel="noopener">
+              <span class="pill">Play Wildfire</span>
+              <span class="run-note">Opens in a new tab. 3.8 MB, needs WebGPU</span>
+            </a>
+          </div>
+        </div>
+        <ul class="cards">
+          <li><a class="card" href="/play/wildfire/" target="_blank" rel="noopener"><b>Wildfire</b><span>A fire spreads through a valley with the wind and up the slopes. Dig firebreaks and call water bombers to keep it from five villages.</span></a></li>
+          <li><a class="card" href="/play/tide/" target="_blank" rel="noopener"><b>Tide</b><span>An older, smaller one: thousands of units on a shore, moved by one system.</span></a></li>
+          <li><a class="card" href={`${site.websiteSource}/tree/main/demo`}><b>Their source</b><span>Both games are in this website's repository, each a few files of Rust.</span></a></li>
+        </ul>
+      </section>
+
+      <section class="group" aria-labelledby="games-title">
+        <h2 id="games-title">Three complete games</h2>
+        <p>Each has menus, settings, sound and saves, and is played from start to end by the test suite.</p>
+        <Games />
+      </section>
+
+      <section class="group" aria-labelledby="run-title">
+        <h2 id="run-title">Run them on your machine</h2>
+        <p>The engine repository has about eighty examples, from a single sprite to a battle of a hundred thousand units. Clone it and run any of them:</p>
+        <pre class="shell"><code>git clone {gh}
+cd ponko
+cargo run --release --example coin_dash --features text-shaping
+cargo run --release --example ember_hop --features physics
+cargo run --release --example shard_grove --features navmesh,physics3d</code></pre>
+        <ul class="cards">
+          <li><a class="card" href={`${gh}/tree/main/examples`}><b>All the examples</b><span>The <code>examples</code> folder in the engine repository.</span></a></li>
+          <li><a class="card" href="/guide/cookbook/index.html"><b>Cookbook</b><span>Short recipes for common tasks, each compiled and run by a test.</span></a></li>
+          <li><a class="card" href="/guide/web.html"><b>Build one for the web</b><span>How an example becomes a page you can send as a link.</span></a></li>
+        </ul>
+      </section>
+
+      <section class="group" aria-labelledby="yours-title">
+        <h2 id="yours-title">Made something with Ponko?</h2>
+        <p>Post it in <a href={`${site.discussions}/categories/show-and-tell`}>Show and tell</a>. Games and tools made with Ponko by other people will be listed on this page, with the name of whoever made them.</p>
+      </section>
+    </div>
+  </main>
+</Base>

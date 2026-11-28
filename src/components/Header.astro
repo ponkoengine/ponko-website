@@ -3,21 +3,10 @@
 // width; once the page scrolls it becomes a floating island of frosted
 // glass. A soft highlight glides to whichever link the pointer is on. On
 // phones the links fold into a card that drops out of the island.
-import { site } from '../site';
+import { nav as links } from '../site';
 
-interface Props {
-  demoHref?: string;
-}
-const { demoHref = '/#play' } = Astro.props;
 const here = Astro.url.pathname;
-const links: [string, string][] = [
-  ['Demo', demoHref],
-  ['Guide', '/guide/'],
-  ['Blog', '/blog/'],
-  ['API', site.api],
-  ['GitHub', site.github],
-];
-const current = (href: string) => (href === '/blog/' && here.startsWith('/blog') ? 'page' : undefined);
+const current = (href: string) => (href.startsWith('/') && here.startsWith(href) ? 'page' : undefined);
 ---
 <header class="top" id="top-bar">
   <div class="top-row">
