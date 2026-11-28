@@ -3,6 +3,8 @@
 // clip recorded from the game. A clip plays once when it comes into view,
 // and again when it is pointed at or tapped; asking for reduced motion
 // leaves it a picture until it is tapped.
+// A clip that is replaced gets a new file name: browsers keep the old file
+// for hours under the old one.
 import { getImage } from 'astro:assets';
 import { site } from '../site';
 import examples from '../data/gallery.json';
@@ -28,7 +30,7 @@ const games = [
     links: [...play('ember_hop'), ['Read the source', src('examples/ember_hop')], ['How it was built', '/guide/ember-hop.html']],
   },
   {
-    name: 'Shard Grove', image: shardGrove, clip: '/media/shard-grove.mp4', width: 960, height: 540,
+    name: 'Shard Grove', image: shardGrove, clip: '/media/shard-grove-2.mp4', width: 960, height: 540,
     alt: 'Shard Grove: a hooded warden walking across a walled grove past a stone block, with a red crawler by the gate and a shard on a raised platform',
     text: 'A third-person 3D game: an animated character, enemies that patrol and chase on a navigation mesh, shadows and saves.',
     links: [...play('shard_grove'), ['Read the source', src('examples/shard_grove')], ['How it was built', '/guide/shard-grove.html']],
