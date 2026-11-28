@@ -89,6 +89,41 @@ const more: [string, string, string, string][] = [
 
 // Measured against Bevy 0.20.1. Every number is from the guide's benchmark
 // page, which gives the method, the ranges and the commands to run it again.
+// Why someone would pick Ponko. Every figure is from the guide: the
+// scoreboard and "Build times and download sizes" in performance.md, and
+// "Speed" in c-cpp.md.
+const reasons = [
+  {
+    fig: '16 of 16', title: 'Speed before you tune anything',
+    text: 'On an Apple M4 Max, Ponko is ahead of Bevy 0.20.1 on all sixteen workloads we measured, and on all but one on a Windows desktop. 100,000 moving sprites take 1.10&nbsp;ms against 11.6&nbsp;ms.',
+    link: 'The sixteen workloads', href: '/guide/performance.html#ponko-vs-bevy-the-scoreboard',
+  },
+  {
+    fig: '45 s', title: 'Short builds and small files',
+    text: 'A small 2D game builds from clean in 45 seconds, and its Bevy port in 118. The release binary is 19.4&nbsp;MB against 82.4&nbsp;MB, the gzipped web build 5.8&nbsp;MB against 21.5&nbsp;MB.',
+    link: 'Build times and sizes', href: '/guide/performance.html#build-times-and-download-sizes',
+  },
+  {
+    fig: '1 crate', title: 'The pieces in the box',
+    text: 'Physics in 2D and 3D, a UI, navigation meshes, lockstep and rollback multiplayer, saves, an editor, an inspector and a server for coding agents ship with the engine and are released together.',
+    link: 'What is in the guide', href: '/learn/',
+  },
+  {
+    fig: 'fn(ctx)', title: 'A game that is a plain function',
+    text: 'A system is <code>fn(&amp;mut Ctx)</code>. Systems run in the order you write them, at a fixed rate, so two runs of the same build do the same thing in the same order. Replays and lockstep build on that.',
+    link: 'Determinism', href: '/guide/determinism.html',
+  },
+  {
+    fig: '0 windows', title: 'Tests without a window',
+    text: '<code>run_headless</code> steps a game with no window and no GPU, for tests and servers. The test suite plays the three reference games that way.',
+    link: 'Headless runs', href: '/guide/headless.html',
+  },
+  {
+    fig: '3 languages', title: 'C and C++ as well as Rust',
+    text: 'The same engine has a C API and a header-only C++17 wrapper. A battle of a million units ported to C++ ran a tick in 19.97&nbsp;ms, against 18.85&nbsp;ms in Rust.',
+    link: 'C and C++', href: '/guide/c-cpp.html',
+  },
+];
 const measured: { what: string; ponko: number; bevy: number; unit: string; digits: number }[] = [
   { what: 'Visit one million entities', ponko: 0.165, bevy: 0.39, unit: 'ms', digits: 3 },
   { what: 'Draw 100,000 moving sprites', ponko: 1.1, bevy: 11.6, unit: 'ms', digits: 2 },
@@ -271,27 +306,34 @@ const crabRects = crab
               <p>Ponko is for programmers who would rather read a game's code than assemble it in an editor or out of plugins. It fits 2D games, simulations with many entities, and games you want to test like software.</p>
             </div>
           </div>
+          <div class="pick">
+            <h3>Pick Ponko if you want</h3>
+            <ul>
+              {reasons.map((r) => (
+                <li>
+                  <i class="fig" aria-hidden="true">{r.fig}</i>
+                  <b>{r.title}</b>
+                  <span set:html={r.text} />
+                  <a class="arrow" href={r.href}>{r.link}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
           <div class="fit">
-            <div>
-              <h3>Pick Ponko if</h3>
-              <ul>
-                <li>you want the game to be plain Rust, with no editor and no list of plugins to put together;</li>
-                <li>your game moves many things at once, or has to run without a window for tests and servers;</li>
-                <li>you can live with an API that still changes between releases.</li>
-              </ul>
-            </div>
             <div>
               <h3>Pick Bevy if</h3>
               <ul>
                 <li>you want the largest Rust game-engine community, with plugins and tutorials for most things;</li>
-                <li>you want the whole game built as ECS systems that the engine schedules in parallel.</li>
+                <li>you want the engine to schedule your systems in parallel by itself (Ponko's parallel systems are opt-in);</li>
+                <li>you need observers, generic relationships or a render graph, which Ponko does not have.</li>
               </ul>
             </div>
             <div>
               <h3>Pick Godot if</h3>
               <ul>
                 <li>you want a visual editor and a scene tree;</li>
-                <li>you want to script in GDScript or C#.</li>
+                <li>you want to script in GDScript or C#;</li>
+                <li>you want an engine that years of released games were made with.</li>
               </ul>
             </div>
           </div>
@@ -301,7 +343,7 @@ const crabRects = crab
               <li><b>you need the API to stay put.</b> Ponko is 0.x. Each of its three releases so far broke something, and more will.</li>
               <li><b>you are shipping on consoles or phones.</b> Consoles are not supported. iOS and Android are experimental: they run on the simulator and the emulator, and have not been run on a device.</li>
               <li><b>you need Linux to be a tested target.</b> The code supports it, but no full run of the checks is recorded on Linux yet.</li>
-              <li><b>you need an engine with released games and several maintainers behind it.</b> Ponko has neither yet.</li>
+              <li><b>you need an engine with released games and a large team behind it.</b> Ponko has two maintainers and no released games yet.</li>
             </ul>
             <p><a class="arrow" href="/guide/comparison.html">Ponko next to Bevy and Unity, in detail</a> <a class="arrow" href="/guide/from-bevy.html">Coming from Bevy</a></p>
           </div>
@@ -354,7 +396,7 @@ const crabRects = crab
             <div class="today-side">
               <h2 id="today-title">Where Ponko is today.</h2>
               <h3>How it is built</h3>
-              <p>One person directs and reviews Ponko. Much of its code is written by AI coding agents working under that direction. Whoever writes a change, it has to pass the same checks before it is merged: the test suite, Clippy, and the three reference games played by tests without a window. Changes to unsafe ECS code also run under Miri, and changes to the C API under AddressSanitizer and UndefinedBehaviorSanitizer.</p>
+              <p>Leon Mamic owns Ponko and directs and reviews the work, and a second maintainer helps. Much of its code is written by AI coding agents working under that direction. Whoever writes a change, it has to pass the same checks before it is merged: the test suite, Clippy, and the three reference games played by tests without a window. Changes to unsafe ECS code also run under Miri, and changes to the C API under AddressSanitizer and UndefinedBehaviorSanitizer.</p>
               <ul class="links">
                 <li><a href={`${gh}/blob/main/ROADMAP.md`} target="_blank" rel="noopener"><span>Roadmap</span><span>What works and what's next</span></a></li>
                 <li><a href={`${gh}/blob/main/STABILITY.md`} target="_blank" rel="noopener"><span>Stability</span><span>What a release may and may not change</span></a></li>
@@ -366,7 +408,7 @@ const crabRects = crab
               <dl class="facts">
                 <div><dt>Version</dt><dd>{release.version}, released {released}. Until 0.2.0 is out, <code>cargo add ponko</code> without a version installs {release.stable}. Ponko is 0.x: a release can break the API, and each one lists every break with the code before and after (<a href="/guide/migrating-to-0.2.html">from 0.1 to 0.2</a>).</dd></div>
                 <div><dt>Age</dt><dd>Public since 2 November 2026.</dd></div>
-                <div><dt>People</dt><dd>One maintainer, Leon Mamic, and one other contributor so far.</dd></div>
+                <div><dt>People</dt><dd>Leon Mamic, who owns the project, and a second maintainer, Damjan Pavličević.</dd></div>
                 <div><dt>macOS</dt><dd>The whole list of checks has run on Apple silicon with Metal, and the result is <a href="/guide/check-results/macos.html">recorded in the guide</a>.</dd></div>
                 <div><dt>Windows</dt><dd>Rendering fixes, a frame-time baseline and the benchmarks were done on Windows 11 with DirectX 12 and Vulkan. A run of the whole list is not recorded yet.</dd></div>
                 <div><dt>Linux</dt><dd>Supported in the code. Nothing is recorded yet (<a href={`${gh}/issues/500`}>issue 500</a>).</dd></div>
@@ -391,7 +433,7 @@ const crabRects = crab
                   <span class="news-art">
                     {p.data.cover
                       ? <Image src={p.data.cover} alt="" widths={[400, 800]} sizes="(max-width: 900px) 100vw, 380px" />
-                      : <DotArt id={p.id} art={p.data.art as ArtOptions} cols={40} rows={22} />}
+                      : <DotArt id={p.id} art={p.data.art as ArtOptions} cols={40} rows={22} animate />}
                   </span>
                   <time datetime={p.data.date.toISOString().slice(0, 10)}>{formatDate(p.data.date)}</time>
                   <b>{p.data.title}</b>
