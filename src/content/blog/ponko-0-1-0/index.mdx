@@ -2,9 +2,22 @@
 title: "Ponko 0.1.0: twelve days in, the API we meant to have"
 description: Ponko 0.1.0 is on crates.io. We broke the API once, on purpose, so each thing has one name and one path. What changed, what the engine does today, and what it doesn't do yet.
 date: 2026-11-13
-tags: [Release, Engine, C++]
+updated: 2026-11-28
+authors: ["Leon Mamic"]
+tags: [Release, ECS, C++]
 art: { palette: neon, shape: life }
 ---
+
+import vsUnity from './3d-vs-unity.jpg';
+
+<Callout type="note" title="Ponko 0.2 is on its way">
+
+This post is about 0.1.0, and the code in it is written for 0.1. The first
+[release candidate of 0.2](/blog/ponko-0-2-0-rc-1/) is out, and some of the
+limits listed below are gone in it. The [0.2 migration
+guide](/guide/migrating-to-0.2.html) lists what changed.
+
+</Callout>
 
 Ponko's first commit landed at 12:25 on 2 November. A sprite renderer
 followed 37 minutes later. The next evening it drew 3D meshes with glTF
@@ -14,8 +27,7 @@ its crates restarted at 0.0.1. Today, 13 November, 0.1.0 is on crates.io.
 <Stats>
   <Stat value="12">days from first commit</Stat>
   <Stat value="275">commits on main</Stat>
-  <Stat value="2,955">tests in the repository</Stat>
-  <Stat value="49">CI jobs on the release commit</Stat>
+  <Stat value="2,955">test functions in the repository</Stat>
 </Stats>
 
 ```sh
@@ -46,7 +58,7 @@ Here is what 0.1.0 does about it, area by area.
 
 ### Imports
 
-In 0.0.1, `use ponko::*;` brought in about 300 names. 2D and 3D types sat
+In 0.0.1, `use ponko::*;` brought in the whole crate root. 2D and 3D types sat
 side by side under different names (`Collider`, `Collider3D`). Whole crates
 came along too: `steamworks`, `serde_json`, and `taffy` renamed to
 `ui_layout`.
@@ -256,7 +268,7 @@ a C++ wrapper. The other 13 are [listed with a reason
 each](/guide/c-cpp.html#c-functions-without-a-c-wrapper). Most of them
 already have a C++ equivalent. Every declaration in `ponko.hpp` has a doc
 comment that gives its units, ownership and what it throws. A CI script
-keeps it that way: it fails on a C function without a wrapper, a C++
+kept it that way: it fails on a C function without a wrapper, a C++
 declaration without a comment, or a C or C++ example in the guide that
 isn't compiled.
 
@@ -286,7 +298,7 @@ names, and security. Each area was reworked and reviewed on its own, then all
 nine merged as [#351](https://github.com/ponkoengine/ponko/pull/351). Every
 change is listed old → new. [#352](https://github.com/ponkoengine/ponko/pull/352)
 added the derive, folded the changelog together and wrote the migration
-chapter. Locally, 5,197 tests passed on the result.
+chapter. Locally, the full test suite passed on the result.
 
 Pull requests only run the quick Linux checks. The full matrix runs after a
 merge, and after these two it failed four jobs. On Windows, a test of the
@@ -295,11 +307,12 @@ leaves a Winsock connection in an undefined state. The C and C++ jobs drove a
 release build through `PONKO_CONTROL`, which #351 had just turned off.
 [#353](https://github.com/ponkoengine/ponko/pull/353) fixed both.
 [#354](https://github.com/ponkoengine/ponko/pull/354) finished the docs and
-the C++ API. The release commit passed all 49 jobs.
+the C++ API. The release commit passed every job.
 
-Every public item in the six crates now has docs, and CI fails if a new one
-doesn't. On docs.rs, items behind a Cargo feature say which feature. The
-guide has 51 chapters, and every Rust snippet in it compiles in CI.
+Every public item in the six crates now has docs, and at the time CI failed
+if a new one didn't. On docs.rs, items behind a Cargo feature say which
+feature. The guide has 50 chapters, and every Rust snippet in it compiled in
+CI.
 
 ## A whole program
 
@@ -364,8 +377,11 @@ renderer or the physics engines.
   probes, decals, particles, ribbons, and your own WGSL materials, effects
   and compute passes, all reloaded on save. Quality comes in presets fitted
   to the GPU, and it can tune itself from GPU timings. On an M4 Max MacBook Pro,
-  the guide measures 100,000 spinning cubes with shadows at 402 FPS,
-  fullscreen with vsync off, in 28 draw calls.
+  the guide measured 100,000 spinning cubes with shadows at 402 FPS,
+  fullscreen with vsync off, in 28 draw calls. That run predates 0.1.0 and
+  had SSAO, post-processing and HDR off; the
+  [benchmarks page](https://ponko.dev/guide/performance.html) has the current
+  figures.
 - **Large worlds**: terrain with levels of detail and blended materials,
   GPU-culled instance batches, LOD groups, cell streaming, and meshes and
   textures that stream in within an upload budget and memory limits.
@@ -392,13 +408,16 @@ renderer or the physics engines.
   inspectors, frame traces, performance reports with budgets, and
   validation bundles that record a run and compare it with the next one. An
   in-game inspector doubles as a level editor, and code can be hot patched.
-- **Platforms**: Linux, macOS and Windows, tested on every change. The web,
+- **Platforms**: Linux, macOS and Windows, tested on every change at the
+  time. The web,
   with WebGPU and a WebGL2 fallback. Headless runs for servers and tests.
 - **C and C++**: a C ABI and a header-only C++17 wrapper over all of it.
 
+<Figure src={vsUnity} alt="Two views of the same field of thousands of coloured cubes on green ground under a blue sky, with a row of red and gold spheres in front: Ponko on the left, Unity on the right, mirrored" caption="The 100,000-cube scene from the benchmarks page: Ponko on the left, Unity 6 on the right." wide />
+
 `coin_dash` in the examples puts a lot of this into one small game: menus,
 rebindable controls, saved progress and sound. It's packaged for the desktop
-and the web, and smoke-tested on Linux, macOS, Windows and in browsers.
+and the web, and was smoke-tested on Linux, macOS, Windows and in browsers.
 
 ## What it can't do yet
 

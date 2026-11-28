@@ -2,10 +2,13 @@
 title: "Release candidate: Ponko 0.2.0 RC 1"
 description: The first release candidate of Ponko 0.2 is on crates.io. What a candidate means, what 0.2 brings, what changed in the last week, and how to help us test it.
 date: 2026-11-28
-tags: [Release, Engine]
+authors: ["Leon Mamic"]
+tags: [Release]
 art: { palette: synth, shape: orbits }
 draft: false
 ---
+
+import emberHop from './ember-hop.jpg';
 
 1,064 commits after 0.1.0, we're happy to announce the first release
 candidate of Ponko 0.2, [on crates.io](https://crates.io/crates/ponko/0.2.0-rc.1)
@@ -14,14 +17,17 @@ now!
 Ponko is a 2D and 3D game engine written in Rust, with a C and C++ API on
 top. Start with [the guide](/guide/), browse
 [the source](https://github.com/ponkoengine/ponko), or play the demo on
-[our home page](/). It's free and open source forever!
+[our home page](/). It's free and open source, under the MIT or Apache 2.0
+license, whichever you prefer.
 
 A release candidate means 0.2 is feature complete. From now on `main` only
-takes fixes for regressions: things that worked before and don't now. If a
-week passes without one, 0.2.0 ships with nothing changed but its version
-number. If something turns up, we fix it and publish RC 2.
+takes fixes for regressions: things that worked before and don't now. 0.2.0
+ships when the full list of checks has passed on macOS, Windows and Linux
+and a week has gone by without a new regression. It will be the last
+candidate with nothing changed but its version number. If something turns
+up, we fix it and publish RC 2.
 
-Two weeks ago we wrote that [the next release waits for proof, not
+Four days ago we wrote that [the next release waits for proof, not
 features](/blog/fewer-releases-better-ones/). This week is where that proof
 comes from, and it needs _you_. We've checked Ponko on our machines, but
 only people running it on theirs, with their own projects, can tell us it's
@@ -41,9 +47,12 @@ to [Downloads](#downloads).
 
 ## Highlights
 
-There's a _lot_ in 0.2. It turns Ponko from a fast 2D and 3D core into an
-engine you can ship a whole game with, and the simple path stays the same:
-`Game::new()`, a few systems and `.run()`. Here are some of the highlights:
+There's a _lot_ in 0.2. It adds much of what a finished game needs around
+the fast 2D and 3D core: an editor, game structure, UI, multiplayer, more
+platforms and packaging. Nobody outside the project has shipped a game with
+it yet, and that is part of what this candidate is for. The simple path
+stays the same: `Game::new()`, a few systems and `.run()`. Here are some of
+the highlights:
 
 - **The editor:** `ponko editor` edits 2D and 3D scenes and prefabs, with
   undo, an asset panel and glTF scenes ([guide](/guide/editor.html)).
@@ -71,6 +80,8 @@ The [release notes](/guide/release-0.2.html) cover all of it, area by area,
 each linked to its chapter in the guide. Then there are two tutorials, a
 cookbook of fifty recipes, [Coming from Bevy](/guide/from-bevy.html) and
 three reference games to learn from.
+
+<Figure src={emberHop} alt="A small glowing ember spirit in a dark cave, among sparks, a lit brazier and a row of spikes" caption="Ember Hop, one of the three reference games in the 0.2 guide." wide />
 
 The rest of this post covers what changed in the last week, while we ran
 the checks for this candidate.
@@ -116,10 +127,10 @@ to the native shader compiler, but browsers judge uniformity more strictly,
 rejected the shader, and with it every 3D pipeline. Desktop was fine, which
 is why nothing else noticed.
 
-#703 fixes the branch. #711 goes further: the shader code shared by every
+[#703](https://github.com/ponkoengine/ponko/pull/703) fixes the branch. [#711](https://github.com/ponkoengine/ponko/pull/711) goes further: the shader code shared by every
 material and compute pass no longer uses implicit screen derivatives at
 all, so a later change can't bring the problem back. A test now checks for
-it, and the render tests' 41 images came out byte-identical.
+it, and the render tests' reference images came out byte-identical.
 
 ## Buffers on iOS Safari
 
@@ -132,20 +143,21 @@ now filled through the queue instead. Native keeps the faster path.
 ## Smaller Fixes
 
 - **Windows:** skeleton file paths, a network test's receive buffer, the
-  WebRTC test switch and the C library's self-test (#692, #706).
+  WebRTC test switch and the C library's self-test ([#692](https://github.com/ponkoengine/ponko/pull/692), [#706](https://github.com/ponkoengine/ponko/pull/706)).
 - **Linux:** native crash reports without line tables, and the Arm C
-  library with video (#697).
-- **Rendering:** a 3D frame holding only compute passes skipped them (#702).
+  library with video ([#697](https://github.com/ponkoengine/ponko/pull/697)).
+- **Rendering:** a 3D frame holding only compute passes skipped them ([#702](https://github.com/ponkoengine/ponko/pull/702)).
 - **Tests:** tests that assumed version 0.1.0 now pass at a candidate's
-  version (#700, #704, #705).
+  version ([#700](https://github.com/ponkoengine/ponko/pull/700), [#704](https://github.com/ponkoengine/ponko/pull/704), [#705](https://github.com/ponkoengine/ponko/pull/705)).
 
 ## What We Checked
 
 Our last post listed what a release has to prove. Here's where RC 1 stands:
 
 - **macOS** (Apple Silicon, Metal): the full list of checks passed on the
-  release branch, including Miri, the address and undefined-behaviour
-  sanitizers, all 17 fuzz targets, and the browser runs in Chromium and
+  release branch, including Miri (which runs the unsafe code in an
+  interpreter that catches undefined behaviour), the address and
+  undefined-behaviour sanitizers (builds that stop on a bad memory access), all 17 fuzz targets, and the browser runs in Chromium and
   WebKit.
 - **Windows:** earlier full runs with DirectX 12 and Vulkan found the Windows
   problems fixed above. A full run on an NVIDIA card is in progress.
@@ -154,7 +166,8 @@ Our last post listed what a release has to prove. Here's where RC 1 stands:
 - **People:** no newcomer has followed the guide yet, and the hardware checks
   (controllers, displays, HDR) are still open.
 
-0.2.0 doesn't ship until the full list passes on all three.
+So 0.2.0 isn't out yet: the full list has to pass on Windows and Linux too,
+and then a week has to go by without a new regression.
 
 ## Changelog
 
@@ -195,8 +208,9 @@ a plain `cargo add ponko` still gives you 0.1.
 </Steps>
 
 <Callout type="note" title="A candidate is still a pre-release">
-  We think RC 1 is ready for real projects, but it isn't a stable release
-  yet. Keep your project in version control, and expect an RC 2 if testing
+  We think RC 1 is ready for you to try on a copy of a real project, but it
+  isn't a stable release yet, and it has only been through the full checks on
+  macOS. Keep your project in version control, and expect an RC 2 if testing
   turns something up.
 </Callout>
 
@@ -205,11 +219,13 @@ a plain `cargo add ponko` still gives you 0.1.
 During the candidate week we fix only regressions. These are the ones we
 already know about:
 
-- **3D in Safari 26 on WebGPU:** after the fixes above, some 3D scenes still
-  lose the GPU device or freeze right after they start in Safari on macOS
-  (#701). Chromium draws them.
-- **Render tests on non-Apple GPUs:** the last part of #497 waits for the
-  NVIDIA run.
+- **3D in Safari 26 on WebGPU:** the fixes above stop Safari rejecting
+  every 3D shader, which is the part of [#701](https://github.com/ponkoengine/ponko/issues/701) the changelog lists as fixed.
+  The issue stays open because some 3D scenes still lose the GPU device or
+  freeze right after they start in Safari on macOS. Chromium draws them.
+- **Render tests on non-Apple GPUs:** the last part of [#497](https://github.com/ponkoengine/ponko/issues/497), which checks
+  the render tests' images on other graphics cards, waits for the NVIDIA
+  run.
 
 The [issue tracker](https://github.com/ponkoengine/ponko/issues) has every
 known bug.
@@ -229,4 +245,5 @@ don't have makes it better. Special thanks to
 [@damix00](https://github.com/damix00), whose Windows and Safari runs this
 week found and fixed several of the problems above.
 
-See you at 0.2.0!
+The [migration guide](/guide/migrating-to-0.2.html) has every breaking
+change with its fix. See you at 0.2.0!
