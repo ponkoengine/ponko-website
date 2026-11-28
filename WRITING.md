@@ -28,7 +28,7 @@ title: What's new in Ponko 0.1          # up to 90 characters
 description: One or two sentences.      # list, search results and social cards
 date: 2026-11-11                        # the day it's published
 updated: 2026-12-01                     # optional: a change readers should know about
-authors: [Leon Mamic]                   # who wrote it; defaults to Leon Mamic
+authors: [Leon Mamić]                   # who wrote it; defaults to Leon Mamić
 tags: [Release, Rendering]              # its kind, then up to four areas
 art: { palette: ember, shape: blobs }   # optional: see "The picture in dots"
 cover: ./cover.png                      # optional: a picture next to the file
@@ -233,7 +233,7 @@ Only the first candidate gets a post. Later candidates update it.
 ### Credits
 
 A post is signed with the name of the person who wrote it (`authors`), or
-the names of the people who did. The maintainer signs as `Leon Mamic`, and a
+the names of the people who did. The maintainer signs as `Leon Mamić`, and a
 post without `authors` gets that name. We don't sign as "the Ponko team":
 a reader should know who is talking. Commits and pull requests for posts
 carry no tool attribution: no co-author lines and no "generated with"
