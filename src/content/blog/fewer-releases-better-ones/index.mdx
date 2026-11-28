@@ -2,6 +2,7 @@
 title: "Fewer releases, better ones"
 description: Ponko's main branch is more than 900 commits past 0.1.0, and we are not releasing it yet. Why the next release waits for proof instead of features, what that proof is, and how to follow along in the meantime.
 date: 2026-11-24
+updated: 2026-11-28
 authors: ["Leon Mamic"]
 tags: [Project]
 art: { palette: sea, shape: ripple }
@@ -9,6 +10,19 @@ draft: false
 ---
 
 import grove from './shard-grove.jpg';
+
+<Callout type="note" title="Since this post">
+
+Some of the list below is done. The render tests were fixed on Direct3D 12
+and Vulkan on a Windows desktop with an AMD card
+([#556](https://github.com/ponkoengine/ponko/pull/556)); the last part of
+[#497](https://github.com/ponkoengine/ponko/issues/497) waits for a run on
+an NVIDIA card.
+The comparison with Bevy now has
+[a second machine](/guide/performance.html#windows-desktop-ryzen-5-3600-radeon-rx-vega-directx-12-and-vulkan).
+And the first [release candidate of 0.2](/blog/ponko-0-2-0-rc-1/) is out.
+
+</Callout>
 
 Ponko 0.1.0 came out on 13 November. Since then `main` has moved more than
 900 commits past it: game states, an entity hierarchy, rollback netcode, an
@@ -20,7 +34,7 @@ We could release it tomorrow. We are not going to, and this post says why.
 <Stats>
   <Stat value="946">commits on main since 0.1.0</Stat>
   <Stat value="1">machine the benchmarks ran on</Stat>
-  <Stat value="11">render tests failing on DirectX 12</Stat>
+  <Stat value="17">issues the next release waits on</Stat>
   <Stat value="0">games shipped by someone else</Stat>
 </Stats>
 
@@ -30,9 +44,10 @@ Ponko has grown fast, and the list of what it can do is long. The list of
 what we have *proven* is much shorter.
 
 On 23 November the render tests ran on a Windows machine for the first time
-since we lost our CI. DirectX 12 failed 11 of them, and a fresh clone with
-Git's default settings failed about 20 other tests. All of that code had
-been marked done.
+since we lost our CI. Some of them failed on DirectX 12, and a fresh clone
+with Git's default settings on Windows failed more tests, until
+[#516](https://github.com/ponkoengine/ponko/pull/516) pinned the line
+endings. All of that code had been marked done.
 
 That is the pattern we want to break. Some honest examples:
 
@@ -67,7 +82,9 @@ proof, not for more features:
    systems, tested on one, or experimental. No more chapters that all read
    alike.
 
-All of this is in the open as issues #499 to #515.
+All of this is in the open as issues
+[#499](https://github.com/ponkoengine/ponko/issues/499) to
+[#515](https://github.com/ponkoengine/ponko/issues/515).
 
 <Callout type="note" title="So how often?">
   A few releases a year, each when its list is done. No dates. Fixes for
