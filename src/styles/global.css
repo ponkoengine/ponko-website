@@ -96,6 +96,7 @@ pre {
 .post-row-mark,
 .post-hero,
 .embed-stage,
+.plays .shot,
 .screen {
   color-scheme: dark;
   color: var(--text);
@@ -177,9 +178,10 @@ main,
 }
 
 /* Links that leave the site get a small arrow pointing up and out. */
-a[href^="http"]:not(.links a, .card)::after,
+a[href^="http"]:not(.links a, .card, .play)::after,
 .links a span:first-child::after,
-.card[href^="http"] b::after {
+.card[href^="http"] b::after,
+.play[href^="http"] .play-title::after {
   content: "";
   display: inline-block;
   width: 0.56em;
@@ -1345,7 +1347,7 @@ a[href^="http"]:not(.links a, .card)::after,
 .fine a:not(.arrow),
 .facts a,
 .row .body > p a:not(.arrow),
-.page a:not(.arrow, .pill, .card) {
+.page a:not(.arrow, .pill, .card, .play) {
   color: var(--ink);
   text-decoration: underline;
   text-decoration-color: var(--faint);
@@ -1355,7 +1357,7 @@ a[href^="http"]:not(.links a, .card)::after,
 .fine a:not(.arrow):hover,
 .facts a:hover,
 .row .body > p a:not(.arrow):hover,
-.page a:not(.arrow, .pill, .card):hover {
+.page a:not(.arrow, .pill, .card, .play):hover {
   text-decoration-color: var(--accent);
 }
 
@@ -1567,6 +1569,99 @@ a[href^="http"]:not(.links a, .card)::after,
   display: inline-block;
   margin-top: auto;
   font-size: 16px;
+}
+/* The engine's examples in the web gallery (Examples page): a picture and
+   a line each, four to a row. */
+.plays-kind {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 36px 0 0;
+  color: var(--ink);
+  font-size: 21px;
+  font-weight: 500;
+}
+.plays-count {
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+}
+.plays {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 28px 24px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.plays li {
+  display: flex;
+}
+.plays a {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.plays .shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #0a0b0d;
+  transition: border-color 0.15s;
+}
+.plays a:hover .shot {
+  border-color: var(--faint);
+}
+.plays b {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 12px 0 4px;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 500;
+}
+.plays a > span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.plays-more {
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+@media (max-width: 1000px) {
+  .plays {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* On a phone each group is a row you swipe, like the home page's pictures. */
+@media (max-width: 700px) {
+  .plays {
+    display: flex;
+    gap: 14px;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .plays::-webkit-scrollbar {
+    display: none;
+  }
+  .plays > li {
+    flex: 0 0 70%;
+    scroll-snap-align: start;
+  }
 }
 .level {
   flex: none;

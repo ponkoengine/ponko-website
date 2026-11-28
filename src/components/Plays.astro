@@ -1,0 +1,40 @@
+---
+// The engine's examples in the web gallery (site.gallery): a picture and a
+// link for each, grouped 2D and 3D. The list and its text are the gallery's
+// examples.json; the pictures are frames the gallery's browser check saved.
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import { site } from '../site';
+import examples from '../data/gallery.json';
+
+const pictures = import.meta.glob<{ default: ImageMetadata }>('../assets/examples/*.jpg', { eager: true });
+const pictureOf = (example: string) => pictures[`../assets/examples/${example.replace(/_/g, '-')}.jpg`]?.default;
+const groups = [
+  { kind: '2d', title: '2D' },
+  { kind: '3d', title: '3D' },
+].map((g) => ({ ...g, examples: examples.filter((e) => e.kind === g.kind) }));
+---
+{groups.map((g) => {
+  const withPicture = g.examples.filter((e) => e.picture && pictureOf(e.example));
+  const without = g.examples.filter((e) => !withPicture.includes(e));
+  return (
+    <>
+      <h3 class="plays-kind">{g.title}<span class="plays-count">{g.examples.length} examples</span></h3>
+      <ul class="plays">
+        {withPicture.map((e) => (
+          <li>
+            <a class="play" href={`${site.gallery}${e.example}/`} title={e.shows}>
+              <Image class="shot" src={pictureOf(e.example)!} alt={e.alt ?? ''} widths={[320, 480]} sizes="(max-width: 700px) 70vw, (max-width: 1000px) 45vw, 300px" width={480} height={300} loading="lazy" decoding="async" />
+              <b><span class="play-title">{e.title}</span>{e.webgpu === 'required' && <span class="level">needs WebGPU</span>}</b>
+            </a>
+          </li>
+        ))}
+      </ul>
+      {without.length > 0 && (
+        <p class="plays-more">Also in the gallery: {without.map((e, i) => (
+          <>{i > 0 && ', '}<a href={`${site.gallery}${e.example}/`}>{e.title}</a></>
+        ))}.</p>
+      )}
+    </>
+  );
+})}

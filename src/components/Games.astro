@@ -5,29 +5,33 @@
 // leaves it a picture until it is tapped.
 import { getImage } from 'astro:assets';
 import { site } from '../site';
+import examples from '../data/gallery.json';
 import coinDash from '../assets/home/coin-dash.jpg';
 import emberHop from '../assets/home/ember-hop.jpg';
 import shardGrove from '../assets/home/shard-grove.jpg';
 
 const src = (path: string) => `${site.github}/tree/main/${path}`;
+// The game's page in the web gallery, if the gallery has it.
+const play = (example: string): [string, string][] =>
+  examples.some((e) => e.example === example) ? [['Play in the browser', `${site.gallery}${example}/`]] : [];
 const games = [
   {
     name: 'Coin Dash', image: coinDash, clip: '/media/coin-dash.mp4', width: 800, height: 600,
     alt: 'Coin Dash: a small knight on a grass field with four coins left to collect and a clock running',
     text: 'A small complete 2D game: menus, settings, rebindable controls and a saved best time, in English and Arabic.',
-    links: [['Read the source', src('examples/coin_dash')], ['How it is packaged', '/guide/packaging.html']],
+    links: [...play('coin_dash'), ['Read the source', src('examples/coin_dash')], ['How it is packaged', '/guide/packaging.html']],
   },
   {
     name: 'Ember Hop', image: emberHop, clip: '/media/ember-hop.mp4', width: 960, height: 540,
     alt: 'Ember Hop: a glowing ember spirit on a cave platform, with sparks to collect, spikes in a pit and a lit brazier',
     text: 'A platformer with two caves made in the Tiled map editor, physics, particles, sound and save slots.',
-    links: [['Read the source', src('examples/ember_hop')], ['How it was built', '/guide/ember-hop.html']],
+    links: [...play('ember_hop'), ['Read the source', src('examples/ember_hop')], ['How it was built', '/guide/ember-hop.html']],
   },
   {
     name: 'Shard Grove', image: shardGrove, clip: '/media/shard-grove.mp4', width: 960, height: 540,
     alt: 'Shard Grove: a hooded warden walking across a walled grove past a stone block, with a red crawler by the gate and a shard on a raised platform',
     text: 'A third-person 3D game: an animated character, enemies that patrol and chase on a navigation mesh, shadows and saves.',
-    links: [['Read the source', src('examples/shard_grove')], ['How it was built', '/guide/shard-grove.html']],
+    links: [...play('shard_grove'), ['Read the source', src('examples/shard_grove')], ['How it was built', '/guide/shard-grove.html']],
   },
 ];
 const posters = await Promise.all(games.map((g) => getImage({ src: g.image, width: 960, format: 'webp' })));
