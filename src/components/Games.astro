@@ -1,6 +1,6 @@
 ---
-// The three reference games in the engine repository, with a short clip
-// recorded from the game where there is one. A clip plays once when it comes into view,
+// The three reference games in the engine repository, each with a short
+// clip recorded from the game. A clip plays once when it comes into view,
 // and again when it is pointed at or tapped; asking for reduced motion
 // leaves it a picture until it is tapped.
 import { getImage } from 'astro:assets';
@@ -24,8 +24,8 @@ const games = [
     links: [['Read the source', src('examples/ember_hop')], ['How it was built', '/guide/ember-hop.html']],
   },
   {
-    name: 'Shard Grove', image: shardGrove, clip: undefined, width: 960, height: 540,
-    alt: 'Shard Grove: a character seen from behind in a walled grove, with a red crawler nearby and a shard on a far wall',
+    name: 'Shard Grove', image: shardGrove, clip: '/media/shard-grove.mp4', width: 960, height: 540,
+    alt: 'Shard Grove: a hooded warden walking across a walled grove past a stone block, with a red crawler by the gate and a shard on a raised platform',
     text: 'A third-person 3D game: an animated character, enemies that patrol and chase on a navigation mesh, shadows and saves.',
     links: [['Read the source', src('examples/shard_grove')], ['How it was built', '/guide/shard-grove.html']],
   },
@@ -48,7 +48,7 @@ const posters = await Promise.all(games.map((g) => getImage({ src: g.image, widt
     </li>
   ))}
 </ul>
-<p class="games-note">The test suite plays all three without a window. The first two are recordings of the games: point at one or tap it to play it again.</p>
+<p class="games-note">The test suite plays all three without a window. The clips are recordings of the games; point at one or tap it to play it again.</p>
 
 <script>
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
