@@ -35,8 +35,9 @@ export const codeFrame = {
   },
 };
 
-// Code colours for the blog, in Ponko's palette: cream text on warm night,
-// orange keywords, amber functions, sage strings.
+// Code colours for the blog, in Ponko's palette. Night: cream text on warm
+// night, orange keywords, amber functions, sage strings. Paper (below) is the
+// same roles in ink on white.
 export const ponkoNight = {
   name: 'ponko-night',
   type: 'dark',
@@ -61,4 +62,21 @@ export const ponkoNight = {
     { scope: ['markup.deleted', 'meta.diff.header.from-file'], settings: { foreground: '#ff8a7a' } },
     { scope: ['markup.heading'], settings: { foreground: '#f08a5d', fontStyle: 'bold' } },
   ],
+};
+
+// The same roles on paper: each night colour and the ink that stands in for it.
+const onPaper = {
+  '#eadccd': '#2b221c', '#8a7b70': '#8c8078', '#b3a397': '#75675d', '#b9cf8a': '#4a7419',
+  '#d6e3a8': '#3c6410', '#f08a5d': '#b8430f', '#f3c26b': '#8a5a00', '#f2d9b0': '#6b4a2b',
+  '#ff9d6e': '#c2410c', '#e79ab5': '#a83e73', '#c9a7d8': '#7a4b99', '#d8c3ae': '#5c4a3c',
+  '#ff8a7a': '#b3261e',
+};
+export const ponkoPaper = {
+  name: 'ponko-paper',
+  type: 'light',
+  colors: { 'editor.background': '#ffffff', 'editor.foreground': '#2b221c' },
+  tokenColors: ponkoNight.tokenColors.map((t) => ({
+    ...t,
+    settings: { ...t.settings, foreground: onPaper[t.settings.foreground] ?? t.settings.foreground },
+  })),
 };

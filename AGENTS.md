@@ -54,13 +54,14 @@ under `/guide/` is the engine's mdBook, built from the engine's `main`.
 ## Design
 
 - Two themes from one set of variables in `global.css` (`--night`,
-  `--panel`, `--ink`, `--accent`, ...): ink, which is the default, and paper,
+  `--panel`, `--ink`, `--accent`, ...): paper, which is the default, and ink,
   which the button in the header switches to. Each variable is written
   `light-dark(paper, ink)`. Use the variables, never a fixed colour, so both
   themes keep working.
-- Code, terminals, number boards and anything a game draws are "screens":
-  they stay dark in both themes. Add a new one to the "Screens" rule in
-  `global.css`.
+- Number boards, dot pictures and anything a game draws are "screens": they
+  stay dark in both themes. Add a new one to the "Screens" rule in
+  `global.css`. Code and terminals are "windows": `var(--window)` with
+  `var(--window-shadow)`, white on paper. No coloured glows.
 - Two fonts, Jost and JetBrains Mono, served from the site. Do not add a font
   or script from another host.
 - The site's own mark is the dot: the logo, the post pictures, the number

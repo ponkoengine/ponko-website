@@ -752,7 +752,7 @@ span.pager-step:last-child::after {
   overflow: hidden;
   border-radius: 14px;
   border: 1px solid var(--line);
-  background: var(--panel);
+  background: var(--window);
 }
 .prose > .code-block {
   margin-top: 1.6em;

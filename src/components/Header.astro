@@ -31,19 +31,19 @@ const current = (href: string) => (href.startsWith('/') && here.startsWith(href)
 </header>
 
 <script>
-  // Ink is the theme unless the button has been pressed; choosing paper is
-  // remembered, and choosing ink again forgets it.
+  // Paper is the theme unless the button has been pressed; choosing ink is
+  // remembered, and choosing paper again forgets it.
   const themeButton = document.querySelector<HTMLButtonElement>('#theme-button');
   if (themeButton) {
     const root = document.documentElement;
-    const light = () => root.dataset.theme === 'light';
-    const label = () => themeButton.setAttribute('aria-label', `Switch to the ${light() ? 'dark' : 'light'} theme`);
+    const dark = () => root.dataset.theme === 'dark';
+    const label = () => themeButton.setAttribute('aria-label', `Switch to the ${dark() ? 'light' : 'dark'} theme`);
     themeButton.addEventListener('click', () => {
-      const next = !light();
-      if (next) root.dataset.theme = 'light';
+      const next = !dark();
+      if (next) root.dataset.theme = 'dark';
       else delete root.dataset.theme;
       try {
-        if (next) localStorage.setItem('ponko-theme', 'light');
+        if (next) localStorage.setItem('ponko-theme', 'dark');
         else localStorage.removeItem('ponko-theme');
       } catch {
         // No storage: the choice lasts for this page.

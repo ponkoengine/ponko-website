@@ -102,10 +102,10 @@ try {
       env: {
         ...process.env,
         MDBOOK_OUTPUT__HTML__SITE_URL: "/guide/",
-        // Ink by default, like the site, whatever the system prefers. The
-        // guide's own theme button still offers the light ones.
-        MDBOOK_OUTPUT__HTML__DEFAULT_THEME: "coal",
-        MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME: "coal",
+        // Paper by default, like the site, whatever the system prefers. The
+        // guide's own theme button still offers the dark ones.
+        MDBOOK_OUTPUT__HTML__DEFAULT_THEME: "light",
+        MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME: "light",
       },
     },
   );
