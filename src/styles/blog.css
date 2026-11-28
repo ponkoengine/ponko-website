@@ -976,6 +976,33 @@ span.pager-step:last-child::after {
   margin-right: 0;
 }
 
+/* Pairs of dot bars: one pair per thing measured. */
+.prose .bars {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  max-width: var(--measure);
+  margin: 2em 0;
+  padding: 0;
+  list-style: none;
+}
+.prose .bars li {
+  margin: 0;
+  padding: 0;
+}
+.prose .bars li::before,
+.prose .bars li::marker {
+  content: none;
+}
+.prose .bars-what {
+  margin: 0 0 4px;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 500;
+}
+.prose .bars .bar {
+  margin: 0;
+}
+
 /* Numbers on dot-matrix boards. */
 .stats {
   display: grid;

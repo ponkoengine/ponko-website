@@ -1,6 +1,7 @@
 // Components every post can use without importing them. Add new ones here
 // and list them in WRITING.md.
 import A from './A.astro';
+import Bars from './Bars.astro';
 import Callout from './Callout.astro';
 import Figure from './Figure.astro';
 import Play from './Play.astro';
@@ -12,6 +13,7 @@ import YouTube from './YouTube.astro';
 
 export const components = {
   a: A,
+  Bars,
   Callout,
   Figure,
   Play,
