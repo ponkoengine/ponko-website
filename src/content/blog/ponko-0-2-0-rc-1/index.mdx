@@ -1,25 +1,32 @@
 ---
 title: "Release candidate: Ponko 0.2.0 RC 1"
-description: The first release candidate of Ponko 0.2 is on crates.io. What a candidate means, what 0.2 brings, what we checked and what we haven't yet, and how to help test it.
+description: The first release candidate of Ponko 0.2 is on crates.io. What a candidate means, what 0.2 brings, what changed in the last week, and how to help us test it.
 date: 2026-11-28
 tags: [Release, Engine]
 art: { palette: synth, shape: orbits }
 draft: false
 ---
 
-Two weeks ago we said the [next release would wait for proof, not for
-features](/blog/fewer-releases-better-ones/). Today we're starting on that
-proof, with the first release candidate of Ponko 0.2.
+1,064 commits after 0.1.0, we're happy to announce the first release
+candidate of Ponko 0.2, [on crates.io](https://crates.io/crates/ponko/0.2.0-rc.1)
+now!
 
-A release candidate means 0.2 is feature complete: nothing else goes in, and
-from now on `main` only takes fixes for problems found in the candidate. If
-nobody finds a regression in it for a week, 0.2.0 ships with only its version
-number changed. If someone does, we fix it and publish RC 2.
+Ponko is a 2D and 3D game engine written in Rust, with a C and C++ API on
+top. Start with [the guide](/guide/), browse
+[the source](https://github.com/ponkoengine/ponko), or play the demo on
+[our home page](/). It's free and open source forever!
 
-That makes this the part where you come in. We can check Ponko on our own
-machines, and we have. But only people using it on their own machines, with
-their own projects, can tell us it's ready. Make a copy of your project
-before you upgrade, or better, keep it in version control.
+A release candidate means 0.2 is feature complete. From now on `main` only
+takes fixes for regressions: things that worked before and don't now. If a
+week passes without one, 0.2.0 ships with nothing changed but its version
+number. If something turns up, we fix it and publish RC 2.
+
+Two weeks ago we wrote that [the next release waits for proof, not
+features](/blog/fewer-releases-better-ones/). This week is where that proof
+comes from, and it needs _you_. We've checked Ponko on our machines, but
+only people running it on theirs, with their own projects, can tell us it's
+ready. Make a copy of your project before you upgrade, or better, keep it in
+version control.
 
 <Stats>
   <Stat value="1,064">commits since 0.1.0</Stat>
@@ -28,110 +35,138 @@ before you upgrade, or better, keep it in version control.
   <Stat value="90.2%">of lines covered by tests</Stat>
 </Stats>
 
-Jump to [Downloads](#downloads) to try it now, or read on for what's in it.
+Coming from 0.1? [Migrating from 0.1 to 0.2](/guide/migrating-to-0.2.html)
+shows every breaking change with the code before and after. Or jump straight
+to [Downloads](#downloads).
 
 ## Highlights
 
-0.1 was a fast 2D and 3D core. 0.2 is meant to be an engine you can ship a
-whole game with. It adds the tools around the code, the systems most games
-need, and multiplayer, while the simple path stays the same:
-`Game::new()`, a few systems and `.run()`.
+There's a _lot_ in 0.2. It turns Ponko from a fast 2D and 3D core into an
+engine you can ship a whole game with, and the simple path stays the same:
+`Game::new()`, a few systems and `.run()`. Here are some of the highlights:
 
-- **Building scenes**: an [editor](/guide/editor.html) (`ponko editor`) for
-  2D and 3D scenes and prefabs, with undo and an asset panel. `ponko cook`
-  turns source assets into runtime files, levels load from Tiled and LDtk,
-  and [saves](/guide/storage.html) migrate between versions of your game.
-- **Game structure**: an [entity hierarchy](/guide/hierarchy.html),
+- **The editor:** `ponko editor` edits 2D and 3D scenes and prefabs, with
+  undo, an asset panel and glTF scenes ([guide](/guide/editor.html)).
+- **Game structure:** an [entity hierarchy](/guide/hierarchy.html),
   [game states](/guide/states.html), component hooks, required components
   and [plugins](/guide/plugins.html) for other people's crates.
-- **Rendering**: 2D lights and particles, several cameras in one window, a
-  sky kit, a [water kit](/guide/water.html), baked and probe lighting,
-  material layers read from glTF (clear coat, sheen, transmission and more),
-  temporal upscaling, auto exposure and [HDR output](/guide/hdr.html).
-- **Animation and crowds**: [2D skeletons](/guide/skeleton2d.html),
-  humanoid retargeting, and [crowds](/guide/crowds.html) of thousands of
-  animated characters in a few draw calls.
-- **UI and input**: a [widget set](/guide/ui-widgets.html), text shaping,
-  IME, [localization](/guide/localization.html), screen readers on Windows
-  and Linux, touch controls, and controllers with gyro and rumble.
-- **Audio**: a mixer of nested buses with effects and snapshots.
-- **Multiplayer**: [rollback](/guide/multiplayer.html), declared
-  replication, client prediction, [dedicated servers](/guide/servers.html),
-  a reference lobby server with relay, WebRTC and Steam.
-- **Platforms**: [iOS](/guide/ios.html), [Android](/guide/android.html),
-  threads on the web, WebGPU first in the browser, and C library downloads
-  for more systems.
-- **Shipping**: `ponko new` and `ponko package`, crash reports with native
+- **Rendering:** 2D lights, a [water kit](/guide/water.html), baked and
+  probe lighting, glTF material layers, temporal upscaling and
+  [HDR output](/guide/hdr.html).
+- **Crowds:** [thousands of animated characters](/guide/crowds.html) in a
+  few draw calls, plus [2D skeletons](/guide/skeleton2d.html) and humanoid
+  retargeting.
+- **UI:** a [widget set](/guide/ui-widgets.html), text shaping, IME,
+  [localization](/guide/localization.html) and screen readers on Windows and
+  Linux.
+- **Multiplayer:** [rollback](/guide/multiplayer.html), replication, client
+  prediction, [dedicated servers](/guide/servers.html), a lobby server,
+  WebRTC and Steam.
+- **More platforms:** [iOS](/guide/ios.html), [Android](/guide/android.html),
+  threads on the web, and WebGPU first in the browser.
+- **Shipping:** `ponko new` and `ponko package`, crash reports with native
   backtraces, mods, and error messages that tell you the fix.
-- **Learning it**: a 2D and a 3D tutorial, a cookbook of fifty recipes, a
-  [guide for people coming from Bevy](/guide/from-bevy.html), and three
-  reference games.
 
-The [release notes](/guide/release-0.2.html) have the full list, linked to
-the guide chapter for each part.
+The [release notes](/guide/release-0.2.html) cover all of it, area by area,
+each linked to its chapter in the guide. Then there are two tutorials, a
+cookbook of fifty recipes, [Coming from Bevy](/guide/from-bevy.html) and
+three reference games to learn from.
 
-## The last week
+The rest of this post covers what changed in the last week, while we ran
+the checks for this candidate.
 
-These are the changes that went in while we ran the checks for this
-candidate. Most of them are fixes for things the checks found:
+## Compute Readback
 
-- **Web**: 3D canvases were blank in every browser on WebGPU. A branch in
-  the built-in material shader passed the native shader compiler but failed
-  browsers' stricter uniformity rules (#703). The shared 3D shader code now
-  uses no screen derivatives at all, so a later change can't bring the
-  problem back (#711).
-- **Web**: Safari on iOS sometimes hands back an empty buffer when a GPU
-  buffer is filled at creation, which stopped games while starting. New
-  buffers are now filled through the queue on WebGPU (#710).
-- **Rendering**: games can now read compute results back on the CPU, for
-  example to count how much of a simulated grid is on fire. It's
-  asynchronous on every backend, so the answer arrives a few frames later
-  (#702).
-- **Rendering**: a 3D frame with only compute passes in it skipped them
-  (#702).
-- **Windows**: skeleton file paths, a network test's receive buffer, the
+Authors: [@cacheleon](https://github.com/cacheleon) · PRs: [#702](https://github.com/ponkoengine/ponko/pull/702)
+
+Compute passes are great for big simulations: a fire spreading over a grid,
+water, a crowd. But their state lives on the GPU, and until now a game had
+no way to read any of it. So the rules couldn't know that a house was on
+fire, or that 62% of the forest was saved.
+
+Now you can ask for a few values and get them a few frames later:
+
+```rust
+// Ask for the 4 x 4 region counts. The answer comes later.
+let pending = ctx.gfx.read_render_target(regions, UVec2::ZERO, UVec2::new(4, 4));
+
+// On a later frame:
+if let Some(Ok(values)) = ctx.gfx.readback(pending) {
+    let burning: f32 = values.iter().map(|v| v.x).sum();
+}
+```
+
+It's asynchronous on every backend, on purpose. A read that waits for the
+GPU stalls the pipeline on native and can't happen at all in a browser, so
+there's no blocking version, and a game behaves the same everywhere.
+
+Two things to know. Read a handful of values, not the whole grid: add the
+grid up in a second compute pass first, as
+[the guide](/guide/3d.html) shows. And keep readback values out of
+deterministic simulation, since GPUs round differently. They're for visuals,
+UI and single-player rules, not for rollback or lockstep.
+
+## 3D in the Browser
+
+Authors: [@cacheleon](https://github.com/cacheleon), [@damix00](https://github.com/damix00) · PRs: [#703](https://github.com/ponkoengine/ponko/pull/703), [#711](https://github.com/ponkoengine/ponko/pull/711)
+
+The candidate's checks caught a big one: 3D canvases were blank in every
+browser on WebGPU. A branch in the built-in material shader looked uniform
+to the native shader compiler, but browsers judge uniformity more strictly,
+rejected the shader, and with it every 3D pipeline. Desktop was fine, which
+is why nothing else noticed.
+
+#703 fixes the branch. #711 goes further: the shader code shared by every
+material and compute pass no longer uses implicit screen derivatives at
+all, so a later change can't bring the problem back. A test now checks for
+it, and the render tests' 41 images came out byte-identical.
+
+## Buffers on iOS Safari
+
+Authors: [@damix00](https://github.com/damix00) · PRs: [#710](https://github.com/ponkoengine/ponko/pull/710)
+
+Safari on iOS sometimes hands back an empty range when a buffer is filled at
+creation, and the game stopped while starting. On WebGPU, new buffers are
+now filled through the queue instead. Native keeps the faster path.
+
+## Smaller Fixes
+
+- **Windows:** skeleton file paths, a network test's receive buffer, the
   WebRTC test switch and the C library's self-test (#692, #706).
-- **Linux**: native crash reports without line tables, and the Arm C
+- **Linux:** native crash reports without line tables, and the Arm C
   library with video (#697).
-- **Tests**: tests that assumed version 0.1.0 now pass at a candidate's
+- **Rendering:** a 3D frame holding only compute passes skipped them (#702).
+- **Tests:** tests that assumed version 0.1.0 now pass at a candidate's
   version (#700, #704, #705).
 
-## What we checked, and what we haven't yet
+## What We Checked
 
-Our last post listed what a release has to prove. Here's where RC 1 stands,
-honestly:
+Our last post listed what a release has to prove. Here's where RC 1 stands:
 
 - **macOS** (Apple Silicon, Metal): the full list of checks passed on the
-  release branch. That includes Miri, the address and undefined-behaviour
-  sanitizers, the 17 fuzz targets, and the browser runs in Chromium and
+  release branch, including Miri, the address and undefined-behaviour
+  sanitizers, all 17 fuzz targets, and the browser runs in Chromium and
   WebKit.
-- **Windows**: earlier full runs with DirectX 12 and Vulkan found the
-  Windows problems fixed above. The full run on an NVIDIA card, on this
-  candidate, is in progress.
-- **Linux**: the C libraries for x86_64 and Arm were built and tested in
+- **Windows:** earlier full runs with DirectX 12 and Vulkan found the Windows
+  problems fixed above. A full run on an NVIDIA card is in progress.
+- **Linux:** the C libraries for x86_64 and Arm were built and tested in
   containers. The full list hasn't run on a real Linux machine yet.
-- **People**: no newcomer has followed the guide yet, and the hardware
-  checks (controllers, displays, HDR) are still open.
+- **People:** no newcomer has followed the guide yet, and the hardware checks
+  (controllers, displays, HDR) are still open.
 
-That's what the candidate week is for. 0.2.0 doesn't ship until the full
-list passes on all three systems.
+0.2.0 doesn't ship until the full list passes on all three.
 
 ## Changelog
 
 The [CHANGELOG](https://github.com/ponkoengine/ponko/blob/v0.2.0-rc.1/CHANGELOG.md)
-has all 1,458 changes since 0.1.0, by area. Coming from 0.1, read
-[Migrating from 0.1 to 0.2](/guide/migrating-to-0.2.html) first: it lists
-each of the 57 breaking changes with the code before and after, and that
-code is compiled as part of our checks.
-
-This release is built from commit
-[`a47cb1eb`](https://github.com/ponkoengine/ponko/commit/a47cb1ebb71c201404298295085d50c6c537c573),
+lists all 1,458 changes since 0.1.0, by area. This release is built from
+commit [`a47cb1eb`](https://github.com/ponkoengine/ponko/commit/a47cb1ebb71c201404298295085d50c6c537c573),
 tagged `v0.2.0-rc.1`.
 
 ## Downloads
 
-Cargo never picks a release candidate unless you ask for it by version.
-A plain `cargo add ponko` still gives you 0.1.
+Cargo never picks a release candidate unless you ask for it by version, so
+a plain `cargo add ponko` still gives you 0.1.
 
 <Steps>
 
@@ -155,42 +190,43 @@ A plain `cargo add ponko` still gives you 0.1.
 3. **From C or C++:** the C library for macOS (Apple Silicon and Intel) and
    Linux (x86_64 and Arm) is on the
    [GitHub release](https://github.com/ponkoengine/ponko/releases/tag/v0.2.0-rc.1),
-   with checksums. Windows downloads will be added there shortly.
+   with checksums. Windows downloads follow there shortly.
 
 </Steps>
 
 <Callout type="note" title="A candidate is still a pre-release">
-  We think RC 1 is ready for real projects, but by definition it's not a
-  stable release yet. Keep your project in version control, and expect an
-  RC 2 if testing turns something up.
+  We think RC 1 is ready for real projects, but it isn't a stable release
+  yet. Keep your project in version control, and expect an RC 2 if testing
+  turns something up.
 </Callout>
 
-## Known issues
+## Known Issues
 
-During the candidate week we fix only regressions: something that worked in
-0.1, or in an earlier build of `main`, and doesn't now. These are the ones
-we already know about:
+During the candidate week we fix only regressions. These are the ones we
+already know about:
 
-- **3D in Safari 26 on WebGPU**: after the shader fixes above, some 3D
-  scenes still lose the GPU device or freeze right after they start in
-  Safari on macOS (#701). Chromium draws them.
-- **Render tests on non-Apple GPUs**: a remaining check of #497 needs the
-  NVIDIA run to finish.
+- **3D in Safari 26 on WebGPU:** after the fixes above, some 3D scenes still
+  lose the GPU device or freeze right after they start in Safari on macOS
+  (#701). Chromium draws them.
+- **Render tests on non-Apple GPUs:** the last part of #497 waits for the
+  NVIDIA run.
 
 The [issue tracker](https://github.com/ponkoengine/ponko/issues) has every
 known bug.
 
-## Bug reports
+## Bug Reports
 
-If something breaks, please [open an issue](https://github.com/ponkoengine/ponko/issues/new/choose).
-Search first, in case it's known, and put "0.2.0-rc.1" in the report. A bug
-in something that worked in 0.1 is the most useful report you can send this
-week, and so is a short note that the candidate builds and runs on your
-machine. Ours is only one machine.
+Found something? Please [open an issue](https://github.com/ponkoengine/ponko/issues/new/choose).
+Search first in case it's known, and put "0.2.0-rc.1" in the report. A bug in
+something that worked in 0.1 is the most useful report you can send this
+week. So is a two-line note that the candidate builds and runs on your
+machine: we only have a few.
 
 ## Thanks
 
-Ponko is free and open source, and built in the open. Thanks to everyone who
-filed issues, sent fixes and tested on machines we don't have. Special
-thanks to [damix00](https://github.com/damix00), whose Windows and Safari
-runs this week found and fixed several of the problems above.
+Ponko is built in the open, and every issue, fix and test run on a machine we
+don't have makes it better. Special thanks to
+[@damix00](https://github.com/damix00), whose Windows and Safari runs this
+week found and fixed several of the problems above.
+
+See you at 0.2.0!
