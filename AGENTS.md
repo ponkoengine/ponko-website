@@ -58,9 +58,9 @@ under `/guide/` is the engine's mdBook, built from the engine's `main`.
   which the button in the header switches to. Each variable is written
   `light-dark(paper, ink)`. Use the variables, never a fixed colour, so both
   themes keep working.
-- Number boards, dot pictures and anything a game draws are "screens": they
-  stay dark in both themes. Add a new one to the "Screens" rule in
-  `global.css`. Code and terminals are "windows": `var(--window)` with
+- Dot pictures and anything a game draws are "screens": they stay dark in
+  both themes. Add a new one to the "Screens" rule in `global.css`. Code,
+  terminals and number boards are "windows": `var(--window)` with
   `var(--window-shadow)`, white on paper. No coloured glows.
 - Two fonts, Jost and JetBrains Mono, served from the site. Do not add a font
   or script from another host.

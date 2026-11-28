@@ -987,11 +987,13 @@ span.pager-step:last-child::after {
   padding: 20px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: var(--panel);
+  background: var(--window);
+  box-shadow: var(--window-shadow);
 }
 .stat .board {
   display: block;
   width: 100%;
+  color: var(--ink);
 }
 .stat p {
   margin: 14px 0 0;

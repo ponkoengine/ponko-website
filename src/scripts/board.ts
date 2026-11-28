@@ -1,5 +1,6 @@
 // A small dot-matrix display. It shows the text in its `data-text`, and when
 // it first scrolls into view the digits roll for a moment before they settle.
+// The dots take the canvas's CSS `color`, so a board follows the theme.
 
 const GLYPHS: Record<string, string[]> = {
   '0': ['01110', '10001', '10011', '10101', '11001', '10001', '01110'],
@@ -32,8 +33,9 @@ export function board(canvas: HTMLCanvasElement, still: boolean) {
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx!.fillStyle = getComputedStyle(canvas).color;
     for (const lit of [false, true]) {
-      ctx!.fillStyle = lit ? '#f5f3ee' : '#262a33';
+      ctx!.globalAlpha = lit ? 1 : 0.11;
       ctx!.beginPath();
       for (let j = 0; j < ROWS; j++) {
         for (let i = 0; i < COLS; i++) {
@@ -50,6 +52,8 @@ export function board(canvas: HTMLCanvasElement, still: boolean) {
 
   draw();
   new ResizeObserver(draw).observe(canvas);
+  // The header's button switches the theme by setting this attribute.
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   if (still) return;
   const seen = new IntersectionObserver(([e]) => {
     if (!e.isIntersecting) return;

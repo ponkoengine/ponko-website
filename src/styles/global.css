@@ -3,8 +3,8 @@
   /* Two themes from one set of names: paper, and ink for those who pick it
      with the button in the header. Each value is light-dark(paper, ink), so
      an element shows the dark one wherever color-scheme is dark: the whole
-     page in the ink theme, and the game screens, boards and dot pictures in
-     both (see "Screens" below). */
+     page in the ink theme, and the game screens and dot pictures in both
+     (see "Screens" below). */
   color-scheme: light;
   --night: light-dark(#f4efe7, #0b0c0f);
   --panel: light-dark(#fbf8f3, #121419);
@@ -19,7 +19,8 @@
   --on-accent: light-dark(#fff8f1, #0b0c0f);
   --shadow: light-dark(rgb(70 45 20 / 0.22), rgb(0 0 0 / 0.75));
   --screen: #2a1916;
-  /* Windows: code, terminals and the frames around games. White on paper. */
+  /* Windows: code, terminals, number boards and the frames around games.
+     White on paper. */
   --window: light-dark(#ffffff, #121419);
   --window-shadow: 0 1px 2px light-dark(rgb(70 45 20 / 0.08), rgb(0 0 0 / 0.4)), 0 18px 40px -28px light-dark(rgb(70 45 20 / 0.35), rgb(0 0 0 / 0.8));
   --kw: light-dark(#b8430f, #f08a5d);
@@ -85,17 +86,15 @@ pre {
   font-family: var(--mono);
 }
 
-/* Screens. Number boards, dot pictures and anything a game draws stay dark
-   on paper too, like a screen set into a page. Code and terminals are
+/* Screens. Dot pictures and anything a game draws stay dark on paper too,
+   like a screen set into a page. Code, terminals and number boards are
    windows (--window) and follow the theme. */
 .game-stage,
-.boards > div,
 .demo-stage,
 .news-art,
 .lead-art,
 .post-row-mark,
 .post-hero,
-.stat,
 .embed-stage,
 .screen {
   color-scheme: dark;
@@ -718,14 +717,17 @@ a[href^="http"]:not(.links a, .card)::after,
   padding: 22px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: var(--panel);
+  background: var(--window);
+  box-shadow: var(--window-shadow);
 }
 .boards dt {
   margin: 0;
 }
+/* board.ts draws the dots in this colour: lit ones solid, unlit ones faint. */
 .board {
   display: block;
   width: 100%;
+  color: var(--ink);
 }
 .boards dd {
   margin: 16px 0 0;
