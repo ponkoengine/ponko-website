@@ -48,7 +48,7 @@ const posters = await Promise.all(games.map((g) => getImage({ src: g.image, widt
     </li>
   ))}
 </ul>
-<p class="games-note">The test suite plays all three without a window. The clips are recordings of the games; point at one or tap it to play it again.</p>
+<p class="games-note">Clips recorded from the games; point at one or tap it to play it again. The test suite plays all three without a window.</p>
 
 <script>
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;

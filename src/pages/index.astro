@@ -80,7 +80,7 @@ const tiles = [
     text: 'A material is a WGSL file you can open and change. This water and this grass are two of them.' },
   { name: 'Many entities', level: 'proven', image: battle, href: '/guide/ecs.html', link: 'Entities, components, queries',
     alt: 'Two armies of ten thousand units each, red and blue, meeting in two long fronts between rocks and mud',
-    text: 'An archetype ECS with queries that can run across all cores. Here two armies of 10,000 units fight; one tick of the simulation takes under a millisecond.' },
+    text: 'An archetype ECS with queries that can run across all cores. Here two armies of 10,000 units fight.' },
   { name: 'Pathfinding', level: 'tested', image: flow, href: '/guide/pathfinding.html', link: 'Flow fields',
     alt: 'Twenty thousand agents streaming along shared paths around obstacles toward one goal',
     text: 'Flow fields move crowds with one field for everyone. Here 20,000 agents share one.' },
@@ -108,32 +108,32 @@ const more: [string, string, string, string][] = [
 const reasons = [
   {
     fig: '16 of 16 workloads ahead', title: 'Speed before you tune anything',
-    text: 'On an Apple M4 Max, Ponko is ahead of Bevy 0.20.1 on all sixteen workloads we measured, and on all but one on a Windows desktop. 100,000 moving sprites take 1.10&nbsp;ms against 11.6&nbsp;ms.',
+    text: 'Ahead of Bevy 0.20.1 on all sixteen workloads measured on an Apple M4 Max. 100,000 moving sprites take 1.10&nbsp;ms against 11.6&nbsp;ms.',
     link: 'The sixteen workloads', href: '/guide/performance.html#ponko-vs-bevy-the-scoreboard',
   },
   {
     fig: '45 s against 118 s', title: 'Short builds and small files',
-    text: 'A small 2D game builds from clean in 45 seconds, and its Bevy port in 118. The release binary is 19.4&nbsp;MB against 82.4&nbsp;MB, the gzipped web build 5.8&nbsp;MB against 21.5&nbsp;MB.',
+    text: 'A small 2D game builds from clean in 45 seconds, and its Bevy port in 118. The release binary is 19.4&nbsp;MB against 82.4&nbsp;MB.',
     link: 'Build times and sizes', href: '/guide/performance.html#build-times-and-download-sizes',
   },
   {
     fig: 'one crate, one version', title: 'The pieces in the box',
-    text: 'Physics in 2D and 3D, a UI, navigation meshes, lockstep and rollback multiplayer, saves, an editor, an inspector and a server for coding agents ship with the engine and are released together.',
+    text: 'Physics, UI, navigation, multiplayer, saves, an editor and an inspector ship with the engine and are released together.',
     link: 'What is in the guide', href: '/learn/',
   },
   {
     fig: 'fn(&mut Ctx)', title: 'A game that is a plain function',
-    text: 'A system is <code>fn(&amp;mut Ctx)</code>. Systems run in the order you write them, at a fixed rate, so two runs of the same build do the same thing in the same order. Replays and lockstep build on that.',
+    text: 'Systems run in the order you write them, at a fixed rate, so two runs of the same build do the same thing.',
     link: 'Determinism', href: '/guide/determinism.html',
   },
   {
     fig: 'no window, no GPU', title: 'Tests without a window',
-    text: '<code>run_headless</code> steps a game with no window and no GPU, for tests and servers. The test suite plays the three reference games that way.',
+    text: '<code>run_headless</code> steps a game for tests and servers. The test suite plays the three reference games that way.',
     link: 'Headless runs', href: '/guide/headless.html',
   },
   {
     fig: 'Rust, C, C++', title: 'C and C++ as well as Rust',
-    text: 'The same engine has a C API and a header-only C++17 wrapper. A battle of a million units ported to C++ ran a tick in 19.97&nbsp;ms, against 18.85&nbsp;ms in Rust.',
+    text: 'A C API and a header-only C++17 wrapper. A battle of a million units ticks in 19.97&nbsp;ms in C++, against 18.85&nbsp;ms in Rust.',
     link: 'C and C++', href: '/guide/c-cpp.html',
   },
 ];
@@ -234,7 +234,7 @@ const crabRects = crab
           <div class="row">
             <h2 id="play-title">See it run.</h2>
             <div class="body">
-              <p>Wildfire is a game made with Ponko and compiled to WebAssembly. Lightning sets a valley alight, and the fire runs with the wind and up the slopes. Dig firebreaks, call water bombers, and keep it away from five villages.</p>
+              <p>Wildfire is a game made with Ponko and compiled to WebAssembly. Fire runs through a valley with the wind, and you keep it away from five villages.</p>
               <p class="aside">Everything on this page was made by the people who build Ponko. Nobody else has released a game made with it yet.</p>
             </div>
           </div>
@@ -261,7 +261,7 @@ const crabRects = crab
               <li><Image src={s.image} alt={s.alt} widths={[640, 960, 1280]} sizes="(max-width: 700px) 100vw, 600px" loading="lazy" /></li>
             ))}
           </ul>
-          <p class="games-note">A private 3D game that is being ported to Ponko. These frames are from the port on 24 November 2026: terrain, trees, grass, water, clouds, shadows and a day that turns to night.</p>
+          <p class="games-note">A private 3D game that is being ported to Ponko. Frames from the port, 24 November 2026.</p>
         </div>
       </section>
 
@@ -270,7 +270,7 @@ const crabRects = crab
           <div class="row">
             <h2 id="features-title">One crate, and what is in it.</h2>
             <div class="body">
-              <p><code>cargo add ponko</code> brings all of this, and Cargo features switch off what a game leaves out. Each part carries a level that says how far it has been proven: <a href="/guide/maturity.html">what the levels mean</a>.</p>
+              <p><code>cargo add ponko</code> brings all of this, and Cargo features switch off what a game leaves out. Each part carries a level: <a href="/guide/maturity.html">what the levels mean</a>.</p>
             </div>
           </div>
           <ul class="tiles">
@@ -298,7 +298,7 @@ const crabRects = crab
           <div class="row">
             <h2 id="measured-title">Measured, with the method.</h2>
             <div class="body">
-              <p>Sixteen workloads, written for both engines and run on the same machine. Four of them are below; the guide has all sixteen, the ranges, a second machine and the commands to run them yourself.</p>
+              <p>Sixteen workloads, written for both engines and run on the same machine. Four of them are below; the guide has the rest and the commands to run them yourself.</p>
             </div>
           </div>
           <ul class="bench" aria-label="Time taken, shorter is faster">
@@ -312,9 +312,8 @@ const crabRects = crab
           </ul>
           <p class="bench-key">Each bar is the time taken. Shorter is faster.</p>
           <div class="fine">
-            <p>Apple M4 Max, macOS, Metal, release builds, the median of three runs, measured between 22 and 26 November 2026. Each engine is set up the way a new project starts.</p>
-            <p>With both engines tuned for shipping, which turns on Bevy's pipelined rendering (Ponko has no pipelined renderer), the sprite row is 1.02 ms against 6.74 ms and the 3D row 4.66 ms against 13.7 ms. On a Windows desktop with Vulkan, Bevy draws 1,000 skinned characters faster than Ponko: 8.35 ms against 8.72 ms.</p>
-            <p>These are specific workloads on two machines. They are not a ranking of the engines. <a class="arrow" href="/guide/performance.html">The full tables and the method</a></p>
+            <p>Apple M4 Max, Metal, release builds, the median of three runs, 22 to 26 November 2026. Each engine is set up the way a new project starts. With Bevy's pipelined rendering turned on, which Ponko does not have, the sprite row is 1.02 ms against 6.74 ms.</p>
+            <p>These are specific workloads, not a ranking of the engines. <a class="arrow" href="/guide/performance.html">The full tables and the method</a></p>
           </div>
         </div>
       </section>
@@ -324,7 +323,7 @@ const crabRects = crab
           <div class="row">
             <h2 id="fit-title">Is it for you?</h2>
             <div class="body">
-              <p>Ponko is for programmers who would rather read a game's code than assemble it in an editor or out of plugins. It fits 2D games, simulations with many entities, and games you want to test like software.</p>
+              <p>Ponko is for programmers who would rather read a game's code than assemble it in an editor or out of plugins.</p>
             </div>
           </div>
           <div class="pick">
@@ -361,9 +360,9 @@ const crabRects = crab
           <div class="not-yet">
             <h3>Ponko is the wrong choice today if</h3>
             <ul>
-              <li><b>you need the API to stay put.</b> Ponko is 0.x. Each of its three releases so far broke something, and more will.</li>
+              <li><b>you need the API to stay put.</b> Ponko is 0.x: a release can break code written for the one before.</li>
               <li><b>you are shipping on consoles.</b> Consoles are not supported.</li>
-              <li><b>you need an engine with released games and a large team behind it.</b> Ponko has two maintainers and no released games yet.</li>
+              <li><b>you need released games and a large team behind the engine.</b> Ponko has two maintainers and no released games yet.</li>
             </ul>
             <p><a class="arrow" href="/guide/comparison.html">Ponko next to Bevy and Unity, in detail</a> <a class="arrow" href="/guide/from-bevy.html">Coming from Bevy</a></p>
           </div>
@@ -375,7 +374,7 @@ const crabRects = crab
           <div class="row">
             <h2 id="hello-title">Your first game, a few lines at a time.</h2>
             <div class="body">
-              <p>The program from the top of this page, grown in seven steps: a window, a colour, a sprite, input, then a thousand entities and one system that turns them all. The panel beside the code is a drawing of what each step does, not the engine running.</p>
+              <p>The program from the top of this page, grown in seven steps. The panel beside the code is a drawing of each step, not the engine running.</p>
               <p><a class="arrow" href="/guide/getting-started.html">Write it yourself in the guide</a></p>
             </div>
           </div>
@@ -416,7 +415,7 @@ const crabRects = crab
             <div class="today-side">
               <h2 id="today-title">Where Ponko is today.</h2>
               <h3>How it is built</h3>
-              <p>Leon Mamić owns Ponko and directs and reviews the work, and a second maintainer helps. Much of its code is written by AI coding agents working under that direction. Whoever writes a change, it has to pass the same checks before it is merged: the test suite, Clippy, and the three reference games played by tests without a window. Changes to unsafe ECS code also run under Miri, and changes to the C API under AddressSanitizer and UndefinedBehaviorSanitizer.</p>
+              <p>Much of Ponko's code is written by AI coding agents, directed and reviewed by its maintainers. Whoever writes a change, it passes the same checks before it is merged: the test suite, Clippy, and the three reference games played by tests without a window.</p>
               <ul class="links">
                 <li><a href={`${gh}/blob/main/ROADMAP.md`} target="_blank" rel="noopener"><span>Roadmap</span><span>What works and what's next</span></a></li>
                 <li><a href={`${gh}/blob/main/STABILITY.md`} target="_blank" rel="noopener"><span>Stability</span><span>What a release may and may not change</span></a></li>
@@ -426,14 +425,14 @@ const crabRects = crab
             </div>
             <div class="body">
               <dl class="facts">
-                <div><dt>Version</dt><dd>{release.version}, released {released}. Until 0.2.0 is out, <code>cargo add ponko</code> without a version installs {release.stable}. Ponko is 0.x: a release can break the API, and each one lists every break with the code before and after (<a href="/guide/migrating-to-0.2.html">from 0.1 to 0.2</a>).</dd></div>
+                <div><dt>Version</dt><dd>{release.version}, released {released}. Until 0.2.0 is out, <code>cargo add ponko</code> without a version installs {release.stable}. A release can break the API, and lists every break with the code before and after (<a href="/guide/migrating-to-0.2.html">from 0.1 to 0.2</a>).</dd></div>
                 <div><dt>Age</dt><dd>Public since 2 November 2026.</dd></div>
                 <div><dt>People</dt><dd>Leon Mamić, who owns the project, and a second maintainer, Damjan Pavličević.</dd></div>
-                <div><dt>macOS</dt><dd>The whole list of checks has run on Apple silicon with Metal, and the result is <a href="/guide/check-results/macos.html">recorded in the guide</a>.</dd></div>
-                <div><dt>Windows</dt><dd>Rendering fixes, a frame-time baseline and the benchmarks were done on Windows 11 with DirectX 12 and Vulkan. A run of the whole list is not recorded yet.</dd></div>
+                <div><dt>macOS</dt><dd>The whole list of checks has run on Apple silicon: <a href="/guide/check-results/macos.html">recorded in the guide</a>.</dd></div>
+                <div><dt>Windows</dt><dd>Benchmarks, a frame-time baseline and rendering fixes on Windows 11 with DirectX 12 and Vulkan. The whole list is not recorded yet.</dd></div>
                 <div><dt>Linux</dt><dd>Supported. The recorded run of the whole list is next (<a href={`${gh}/issues/500`}>issue 500</a>).</dd></div>
                 <div><dt>The web</dt><dd>WebGL2 is checked in headless Chromium, Firefox and WebKit, and WebGPU on a real GPU, on a Mac.</dd></div>
-                <div><dt>Testing</dt><dd>There is no CI service. Maintainers run the list of checks on their own machines before a change is merged, and record the full runs.</dd></div>
+                <div><dt>Testing</dt><dd>No CI service: maintainers run the checks on their own machines before a change is merged.</dd></div>
               </dl>
             </div>
           </div>

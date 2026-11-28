@@ -280,8 +280,10 @@ A note set apart from the text. `type` is `note` (the default), `tip` or
 
 ### Figure
 
-A picture with a caption. `wide` lets it run wider than the text, and
-`pixelated` keeps pixel art sharp. Import the picture so it gets optimised:
+A picture with a caption. `wide` lets it run as wide as the page when the
+picture is at least 1200 pixels wide; a smaller one stays in the text column,
+so it is never stretched. `pixelated` keeps pixel art sharp. Import the
+picture so it gets optimised:
 
 ```mdx
 import island from './island.png';

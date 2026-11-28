@@ -1,6 +1,8 @@
 ---
 // A picture with a caption. `src` is an imported image (optimised for you)
-// or a path under public/. `wide` lets it run wider than the text.
+// or a path under public/. `wide` lets it run wider than the text, as wide
+// as the page, when the picture is at least that wide itself (1200 px); a
+// smaller picture stays in the text column, where it is not stretched.
 //   import shot from './shot.png';
 //   <Figure src={shot} alt="…" caption="…" wide />
 import { Image } from 'astro:assets';
@@ -14,12 +16,13 @@ interface Props {
   /** Draw pixel art with hard edges. */
   pixelated?: boolean;
 }
-const { src, alt, caption, wide = false, pixelated = false } = Astro.props;
+const { src, alt, caption, wide: asked = false, pixelated = false } = Astro.props;
+const wide = asked && (typeof src === 'string' || src.width >= 1200);
 const style = pixelated ? 'image-rendering: pixelated' : undefined;
 ---
 <figure class:list={['figure', { wide }]}>
   {typeof src === 'string'
     ? <img src={src} alt={alt} loading="lazy" decoding="async" style={style} />
-    : <Image src={src} alt={alt} widths={[640, 960, 1440]} sizes={wide ? '(max-width: 1100px) 100vw, 1040px' : '(max-width: 760px) 100vw, 720px'} style={style} />}
+    : <Image src={src} alt={alt} widths={[640, 960, 1440]} sizes={wide ? '(max-width: 1280px) 100vw, 1200px' : '(max-width: 940px) 100vw, 860px'} style={style} />}
   {(caption || Astro.slots.has('default')) && <figcaption>{caption}<slot /></figcaption>}
 </figure>
