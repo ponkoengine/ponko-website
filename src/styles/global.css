@@ -1,11 +1,11 @@
 /* Ponko's site. Night ink with the panda's orange and cream. */
 :root {
-  /* Two themes from one set of names: ink, and paper for those who pick it
+  /* Two themes from one set of names: paper, and ink for those who pick it
      with the button in the header. Each value is light-dark(paper, ink), so
      an element shows the dark one wherever color-scheme is dark: the whole
-     page in the ink theme, and the code panels, boards and game screens in
+     page in the ink theme, and the game screens, boards and dot pictures in
      both (see "Screens" below). */
-  color-scheme: dark;
+  color-scheme: light;
   --night: light-dark(#f4efe7, #0b0c0f);
   --panel: light-dark(#fbf8f3, #121419);
   --raised: light-dark(#ffffff, #1a1d24);
@@ -19,6 +19,12 @@
   --on-accent: light-dark(#fff8f1, #0b0c0f);
   --shadow: light-dark(rgb(70 45 20 / 0.22), rgb(0 0 0 / 0.75));
   --screen: #2a1916;
+  /* Windows: code, terminals and the frames around games. White on paper. */
+  --window: light-dark(#ffffff, #121419);
+  --window-shadow: 0 1px 2px light-dark(rgb(70 45 20 / 0.08), rgb(0 0 0 / 0.4)), 0 18px 40px -28px light-dark(rgb(70 45 20 / 0.35), rgb(0 0 0 / 0.8));
+  --kw: light-dark(#b8430f, #f08a5d);
+  --str: light-dark(#4a7419, #b9cf8a);
+  --fn: light-dark(#8a5a00, #f3c26b);
   --sans: "Jost", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --wrap: 1200px;
@@ -27,8 +33,8 @@
   font-synthesis: none;
   scroll-behavior: smooth;
 }
-:root[data-theme="light"] {
-  color-scheme: light;
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 * {
   box-sizing: border-box;
@@ -79,12 +85,10 @@ pre {
   font-family: var(--mono);
 }
 
-/* Screens. Code, terminals, number boards and anything a game draws stay
-   dark on paper too, like a screen set into a page. */
-.code,
-.game,
-.install,
-.shell,
+/* Screens. Number boards, dot pictures and anything a game draws stay dark
+   on paper too, like a screen set into a page. Code and terminals are
+   windows (--window) and follow the theme. */
+.game-stage,
 .boards > div,
 .demo-stage,
 .news-art,
@@ -92,8 +96,6 @@ pre {
 .post-row-mark,
 .post-hero,
 .stat,
-.code-block,
-.prose pre,
 .embed-stage,
 .screen {
   color-scheme: dark;
@@ -444,7 +446,7 @@ a[href^="http"]:not(.links a, .card)::after,
   padding: 10px 12px 10px 16px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: var(--panel);
+  background: var(--window);
   font-size: 15px;
 }
 .install code {
@@ -653,7 +655,7 @@ a[href^="http"]:not(.links a, .card)::after,
   border-radius: 14px;
   border: 1px solid var(--line);
   background: #0a0b0d;
-  box-shadow: 0 40px 120px -40px color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow: var(--window-shadow);
 }
 .demo-stage img {
   position: absolute;
@@ -750,7 +752,8 @@ a[href^="http"]:not(.links a, .card)::after,
   overflow: hidden;
   border-radius: 14px;
   border: 1px solid var(--line);
-  background: var(--panel);
+  background: var(--window);
+  box-shadow: var(--window-shadow);
 }
 .code-bar,
 .game-bar {
@@ -787,13 +790,13 @@ a[href^="http"]:not(.links a, .card)::after,
   opacity: 0.2;
 }
 .kw {
-  color: #f08a5d;
+  color: var(--kw);
 }
 .str {
-  color: #b9cf8a;
+  color: var(--str);
 }
 .fn {
-  color: #f3c26b;
+  color: var(--fn);
 }
 .ln.new {
   animation: fresh 2.4s ease-out both;
@@ -1311,10 +1314,7 @@ a[href^="http"]:not(.links a, .card)::after,
   mask: radial-gradient(ellipse 60% 90% at 50% 100%, #000 0%, transparent 75%);
 }
 .hero-code {
-  background: var(--panel);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent),
-    0 40px 120px -50px color-mix(in srgb, var(--accent) 50%, transparent);
+  background: var(--window);
 }
 .hero h1 {
   font-size: clamp(40px, 4.5vw, 64px);
@@ -1683,18 +1683,15 @@ a[href^="http"]:not(.links a, .card)::after,
   border-top: 1px solid var(--line);
 }
 .pick .fig {
-  margin-bottom: 6px;
   color: var(--accent);
   font-family: var(--mono);
-  font-size: 26px;
+  font-size: 14px;
   font-style: normal;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  line-height: 1.4;
 }
 .pick b {
   color: var(--ink);
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 500;
   line-height: 1.3;
 }
@@ -1755,7 +1752,7 @@ a[href^="http"]:not(.links a, .card)::after,
 }
 .not-yet ul {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0 40px;
 }
 .not-yet b {
@@ -1963,7 +1960,7 @@ a[href^="http"]:not(.links a, .card)::after,
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: var(--panel);
+  background: var(--window);
   color: var(--ink);
   font-size: 14px;
   line-height: 1.7;

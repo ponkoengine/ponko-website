@@ -7,7 +7,7 @@ import Games from '../components/Games.astro';
 import DotArt from '../components/DotArt.astro';
 import type { ArtOptions } from '../lib/dot-art';
 import { site, release } from '../site';
-import { ponkoNight } from '../lib/shiki-ponko.mjs';
+import { ponkoNight, ponkoPaper } from '../lib/shiki-ponko.mjs';
 import { formatDate, getPosts, postHref } from '../lib/blog';
 import emberHop from '../assets/home/ember-hop.jpg';
 import lights from '../assets/home/lights.jpg';
@@ -94,32 +94,32 @@ const more: [string, string, string, string][] = [
 // "Speed" in c-cpp.md.
 const reasons = [
   {
-    fig: '16 of 16', title: 'Speed before you tune anything',
+    fig: '16 of 16 workloads ahead', title: 'Speed before you tune anything',
     text: 'On an Apple M4 Max, Ponko is ahead of Bevy 0.20.1 on all sixteen workloads we measured, and on all but one on a Windows desktop. 100,000 moving sprites take 1.10&nbsp;ms against 11.6&nbsp;ms.',
     link: 'The sixteen workloads', href: '/guide/performance.html#ponko-vs-bevy-the-scoreboard',
   },
   {
-    fig: '45 s', title: 'Short builds and small files',
+    fig: '45 s against 118 s', title: 'Short builds and small files',
     text: 'A small 2D game builds from clean in 45 seconds, and its Bevy port in 118. The release binary is 19.4&nbsp;MB against 82.4&nbsp;MB, the gzipped web build 5.8&nbsp;MB against 21.5&nbsp;MB.',
     link: 'Build times and sizes', href: '/guide/performance.html#build-times-and-download-sizes',
   },
   {
-    fig: '1 crate', title: 'The pieces in the box',
+    fig: 'one crate, one version', title: 'The pieces in the box',
     text: 'Physics in 2D and 3D, a UI, navigation meshes, lockstep and rollback multiplayer, saves, an editor, an inspector and a server for coding agents ship with the engine and are released together.',
     link: 'What is in the guide', href: '/learn/',
   },
   {
-    fig: 'fn(ctx)', title: 'A game that is a plain function',
+    fig: 'fn(&mut Ctx)', title: 'A game that is a plain function',
     text: 'A system is <code>fn(&amp;mut Ctx)</code>. Systems run in the order you write them, at a fixed rate, so two runs of the same build do the same thing in the same order. Replays and lockstep build on that.',
     link: 'Determinism', href: '/guide/determinism.html',
   },
   {
-    fig: '0 windows', title: 'Tests without a window',
+    fig: 'no window, no GPU', title: 'Tests without a window',
     text: '<code>run_headless</code> steps a game with no window and no GPU, for tests and servers. The test suite plays the three reference games that way.',
     link: 'Headless runs', href: '/guide/headless.html',
   },
   {
-    fig: '3 languages', title: 'C and C++ as well as Rust',
+    fig: 'Rust, C, C++', title: 'C and C++ as well as Rust',
     text: 'The same engine has a C API and a header-only C++17 wrapper. A battle of a million units ported to C++ ran a tick in 19.97&nbsp;ms, against 18.85&nbsp;ms in Rust.',
     link: 'C and C++', href: '/guide/c-cpp.html',
   },
@@ -209,8 +209,8 @@ const crabRects = crab
             <span>the whole program</span>
           </div>
           <div class="panels">
-            <div class="panel" id="code-rust" role="tabpanel" aria-labelledby="tab-rust"><Code code={rust} lang="rust" theme={ponkoNight} /></div>
-            <div class="panel" id="code-cpp" role="tabpanel" aria-labelledby="tab-cpp" hidden><Code code={cpp} lang="cpp" theme={ponkoNight} /></div>
+            <div class="panel" id="code-rust" role="tabpanel" aria-labelledby="tab-rust"><Code code={rust} lang="rust" themes={{ light: ponkoPaper, dark: ponkoNight }} defaultColor="light-dark()" /></div>
+            <div class="panel" id="code-cpp" role="tabpanel" aria-labelledby="tab-cpp" hidden><Code code={cpp} lang="cpp" themes={{ light: ponkoPaper, dark: ponkoNight }} defaultColor="light-dark()" /></div>
           </div>
           <p class="code-note">A window, a sprite, and the arrow keys to move it. <a class="arrow" href="/guide/getting-started.html">Build it</a></p>
         </div>
@@ -311,8 +311,8 @@ const crabRects = crab
             <ul>
               {reasons.map((r) => (
                 <li>
-                  <i class="fig" aria-hidden="true">{r.fig}</i>
                   <b>{r.title}</b>
+                  <i class="fig">{r.fig}</i>
                   <span set:html={r.text} />
                   <a class="arrow" href={r.href}>{r.link}</a>
                 </li>
@@ -341,8 +341,7 @@ const crabRects = crab
             <h3>Ponko is the wrong choice today if</h3>
             <ul>
               <li><b>you need the API to stay put.</b> Ponko is 0.x. Each of its three releases so far broke something, and more will.</li>
-              <li><b>you are shipping on consoles or phones.</b> Consoles are not supported. iOS and Android are experimental: they run on the simulator and the emulator, and have not been run on a device.</li>
-              <li><b>you need Linux to be a tested target.</b> The code supports it, but no full run of the checks is recorded on Linux yet.</li>
+              <li><b>you are shipping on consoles.</b> Consoles are not supported.</li>
               <li><b>you need an engine with released games and a large team behind it.</b> Ponko has two maintainers and no released games yet.</li>
             </ul>
             <p><a class="arrow" href="/guide/comparison.html">Ponko next to Bevy and Unity, in detail</a> <a class="arrow" href="/guide/from-bevy.html">Coming from Bevy</a></p>
@@ -411,7 +410,7 @@ const crabRects = crab
                 <div><dt>People</dt><dd>Leon Mamic, who owns the project, and a second maintainer, Damjan Pavličević.</dd></div>
                 <div><dt>macOS</dt><dd>The whole list of checks has run on Apple silicon with Metal, and the result is <a href="/guide/check-results/macos.html">recorded in the guide</a>.</dd></div>
                 <div><dt>Windows</dt><dd>Rendering fixes, a frame-time baseline and the benchmarks were done on Windows 11 with DirectX 12 and Vulkan. A run of the whole list is not recorded yet.</dd></div>
-                <div><dt>Linux</dt><dd>Supported in the code. Nothing is recorded yet (<a href={`${gh}/issues/500`}>issue 500</a>).</dd></div>
+                <div><dt>Linux</dt><dd>Supported. The recorded run of the whole list is next (<a href={`${gh}/issues/500`}>issue 500</a>).</dd></div>
                 <div><dt>The web</dt><dd>WebGL2 is checked in headless Chromium, Firefox and WebKit, and WebGPU on a real GPU, on a Mac.</dd></div>
                 <div><dt>Testing</dt><dd>There is no CI service. Maintainers run the list of checks on their own machines before a change is merged, and record the full runs.</dd></div>
               </dl>
