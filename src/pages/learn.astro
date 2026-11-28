@@ -7,19 +7,22 @@ type Link = [string, string, string];
 const groups: { title: string; text?: string; links: Link[] }[] = [
   {
     title: 'Start',
-    text: 'In this order. The first takes about ten minutes, the tutorials an afternoon each.',
+    text: 'In this order. Getting started is the short one; each tutorial builds a whole small game.',
     links: [
       ['Getting started', 'Install Rust, make a project and get a sprite moving.', '/guide/getting-started.html'],
+      ['Key concepts', 'The game, the context, the world, systems and assets, on one page.', '/guide/key-concepts.html'],
       ['A first 2D game', 'A level, a player, coins, sound and a saved best time.', '/guide/tutorial-2d.html'],
       ['A first 3D game', 'A scene, a character, a camera and physics.', '/guide/tutorial-3d.html'],
+      ['Cookbook', 'Short recipes for common tasks, each one compiled and run by a test.', '/guide/cookbook/index.html'],
+      ['Troubleshooting', 'The first problems people hit: Linux packages, no GPU found, an empty window, slow builds.', '/guide/troubleshooting.html'],
     ],
   },
   {
     title: 'Look things up',
     links: [
-      ['Cookbook', 'Short recipes for common tasks, each one compiled and run by a test.', '/guide/cookbook/index.html'],
       ['The guide', 'Every part of the engine, a chapter each.', '/guide/'],
       ['API reference', 'Every type and function, on docs.rs.', site.api],
+      ['Benchmarks', 'Sixteen workloads against Bevy on two machines, with the method.', '/guide/performance.html'],
     ],
   },
   {
@@ -70,7 +73,7 @@ const groups: { title: string; text?: string; links: Link[] }[] = [
       ))}
       <section class="group">
         <h2>Stuck?</h2>
-        <p>Ask in <a href={site.discussions}>GitHub Discussions</a>. If the guide was wrong or missing something, that is a bug: <a href={`${site.github}/issues`}>open an issue</a>.</p>
+        <p>Look in <a href="/guide/troubleshooting.html">Troubleshooting</a> first, then ask in <a href={site.discussions}>GitHub Discussions</a>. If the guide was wrong or missing something, that is a bug: <a href={`${site.github}/issues`}>open an issue</a>.</p>
       </section>
     </div>
   </main>
