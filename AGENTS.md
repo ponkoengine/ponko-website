@@ -54,7 +54,7 @@ under `/guide/` is the engine's mdBook, built from the engine's `main`.
 ## Design
 
 - Two themes from one set of variables in `global.css` (`--night`,
-  `--panel`, `--ink`, `--accent`, ...): paper, which is the default, and ink,
+  `--panel`, `--ink`, `--accent`, ...): ink, which is the default, and paper,
   which the button in the header switches to. Each variable is written
   `light-dark(paper, ink)`. Use the variables, never a fixed colour, so both
   themes keep working.
