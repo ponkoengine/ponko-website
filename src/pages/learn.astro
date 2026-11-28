@@ -1,0 +1,77 @@
+---
+import Base from '../layouts/Base.astro';
+import Install from '../components/Install.astro';
+import { site, release } from '../site';
+
+type Link = [string, string, string];
+const groups: { title: string; text?: string; links: Link[] }[] = [
+  {
+    title: 'Start',
+    text: 'In this order. The first takes about ten minutes, the tutorials an afternoon each.',
+    links: [
+      ['Getting started', 'Install Rust, make a project and get a sprite moving.', '/guide/getting-started.html'],
+      ['A first 2D game', 'A level, a player, coins, sound and a saved best time.', '/guide/tutorial-2d.html'],
+      ['A first 3D game', 'A scene, a character, a camera and physics.', '/guide/tutorial-3d.html'],
+    ],
+  },
+  {
+    title: 'Look things up',
+    links: [
+      ['Cookbook', 'Short recipes for common tasks, each one compiled and run by a test.', '/guide/cookbook/index.html'],
+      ['The guide', 'Every part of the engine, a chapter each.', '/guide/'],
+      ['API reference', 'Every type and function, on docs.rs.', site.api],
+    ],
+  },
+  {
+    title: 'Read a whole game',
+    text: 'Three games live in the engine repository. Two have a chapter that builds them from the first line.',
+    links: [
+      ['Ember Hop', 'A platformer, start to finish.', '/guide/ember-hop.html'],
+      ['Shard Grove', 'A third-person 3D game, start to finish.', '/guide/shard-grove.html'],
+      ['A complete game, packaged', 'Coin Dash and Ember Hop turned into something you can hand to a player.', '/guide/packaging.html'],
+    ],
+  },
+  {
+    title: 'Coming from another engine',
+    links: [
+      ['Coming from Bevy', 'The same ideas side by side, and what is different.', '/guide/from-bevy.html'],
+      ['Ponko next to Bevy and Unity', 'What each has that the others lack, with sources.', '/guide/comparison.html'],
+      ['Importing from Unity', 'What the importer converts, and what it does not.', '/guide/unity.html'],
+    ],
+  },
+  {
+    title: 'Upgrading',
+    links: [
+      ["What's new in 0.2", 'The release, feature by feature.', '/guide/release-0.2.html'],
+      ['From 0.1 to 0.2', 'Every breaking change, with the code before and after.', '/guide/migrating-to-0.2.html'],
+      ['From 0.0.1 to 0.1', 'The earlier migration.', '/guide/migrating-to-0.1.html'],
+    ],
+  },
+];
+---
+<Base title="Learn · Ponko Engine" description="Where to start with Ponko: getting started, two tutorials, the cookbook, the guide, the API reference, and guides for people coming from Bevy or Unity.">
+  <main id="main" class="page">
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Learn</h1>
+        <p>Everything written about using Ponko, in the order a newcomer needs it. This describes version {release.version}; until 0.2.0 is released, <code>cargo add ponko</code> without a version installs {release.stable}.</p>
+        <Install />
+      </header>
+      {groups.map((g) => (
+        <section class="group">
+          <h2>{g.title}</h2>
+          {g.text && <p>{g.text}</p>}
+          <ul class="cards">
+            {g.links.map(([name, text, href]) => (
+              <li><a class="card" href={href}><b>{name}</b><span>{text}</span></a></li>
+            ))}
+          </ul>
+        </section>
+      ))}
+      <section class="group">
+        <h2>Stuck?</h2>
+        <p>Ask in <a href={site.discussions}>GitHub Discussions</a>. If the guide was wrong or missing something, that is a bug: <a href={`${site.github}/issues`}>open an issue</a>.</p>
+      </section>
+    </div>
+  </main>
+</Base>

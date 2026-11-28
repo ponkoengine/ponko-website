@@ -1,0 +1,51 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../site';
+
+const gh = site.github;
+const first = `${gh}/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22`;
+---
+<Base title="Community · Ponko Engine" description="Where to ask about Ponko, report a bug, show what you made and start contributing.">
+  <main id="main" class="page">
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Community</h1>
+        <p>Ponko is a young project with one maintainer. These are the places where it happens, and what to expect from each.</p>
+      </header>
+
+      <section class="group">
+        <h2>Ask, report, show</h2>
+        <ul class="cards">
+          <li><a class="card" href={site.discussions}><b>Discussions</b><span>Questions, ideas and things you made. Answers stay findable for the next person.</span></a></li>
+          <li><a class="card" href={`${gh}/issues`}><b>Issues</b><span>Bugs, and anything in the guide that was wrong or missing.</span></a></li>
+          <li><a class="card" href={`${site.discussions}/categories/show-and-tell`}><b>Show and tell</b><span>A game, a tool or an experiment made with Ponko.</span></a></li>
+        </ul>
+        <p>Expect a first reply within a week, usually sooner. One person reads everything.</p>
+      </section>
+
+      <section class="group">
+        <h2>Contribute</h2>
+        <p>A fix to a sentence in the guide is a real contribution, and so is a bug report with the steps to see it.</p>
+        <ul class="cards">
+          <li><a class="card" href={first}><b>Good first issues</b><span>Small and scoped: each says what to change, where, and how to test it. They are kept for people new to the project.</span></a></li>
+          <li><a class="card" href={`${gh}/blob/main/CONTRIBUTING.md`}><b>Contributing</b><span>How to build the engine, which checks a change needs, and how a pull request is reviewed.</span></a></li>
+          <li><a class="card" href={`${gh}/blob/main/ROADMAP.md`}><b>Roadmap</b><span>What works, what is partly there, and what comes next.</span></a></li>
+        </ul>
+      </section>
+
+      <section class="group">
+        <h2>How we treat each other</h2>
+        <p>Every Ponko space follows the <a href={`${gh}/blob/main/CODE_OF_CONDUCT.md`}>code of conduct</a>, and <a href={`${gh}/blob/main/GOVERNANCE.md`}>the governance page</a> says how decisions are made.</p>
+      </section>
+
+      <section class="group">
+        <h2>Follow along</h2>
+        <ul class="cards">
+          <li><a class="card" href="/blog/"><b>Blog</b><span>Releases, how the engine works inside, and news from the project.</span></a></li>
+          <li><a class="card" href="/blog/rss.xml"><b>RSS feed</b><span>Every post, in your reader.</span></a></li>
+          <li><a class="card" href={`${gh}/releases`}><b>Releases</b><span>Each version with its notes, on GitHub.</span></a></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</Base>
