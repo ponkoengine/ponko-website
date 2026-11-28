@@ -33,7 +33,7 @@ export function board(canvas: HTMLCanvasElement, still: boolean) {
     canvas.height = Math.round(h * dpr);
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
     for (const lit of [false, true]) {
-      ctx!.fillStyle = lit ? '#f4e9db' : '#2a201c';
+      ctx!.fillStyle = lit ? '#f5f3ee' : '#262a33';
       ctx!.beginPath();
       for (let j = 0; j < ROWS; j++) {
         for (let i = 0; i < COLS; i++) {

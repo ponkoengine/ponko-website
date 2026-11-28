@@ -1,45 +1,70 @@
-/* Ponko's colors over mdBook's themes, so the guide matches ponko.dev.
-   Dark themes get the site's warm browns; light ones keep their paper
-   and take the panda orange for links and highlights. */
+/* Ponko's colors over mdBook's themes, so the guide matches ponko.dev:
+   the light themes get the site's paper, the dark ones its ink, and both
+   take the panda orange for links and highlights. */
+.light,
+.rust {
+  --bg: #f4efe7;
+  --fg: #2a221d;
+  --sidebar-bg: #fbf8f3;
+  --sidebar-fg: #3b322c;
+  --sidebar-non-existant: #a89d94;
+  --sidebar-active: #c2410c;
+  --sidebar-header-border-color: #c2410c;
+  --sidebar-spacer: #ddd3c5;
+  --scrollbar: #c9bdae;
+  --icons: #857970;
+  --icons-hover: #1a1512;
+  --links: #c2410c;
+  --inline-code-color: #8a3009;
+  --theme-popup-bg: #fbf8f3;
+  --theme-popup-border: #ddd3c5;
+  --theme-hover: #efe8dc;
+  --quote-bg: #efe8dc;
+  --quote-border: #ddd3c5;
+  --table-border-color: #ddd3c5;
+  --table-header-bg: #ebe3d6;
+  --table-alternate-bg: #f8f4ee;
+  --searchbar-border-color: #c9bdae;
+  --searchbar-bg: #ffffff;
+  --searchbar-fg: #1a1512;
+  --searchbar-shadow-color: #c9bdae;
+  --searchresults-header-fg: #6c6059;
+  --searchresults-border-color: #ddd3c5;
+  --searchresults-li-bg: #efe8dc;
+  --search-mark-bg: #ff6a2b55;
+}
 .coal,
 .navy,
 .ayu {
-  --bg: #15100e;
-  --fg: #eadccd;
-  --sidebar-bg: #1b1411;
-  --sidebar-fg: #c9b8a9;
-  --sidebar-non-existant: #6f5d52;
-  --sidebar-active: #ec6b3c;
-  --sidebar-header-border-color: #ec6b3c;
-  --sidebar-spacer: #3a2b24;
-  --scrollbar: #4a382f;
-  --icons: #9c8678;
-  --icons-hover: #f6e7d6;
-  --links: #ef7a4e;
+  --bg: #0b0c0f;
+  --fg: #d7d9de;
+  --sidebar-bg: #121419;
+  --sidebar-fg: #b4b9c2;
+  --sidebar-non-existant: #5b616c;
+  --sidebar-active: #ff6a2b;
+  --sidebar-header-border-color: #ff6a2b;
+  --sidebar-spacer: #23272f;
+  --scrollbar: #343a45;
+  --icons: #8a909b;
+  --icons-hover: #f5f3ee;
+  --links: #ff7a42;
   --inline-code-color: #f3c26b;
-  --theme-popup-bg: #211915;
-  --theme-popup-border: #3a2b24;
-  --theme-hover: #2c211c;
-  --quote-bg: #1d1613;
-  --quote-border: #3a2b24;
-  --table-border-color: #3a2b24;
-  --table-header-bg: #211915;
-  --table-alternate-bg: #1a1310;
-  --searchbar-border-color: #3a2b24;
-  --searchbar-bg: #211915;
-  --searchbar-fg: #f6e7d6;
+  --theme-popup-bg: #1a1d24;
+  --theme-popup-border: #2c313b;
+  --theme-hover: #23272f;
+  --quote-bg: #14171c;
+  --quote-border: #2c313b;
+  --table-border-color: #2c313b;
+  --table-header-bg: #1a1d24;
+  --table-alternate-bg: #101216;
+  --searchbar-border-color: #2c313b;
+  --searchbar-bg: #1a1d24;
+  --searchbar-fg: #f5f3ee;
   --searchbar-shadow-color: #000;
-  --searchresults-header-fg: #bba797;
-  --searchresults-border-color: #3a2b24;
-  --searchresults-li-bg: #1d1613;
-  --search-mark-bg: #ec6b3c66;
-}
-.light,
-.rust {
-  --links: #c2481f;
-  --sidebar-active: #c2481f;
-  --sidebar-header-border-color: #c2481f;
-  --search-mark-bg: #ec6b3c44;
+  --searchresults-header-fg: #a9afb9;
+  --searchresults-border-color: #2c313b;
+  --searchresults-li-bg: #14171c;
+  --search-mark-bg: #ff6a2b66;
 }
 .coal pre,
 .navy pre,
@@ -47,10 +72,10 @@
 .coal pre > .buttons,
 .navy pre > .buttons,
 .ayu pre > .buttons {
-  background: #110c0a;
+  background: #121419;
 }
 .coal .hljs,
 .navy .hljs,
 .ayu .hljs {
-  background: #110c0a;
+  background: #121419;
 }
