@@ -1935,6 +1935,10 @@ a[href^="http"]:not(.links a, .card)::after,
   margin: 10px 0 0;
   color: var(--muted);
 }
+/* A note under a row of cards needs the same air the cards have above. */
+.group > .cards + p {
+  margin-top: 24px;
+}
 .cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
