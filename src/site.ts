@@ -6,8 +6,8 @@ export const site = {
   discussions: 'https://github.com/ponkoengine/ponko/discussions',
   api: 'https://docs.rs/ponko/',
   websiteSource: 'https://github.com/ponkoengine/ponko-website',
-  /** The engine's web gallery, one page per example. Becomes https://examples.ponko.dev/ when that domain is added. */
-  gallery: 'https://ponko-examples.pages.dev/',
+  /** The engine's web gallery, one page per example. */
+  gallery: 'https://examples.ponko.dev/',
 };
 
 // The release the site describes. Change these four lines when a release

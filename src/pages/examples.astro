@@ -37,7 +37,7 @@ const needWebgpu = examples.filter((e) => e.webgpu === 'required');
 
       <section class="group" aria-labelledby="gallery-title">
         <h2 id="gallery-title">The engine's examples, in the browser</h2>
-        <p>{examples.length} examples from the engine repository, each built for the web on a page of its own with its controls and a link to its source. They draw with WebGPU where the browser has it and with WebGL2 where it does not, except the {needWebgpu.length} marked "needs WebGPU", which show a message instead. The pictures are frames from the examples running in a headless browser.</p>
+        <p>{examples.length} examples from the engine repository, each on a page of its own with its controls and a link to its source. They run on WebGPU or WebGL2, except the {needWebgpu.length} marked "needs WebGPU".</p>
         <Plays />
         <ul class="cards">
           <li><a class="card" href={site.gallery}><b>The whole gallery</b><span>All {examples.length} examples on one page, with what each one shows.</span></a></li>
