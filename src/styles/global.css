@@ -1505,6 +1505,23 @@ a[href^="http"]:not(.links a, .card)::after,
   color: var(--faint);
   font-size: 15px;
 }
+/* Frames from a larger game, two by two. */
+.shots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.shots img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--window-shadow);
+}
 
 /* What comes in the crate: six pictures, then the rest as a list. */
 .tiles {
@@ -2026,6 +2043,7 @@ a[href^="http"]:not(.links a, .card)::after,
   }
   .tiles,
   .games,
+  .shots,
   .cards,
   .more,
   .boards,
