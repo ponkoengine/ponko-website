@@ -1,6 +1,6 @@
 ---
-// The three reference games in the engine repository, each with a short
-// clip recorded from the game. A clip plays once when it comes into view,
+// The three reference games in the engine repository, with a short clip
+// recorded from the game where there is one. A clip plays once when it comes into view,
 // and again when it is pointed at or tapped; asking for reduced motion
 // leaves it a picture until it is tapped.
 import { getImage } from 'astro:assets';
@@ -24,7 +24,7 @@ const games = [
     links: [['Read the source', src('examples/ember_hop')], ['How it was built', '/guide/ember-hop.html']],
   },
   {
-    name: 'Shard Grove', image: shardGrove, clip: '/media/shard-grove.mp4', width: 960, height: 540,
+    name: 'Shard Grove', image: shardGrove, clip: undefined, width: 960, height: 540,
     alt: 'Shard Grove: a character seen from behind in a walled grove, with a red crawler nearby and a shard on a far wall',
     text: 'A third-person 3D game: an animated character, enemies that patrol and chase on a navigation mesh, shadows and saves.',
     links: [['Read the source', src('examples/shard_grove')], ['How it was built', '/guide/shard-grove.html']],
@@ -35,20 +35,24 @@ const posters = await Promise.all(games.map((g) => getImage({ src: g.image, widt
 <ul class="games">
   {games.map((g, i) => (
     <li>
-      <video class="clip" muted playsinline preload="none" poster={posters[i].src} width={g.width} height={g.height} aria-label={g.alt}>
-        <source src={g.clip} type="video/mp4" />
-      </video>
+      {g.clip ? (
+        <video class="clip" muted playsinline preload="none" poster={posters[i].src} width={g.width} height={g.height} aria-label={g.alt}>
+          <source src={g.clip} type="video/mp4" />
+        </video>
+      ) : (
+        <img class="clip still" src={posters[i].src} width={g.width} height={g.height} alt={g.alt} loading="lazy" decoding="async" />
+      )}
       <h3>{g.name}</h3>
       <p>{g.text}</p>
       <p class="card-links">{g.links.map(([label, href]) => <a class="arrow" href={href}>{label}</a>)}</p>
     </li>
   ))}
 </ul>
-<p class="games-note">The test suite plays all three without a window. The clips are recordings of the games; point at one or tap it to play it again.</p>
+<p class="games-note">The test suite plays all three without a window. The first two are recordings of the games: point at one or tap it to play it again.</p>
 
 <script>
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const clips = [...document.querySelectorAll<HTMLVideoElement>('.clip')];
+  const clips = [...document.querySelectorAll<HTMLVideoElement>('video.clip')];
   const replay = (clip: HTMLVideoElement) => {
     clip.currentTime = 0;
     clip.play().catch(() => {});

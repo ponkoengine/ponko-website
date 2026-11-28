@@ -1,10 +1,11 @@
 /* Ponko's site. Night ink with the panda's orange and cream. */
 :root {
-  /* Two themes from one set of names: paper by day, ink by night. Each
-     value is light-dark(paper, ink), so an element shows the dark one
-     wherever color-scheme is dark: the whole page at night, and the code
-     panels, boards and game screens at any hour (see "Screens" below). */
-  color-scheme: light dark;
+  /* Two themes from one set of names: paper, and ink for those who pick it
+     with the button in the header. Each value is light-dark(paper, ink), so
+     an element shows the dark one wherever color-scheme is dark: the whole
+     page in the ink theme, and the code panels, boards and game screens in
+     both (see "Screens" below). */
+  color-scheme: light;
   --night: light-dark(#f4efe7, #0b0c0f);
   --panel: light-dark(#fbf8f3, #121419);
   --raised: light-dark(#ffffff, #1a1d24);
@@ -25,9 +26,6 @@
   font-family: var(--sans);
   font-synthesis: none;
   scroll-behavior: smooth;
-}
-:root[data-theme="light"] {
-  color-scheme: light;
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -471,14 +469,22 @@ a[href^="http"]:not(.links a, .card)::after,
 
 /* Sections. */
 .section {
-  padding: 104px 0;
+  padding: 0 0 80px;
+}
+.section > .wrap::before {
+  content: "";
+  display: block;
+  height: 1px;
+  margin-bottom: 64px;
+  background: var(--line);
 }
 .row {
   display: grid;
   grid-template-columns: 5fr 7fr;
   gap: 48px;
 }
-.row h2 {
+.row h2,
+.news-head h2 {
   font-size: clamp(34px, 3.8vw, 52px);
   line-height: 1.05;
   letter-spacing: -0.03em;
@@ -644,7 +650,7 @@ a[href^="http"]:not(.links a, .card)::after,
   position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 14px;
   border: 1px solid var(--line);
   background: #0a0b0d;
   box-shadow: 0 40px 120px -40px color-mix(in srgb, var(--accent) 35%, transparent);
@@ -703,7 +709,7 @@ a[href^="http"]:not(.links a, .card)::after,
 .boards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 24px;
   margin: 24px 0 0;
 }
 .boards > div {
@@ -736,8 +742,8 @@ a[href^="http"]:not(.links a, .card)::after,
   display: grid;
   grid-template-columns: 7fr 5fr;
   gap: 24px;
-  align-items: start;
-  margin-top: 64px;
+  align-items: stretch;
+  margin-top: 40px;
 }
 .code,
 .game {
@@ -983,8 +989,14 @@ a[href^="http"]:not(.links a, .card)::after,
 /* All seven captions sit in the same grid cell, so the caption is as tall
    as the longest one on every step and the buttons below it stay put. Only
    the current one is visible. */
+.game {
+  display: flex;
+  flex-direction: column;
+}
 .step-caption {
+  flex: 1;
   display: grid;
+  align-content: start;
   padding: 18px 20px 20px;
   border-top: 1px solid var(--line);
   color: var(--muted);
@@ -1279,8 +1291,8 @@ a[href^="http"]:not(.links a, .card)::after,
   grid-template-columns: minmax(0, 11fr) minmax(0, 12fr);
   gap: 56px;
   align-items: center;
-  padding-top: 150px;
-  padding-bottom: 56px;
+  padding-top: 132px;
+  padding-bottom: 72px;
 }
 .hero::before,
 .closing::before {
@@ -1400,7 +1412,7 @@ a[href^="http"]:not(.links a, .card)::after,
 
 /* Small headings inside a section, and asides. */
 .sub {
-  margin: 72px 0 24px;
+  margin: 56px 0 20px;
   color: var(--ink);
   font-size: 22px;
   font-weight: 500;
@@ -1422,7 +1434,7 @@ a[href^="http"]:not(.links a, .card)::after,
   grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
   gap: 24px;
   align-items: stretch;
-  margin-top: 56px;
+  margin-top: 40px;
 }
 .demo-split .boards {
   grid-template-columns: minmax(0, 1fr);
@@ -1458,7 +1470,7 @@ a[href^="http"]:not(.links a, .card)::after,
   aspect-ratio: 16 / 10;
   object-fit: cover;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 14px;
   background: #0a0b0d;
   cursor: pointer;
 }
@@ -1474,11 +1486,17 @@ a[href^="http"]:not(.links a, .card)::after,
   font-size: 16px;
   line-height: 1.5;
 }
-.card-links {
+.games li {
+  display: flex;
+  flex-direction: column;
+}
+.games .card-links {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 20px;
-  margin-top: 10px !important;
+  margin-top: auto;
+  padding-top: 12px;
+  font-size: 16px;
 }
 .games-note {
   margin-top: 28px;
@@ -1491,10 +1509,15 @@ a[href^="http"]:not(.links a, .card)::after,
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
-  margin-top: 56px;
+  margin-top: 40px;
+}
+.tiles li {
+  display: flex;
 }
 .tiles a {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 .tiles img {
   display: block;
@@ -1503,7 +1526,7 @@ a[href^="http"]:not(.links a, .card)::after,
   aspect-ratio: 16 / 10;
   object-fit: cover;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 14px;
   transition: border-color 0.15s;
 }
 .tiles a:hover img {
@@ -1518,14 +1541,15 @@ a[href^="http"]:not(.links a, .card)::after,
   font-size: 19px;
 }
 .tiles p {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   color: var(--muted);
   font-size: 16px;
   line-height: 1.5;
 }
 .tiles .arrow {
   display: inline-block;
-  font-size: 15px;
+  margin-top: auto;
+  font-size: 16px;
 }
 .level {
   flex: none;
@@ -1571,14 +1595,14 @@ a[href^="http"]:not(.links a, .card)::after,
 .bench {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 40px 56px;
-  margin: 56px 0 0;
+  gap: 36px 56px;
+  margin: 40px 0 0;
   padding: 0;
   list-style: none;
 }
 .bench h3 {
   margin-bottom: 14px;
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 500;
 }
 .bar {
@@ -1621,8 +1645,9 @@ a[href^="http"]:not(.links a, .card)::after,
   font-size: 12px;
 }
 .fine {
-  max-width: 46em;
-  margin-top: 24px;
+  columns: 2;
+  column-gap: 56px;
+  margin-top: 28px;
   color: var(--muted);
   font-size: 15px;
   line-height: 1.6;
@@ -1744,7 +1769,7 @@ a[href^="http"]:not(.links a, .card)::after,
   overflow: hidden;
   aspect-ratio: 40 / 22;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--panel);
   transition: border-color 0.15s;
 }
@@ -1774,7 +1799,7 @@ a[href^="http"]:not(.links a, .card)::after,
 }
 .news span:not(.news-art, .dot-art) {
   color: var(--muted);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.5;
 }
 /* Today: how it is built beside the facts. */
@@ -1795,7 +1820,7 @@ a[href^="http"]:not(.links a, .card)::after,
 /* The last word on the home page. */
 .closing {
   position: relative;
-  padding: 110px 0 130px;
+  padding: 88px 0 104px;
   border-top: 1px solid var(--line);
   text-align: center;
 }
@@ -1846,7 +1871,7 @@ a[href^="http"]:not(.links a, .card)::after,
 .cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  gap: 24px;
   margin: 28px 0 0;
   padding: 0;
   list-style: none;
@@ -1886,7 +1911,7 @@ a[href^="http"]:not(.links a, .card)::after,
   padding: 16px 20px;
   overflow-x: auto;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--panel);
   color: var(--ink);
   font-size: 14px;
@@ -2015,6 +2040,15 @@ a[href^="http"]:not(.links a, .card)::after,
 }
 @media (max-width: 700px) {
   .section {
-    padding: 64px 0;
+    padding: 0 0 56px;
   }
+  .section > .wrap::before {
+    margin-bottom: 44px;
+  }
+  .fine {
+    columns: 1;
+  }
+}
+.fine p {
+  break-inside: avoid;
 }
