@@ -16,19 +16,20 @@ shows where it comes from: sixteen workloads, each written once for Ponko and
 once for [Bevy](https://bevy.org) 0.20.1, and timed the same way on two
 machines.
 
-It also shows the row Bevy wins, the settings that nearly halve Bevy's sprite
+It also shows the row Bevy won on the second machine, the settings that nearly halve Bevy's sprite
 time, and what a table like this can't tell you. I'll start there, because
 it's the part an engine's own blog is least likely to lead with.
 
 ## Where Bevy Is Ahead
 
-**Skinned characters on Vulkan.** On a Windows desktop with a Radeon RX Vega,
-Bevy draws 1,000 animated characters with a sun shadow in 8.35 ms a frame.
-Ponko takes 8.72 ms. The ranges of the three runs don't overlap, so this is
-a real difference and not noise. Ponko is ahead on the same machine with
-DirectX 12, and on a MacBook with Metal, but four days before that
-measurement Bevy won on the MacBook too. More on that row
-[below](#the-row-that-changed-sides).
+**Skinned characters on Vulkan, when last measured.** On a Windows desktop
+with a Radeon RX Vega, Bevy drew 1,000 animated characters with a sun shadow
+in 8.35 ms a frame, and Ponko took 8.72 ms. The ranges of the three runs
+don't overlap, so that was a real difference and not noise. But the run is
+from about twelve hours before Ponko's skinning was reworked, the change
+that took the same row on the MacBook from behind Bevy to ahead of it.
+Nobody has run it on that machine since, so I can't say who is ahead there
+today. More on that row [below](#the-row-that-changed-sides).
 
 **Pipelined rendering.** Bevy can simulate one frame while it renders the one
 before, on another thread. Ponko has no pipelined renderer: it simulates,
@@ -41,8 +42,8 @@ second table turns it back on, and Bevy's sprite frame falls from 11.6 to
 0.08 s against Ponko's 0.12 s.
 
 **Everything a stopwatch can't see.** Bevy has a far larger community, a
-plugin ecosystem, released games and several maintainers. Ponko has one
-maintainer and no released games. None of that is in a table of
+plugin ecosystem, released games and several maintainers. Ponko has two
+maintainers and no released games. None of that is in a table of
 milliseconds, and for most projects it matters more.
 [Ponko vs Bevy vs Unity](/guide/comparison.html) goes through it.
 
@@ -198,8 +199,9 @@ Every frame is slower than on the M4 Max, and the ratios between the engines
 are close to the first machine's: 100,000 sprites are 10× on DirectX 12 and
 12× on Vulkan, physics 1.3× and 1.2×.
 
-Two rows stand out. Bevy wins the skinned characters on Vulkan, as said at
-the top. And Bevy's tinted-sprite program failed all three runs on DirectX 12
+Two rows stand out. Bevy won the skinned characters on Vulkan, as said at
+the top. Both skinned columns show Ponko's skinning as it was before the
+change described [below](#the-row-that-changed-sides). And Bevy's tinted-sprite program failed all three runs on DirectX 12
 with `DeviceLost: Out of memory`, from a material for each of 100,000
 sprites; the same program runs on Vulkan. The time to first frame on
 DirectX 12 is within noise, because one of Ponko's three launches took
@@ -261,9 +263,12 @@ passes as before.
 The two engines still trade work differently. Ponko skins each corner once a
 frame and reads it in every pass, but records one draw per model and pass.
 Bevy skins each corner again in every pass that draws it (five times in this
-scene) but draws a whole crowd in a few instanced draws. On the M4 Max and on
-DirectX 12, Ponko's trade now comes out ahead. On Vulkan on the Vega, Bevy's
-still does, by 4%.
+scene) but draws a whole crowd in a few instanced draws. On the M4 Max,
+Ponko's trade now comes out ahead. The Windows desktop was measured about
+twelve hours before this change, so its skinned rows show the old skinning:
+ahead of Bevy on DirectX 12, and 4% behind on Vulkan.
+[Running them again](https://github.com/ponkoengine/ponko/issues/719) is
+open.
 [The guide has the full breakdown](/guide/performance.html#skinned-characters-where-the-frame-goes).
 
 ## What These Numbers Don't Say
