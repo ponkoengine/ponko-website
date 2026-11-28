@@ -1453,9 +1453,7 @@ a[href^="http"]:not(.links a, .card)::after,
 .games,
 .tiles,
 .more,
-.news,
-.fit ul,
-.not-yet ul {
+.news {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1602,12 +1600,6 @@ a[href^="http"]:not(.links a, .card)::after,
 .more a:hover b {
   color: var(--accent);
 }
-.more-text {
-  grid-column: 1 / -1;
-  color: var(--muted);
-  font-size: 15px;
-  line-height: 1.45;
-}
 
 /* The benchmarks: for each workload, two bars of dots as long as the time
    each engine took. */
@@ -1728,61 +1720,15 @@ a[href^="http"]:not(.links a, .card)::after,
   padding-top: 4px;
   font-size: 16px;
 }
-.fit {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
-  margin-top: 24px;
-}
-.fit > div,
-.not-yet {
-  padding: 24px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--panel);
-}
-.fit h3,
-.not-yet h3 {
-  margin-bottom: 14px;
-  font-size: 19px;
-}
-.fit li,
-.not-yet li {
-  position: relative;
-  margin-top: 10px;
-  padding-left: 18px;
-  color: var(--text);
-  font-size: 16px;
-  line-height: 1.5;
-}
-.fit li::before,
-.not-yet li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.62em;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--faint);
-}
-.not-yet {
-  margin-top: 24px;
-}
-.not-yet ul {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0 40px;
-}
-.not-yet b {
-  color: var(--ink);
-  font-weight: 500;
-}
-.not-yet p {
+.fit-note {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 24px;
-  margin: 22px 0 0;
+  gap: 6px 24px;
+  max-width: 62em;
+  margin: 28px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 /* Where the project stands: a list of plain facts. */
@@ -1864,22 +1810,7 @@ a[href^="http"]:not(.links a, .card)::after,
 .news a:hover b {
   color: var(--accent);
 }
-.news span:not(.news-art, .dot-art) {
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1.5;
-}
-/* Today: how it is built beside the facts. */
-.today-side h3 {
-  margin: 40px 0 10px;
-  font-size: 19px;
-  font-weight: 500;
-}
-.today-side p {
-  color: var(--text);
-  font-size: 16px;
-  line-height: 1.6;
-}
+/* Today: the links beside the facts. */
 .today-side .links {
   margin-top: 28px;
 }
@@ -2010,7 +1941,6 @@ a[href^="http"]:not(.links a, .card)::after,
   .more {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .fit,
   .demo-split {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -2051,8 +1981,7 @@ a[href^="http"]:not(.links a, .card)::after,
   .cards,
   .more,
   .boards,
-  .demo-split .boards,
-  .not-yet ul {
+  .demo-split .boards {
     grid-template-columns: minmax(0, 1fr);
   }
   .hero h1 {

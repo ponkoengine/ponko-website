@@ -74,10 +74,10 @@ const tiles = [
     text: 'Sprites, sprite sheets, Tiled tilemaps, text, particles and a camera.' },
   { name: '3D', level: 'tested', image: lights, href: '/guide/3d.html', link: 'Meshes, materials and the sun',
     alt: 'A dark floor of small cubes lit by dozens of coloured point lights',
-    text: 'PBR meshes, glTF, skeletal animation, shadows, clustered lights, terrain and water, on wgpu.' },
+    text: 'PBR meshes, glTF, skeletal animation, shadows, terrain and water, on wgpu.' },
   { name: 'Your own shaders', level: 'tested', image: shaders, href: '/guide/3d.html', link: 'Custom materials',
     alt: 'A pond with waves, a field of grass blades and a checkered ball, each drawn by its own shader',
-    text: 'A material is a WGSL file you can open and change. This water and this grass are two of them.' },
+    text: 'A material is a WGSL file you can open and change.' },
   { name: 'Many entities', level: 'proven', image: battle, href: '/guide/ecs.html', link: 'Entities, components, queries',
     alt: 'Two armies of ten thousand units each, red and blue, meeting in two long fronts between rocks and mud',
     text: 'An archetype ECS with queries that can run across all cores. Here two armies of 10,000 units fight.' },
@@ -86,7 +86,7 @@ const tiles = [
     text: 'Flow fields move crowds with one field for everyone. Here 20,000 agents share one.' },
   { name: 'An inspector', level: 'tested', image: inspector, href: '/guide/inspector.html', link: 'The inspector',
     alt: 'A running game with a panel beside it listing entities, their components and the time each system takes',
-    text: 'A panel in the running game: entities, components, the time each system takes, pause and single-step.' },
+    text: 'A panel in the running game: entities, components and the time each system takes.' },
 ];
 const more: [string, string, string, string][] = [
   ['Physics', 'proven in 2D, tested in 3D', 'Rapier bodies, joints, characters and vehicles.', '/guide/physics.html'],
@@ -108,32 +108,32 @@ const more: [string, string, string, string][] = [
 const reasons = [
   {
     fig: '16 of 16 workloads ahead', title: 'Speed before you tune anything',
-    text: 'Ahead of Bevy 0.20.1 on all sixteen workloads measured on an Apple M4 Max. 100,000 moving sprites take 1.10&nbsp;ms against 11.6&nbsp;ms.',
+    text: 'Ahead of Bevy 0.20.1 on all sixteen workloads measured on an Apple M4 Max.',
     link: 'The sixteen workloads', href: '/guide/performance.html#ponko-vs-bevy-the-scoreboard',
   },
   {
     fig: '45 s against 118 s', title: 'Short builds and small files',
-    text: 'A small 2D game builds from clean in 45 seconds, and its Bevy port in 118. The release binary is 19.4&nbsp;MB against 82.4&nbsp;MB.',
+    text: 'A small 2D game builds from clean in 45 seconds, and its Bevy port in 118.',
     link: 'Build times and sizes', href: '/guide/performance.html#build-times-and-download-sizes',
   },
   {
     fig: 'one crate, one version', title: 'The pieces in the box',
-    text: 'Physics, UI, navigation, multiplayer, saves, an editor and an inspector ship with the engine and are released together.',
+    text: 'Physics, UI, navigation, multiplayer, saves, an editor and an inspector, released together.',
     link: 'What is in the guide', href: '/learn/',
   },
   {
     fig: 'fn(&mut Ctx)', title: 'A game that is a plain function',
-    text: 'Systems run in the order you write them, at a fixed rate, so two runs of the same build do the same thing.',
+    text: 'Systems run in the order you write them, so two runs do the same thing.',
     link: 'Determinism', href: '/guide/determinism.html',
   },
   {
     fig: 'no window, no GPU', title: 'Tests without a window',
-    text: '<code>run_headless</code> steps a game for tests and servers. The test suite plays the three reference games that way.',
+    text: 'Step a game with no window and no GPU. The test suite plays three games that way.',
     link: 'Headless runs', href: '/guide/headless.html',
   },
   {
     fig: 'Rust, C, C++', title: 'C and C++ as well as Rust',
-    text: 'A C API and a header-only C++17 wrapper. A battle of a million units ticks in 19.97&nbsp;ms in C++, against 18.85&nbsp;ms in Rust.',
+    text: 'A C API and a header-only C++17 wrapper over the same engine.',
     link: 'C and C++', href: '/guide/c-cpp.html',
   },
 ];
@@ -235,7 +235,6 @@ const crabRects = crab
             <h2 id="play-title">See it run.</h2>
             <div class="body">
               <p>Wildfire is a game made with Ponko and compiled to WebAssembly. Fire runs through a valley with the wind, and you keep it away from five villages.</p>
-              <p class="aside">Everything on this page was made by the people who build Ponko. Nobody else has released a game made with it yet.</p>
             </div>
           </div>
           <div class="demo demo-split" id="demo">
@@ -287,85 +286,9 @@ const crabRects = crab
           </ul>
           <ul class="more">
             {more.map(([name, level, text, href]) => (
-              <li><a href={href}><b>{name}</b><span class="level">{level}</span><span class="more-text">{text}</span></a></li>
+              <li><a href={href} title={text}><b>{name}</b><span class="level">{level}</span></a></li>
             ))}
           </ul>
-        </div>
-      </section>
-
-      <section id="measured" class="section" aria-labelledby="measured-title">
-        <div class="wrap">
-          <div class="row">
-            <h2 id="measured-title">Measured, with the method.</h2>
-            <div class="body">
-              <p>Sixteen workloads, written for both engines and run on the same machine. Four of them are below; the guide has the rest and the commands to run them yourself.</p>
-            </div>
-          </div>
-          <ul class="bench" aria-label="Time taken, shorter is faster">
-            {measured.map((m) => (
-              <li>
-                <h3>{m.what}</h3>
-                <div class="bar ours" style={`--w:${((m.ponko / m.bevy) * 100).toFixed(1)}%`}><span>Ponko</span><i aria-hidden="true"></i><b>{shown(m.ponko, m.digits)} {m.unit}</b></div>
-                <div class="bar theirs" style="--w:100%"><span>Bevy 0.20.1</span><i aria-hidden="true"></i><b>{shown(m.bevy, m.digits)} {m.unit}</b></div>
-              </li>
-            ))}
-          </ul>
-          <p class="bench-key">Each bar is the time taken. Shorter is faster.</p>
-          <div class="fine">
-            <p>Apple M4 Max, Metal, release builds, the median of three runs, 22 to 26 November 2026. Each engine is set up the way a new project starts. With Bevy's pipelined rendering turned on, which Ponko does not have, the sprite row is 1.02 ms against 6.74 ms.</p>
-            <p>These are specific workloads, not a ranking of the engines. <a class="arrow" href="/guide/performance.html">The full tables and the method</a></p>
-          </div>
-        </div>
-      </section>
-
-      <section id="fit" class="section" aria-labelledby="fit-title">
-        <div class="wrap">
-          <div class="row">
-            <h2 id="fit-title">Is it for you?</h2>
-            <div class="body">
-              <p>Ponko is for programmers who would rather read a game's code than assemble it in an editor or out of plugins.</p>
-            </div>
-          </div>
-          <div class="pick">
-            <h3>Pick Ponko if you want</h3>
-            <ul>
-              {reasons.map((r) => (
-                <li>
-                  <b>{r.title}</b>
-                  <i class="fig">{r.fig}</i>
-                  <span set:html={r.text} />
-                  <a class="arrow" href={r.href}>{r.link}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div class="fit">
-            <div>
-              <h3>Pick Bevy if</h3>
-              <ul>
-                <li>you want the largest Rust game-engine community, with plugins and tutorials for most things;</li>
-                <li>you want the engine to schedule your systems in parallel by itself (Ponko's parallel systems are opt-in);</li>
-                <li>you need observers, generic relationships or a render graph, which Ponko does not have.</li>
-              </ul>
-            </div>
-            <div>
-              <h3>Pick Godot if</h3>
-              <ul>
-                <li>you want a visual editor and a scene tree;</li>
-                <li>you want to script in GDScript or C#;</li>
-                <li>you want an engine that years of released games were made with.</li>
-              </ul>
-            </div>
-          </div>
-          <div class="not-yet">
-            <h3>Ponko is the wrong choice today if</h3>
-            <ul>
-              <li><b>you need the API to stay put.</b> Ponko is 0.x: a release can break code written for the one before.</li>
-              <li><b>you are shipping on consoles.</b> Consoles are not supported.</li>
-              <li><b>you need released games and a large team behind the engine.</b> Ponko has two maintainers and no released games yet.</li>
-            </ul>
-            <p><a class="arrow" href="/guide/comparison.html">Ponko next to Bevy and Unity, in detail</a> <a class="arrow" href="/guide/from-bevy.html">Coming from Bevy</a></p>
-          </div>
         </div>
       </section>
 
@@ -409,13 +332,61 @@ const crabRects = crab
         </div>
       </section>
 
+      <section id="measured" class="section" aria-labelledby="measured-title">
+        <div class="wrap">
+          <div class="row">
+            <h2 id="measured-title">Measured, with the method.</h2>
+            <div class="body">
+              <p>Sixteen workloads, written for both engines and run on the same machine. Four of them are below; the guide has the rest and the commands to run them yourself.</p>
+            </div>
+          </div>
+          <ul class="bench" aria-label="Time taken, shorter is faster">
+            {measured.map((m) => (
+              <li>
+                <h3>{m.what}</h3>
+                <div class="bar ours" style={`--w:${((m.ponko / m.bevy) * 100).toFixed(1)}%`}><span>Ponko</span><i aria-hidden="true"></i><b>{shown(m.ponko, m.digits)} {m.unit}</b></div>
+                <div class="bar theirs" style="--w:100%"><span>Bevy 0.20.1</span><i aria-hidden="true"></i><b>{shown(m.bevy, m.digits)} {m.unit}</b></div>
+              </li>
+            ))}
+          </ul>
+          <p class="bench-key">Each bar is the time taken. Shorter is faster.</p>
+          <div class="fine">
+            <p>Apple M4 Max, Metal, release builds, the median of three runs, 22 to 26 November 2026. Bevy's pipelined rendering is off, so both engines do the same work in the same order; with it on, the sprite row is 1.02 ms against 6.74 ms.</p>
+            <p>These are specific workloads, not a ranking of the engines. <a class="arrow" href="/guide/performance.html">The full tables and the method</a></p>
+          </div>
+        </div>
+      </section>
+
+      <section id="fit" class="section" aria-labelledby="fit-title">
+        <div class="wrap">
+          <div class="row">
+            <h2 id="fit-title">Is it for you?</h2>
+            <div class="body">
+              <p>Ponko is for programmers who would rather read a game's code than assemble it in an editor or out of plugins.</p>
+            </div>
+          </div>
+          <div class="pick">
+            <h3>Pick Ponko if you want</h3>
+            <ul>
+              {reasons.map((r) => (
+                <li>
+                  <b>{r.title}</b>
+                  <i class="fig">{r.fig}</i>
+                  <span set:html={r.text} />
+                  <a class="arrow" href={r.href}>{r.link}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <p class="fit-note">Pick Bevy for the largest Rust community and systems scheduled in parallel for you, or Godot for a visual editor. Ponko is 0.x, does not run on consoles, and nobody outside the project has released a game with it yet. <a class="arrow" href="/guide/comparison.html">The comparison in detail</a> <a class="arrow" href="/guide/from-bevy.html">Coming from Bevy</a></p>
+        </div>
+      </section>
+
       <section id="today" class="section" aria-labelledby="today-title">
         <div class="wrap">
           <div class="row">
             <div class="today-side">
               <h2 id="today-title">Where Ponko is today.</h2>
-              <h3>How it is built</h3>
-              <p>Much of Ponko's code is written by AI coding agents, directed and reviewed by its maintainers. Whoever writes a change, it passes the same checks before it is merged: the test suite, Clippy, and the three reference games played by tests without a window.</p>
               <ul class="links">
                 <li><a href={`${gh}/blob/main/ROADMAP.md`} target="_blank" rel="noopener"><span>Roadmap</span><span>What works and what's next</span></a></li>
                 <li><a href={`${gh}/blob/main/STABILITY.md`} target="_blank" rel="noopener"><span>Stability</span><span>What a release may and may not change</span></a></li>
@@ -425,14 +396,9 @@ const crabRects = crab
             </div>
             <div class="body">
               <dl class="facts">
-                <div><dt>Version</dt><dd>{release.version}, released {released}. Until 0.2.0 is out, <code>cargo add ponko</code> without a version installs {release.stable}. A release can break the API, and lists every break with the code before and after (<a href="/guide/migrating-to-0.2.html">from 0.1 to 0.2</a>).</dd></div>
-                <div><dt>Age</dt><dd>Public since 2 November 2026.</dd></div>
-                <div><dt>People</dt><dd>Leon Mamić, who owns the project, and a second maintainer, Damjan Pavličević.</dd></div>
-                <div><dt>macOS</dt><dd>The whole list of checks has run on Apple silicon: <a href="/guide/check-results/macos.html">recorded in the guide</a>.</dd></div>
-                <div><dt>Windows</dt><dd>Benchmarks, a frame-time baseline and rendering fixes on Windows 11 with DirectX 12 and Vulkan. The whole list is not recorded yet.</dd></div>
-                <div><dt>Linux</dt><dd>Supported. The recorded run of the whole list is next (<a href={`${gh}/issues/500`}>issue 500</a>).</dd></div>
-                <div><dt>The web</dt><dd>WebGL2 is checked in headless Chromium, Firefox and WebKit, and WebGPU on a real GPU, on a Mac.</dd></div>
-                <div><dt>Testing</dt><dd>No CI service: maintainers run the checks on their own machines before a change is merged.</dd></div>
+                <div><dt>Version</dt><dd>{release.version}, released {released}. Until 0.2.0 is out, <code>cargo add ponko</code> without a version installs {release.stable}. A release can break the API, and lists every break (<a href="/guide/migrating-to-0.2.html">from 0.1 to 0.2</a>).</dd></div>
+                <div><dt>People</dt><dd>Leon Mamić owns the project, and Damjan Pavličević is a second maintainer. Much of the code is written by AI coding agents, and every change passes the same checks before it is merged.</dd></div>
+                <div><dt>Tested on</dt><dd>macOS, with <a href="/guide/check-results/macos.html">the whole list of checks recorded</a>. Windows, for the benchmarks and rendering. The web, in Chromium, Firefox and WebKit. Linux is next (<a href={`${gh}/issues/500`}>issue 500</a>).</dd></div>
               </dl>
             </div>
           </div>
@@ -456,7 +422,6 @@ const crabRects = crab
                   </span>
                   <time datetime={p.data.date.toISOString().slice(0, 10)}>{formatDate(p.data.date)}</time>
                   <b>{p.data.title}</b>
-                  <span>{p.data.description}</span>
                 </a>
               </li>
             ))}

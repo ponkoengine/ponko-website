@@ -14,7 +14,7 @@ const games = [
   {
     name: 'Coin Dash', image: coinDash, clip: '/media/coin-dash.mp4', width: 800, height: 600,
     alt: 'Coin Dash: a small knight on a grass field with four coins left to collect and a clock running',
-    text: 'A small complete 2D game: a title screen, settings, rebindable controls, rounds against the clock and a saved best time, in English and Arabic.',
+    text: 'A small complete 2D game: menus, settings, rebindable controls and a saved best time, in English and Arabic.',
     links: [['Read the source', src('examples/coin_dash')], ['How it is packaged', '/guide/packaging.html']],
   },
   {
@@ -48,7 +48,7 @@ const posters = await Promise.all(games.map((g) => getImage({ src: g.image, widt
     </li>
   ))}
 </ul>
-<p class="games-note">Clips recorded from the games; point at one or tap it to play it again. The test suite plays all three without a window.</p>
+<p class="games-note">Clips recorded from the games. The test suite plays all three without a window.</p>
 
 <script>
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
