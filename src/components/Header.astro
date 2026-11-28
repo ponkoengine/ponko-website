@@ -18,6 +18,10 @@ const current = (href: string) => (href.startsWith('/') && here.startsWith(href)
         return <a class="nav-link" href={href} aria-current={current(href)} target={out ? '_blank' : undefined} rel={out ? 'noopener' : undefined}>{label}</a>;
       })}
       <a class="pill small" href="/guide/getting-started.html">Get started</a>
+      <button class="theme-button" type="button" id="theme-button" aria-label="Switch between the light and dark theme">
+        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="1.6" /><path d="M10 3a7 7 0 0 1 0 14z" fill="currentColor" /></svg>
+        <span>Theme</span>
+      </button>
     </nav>
     <button class="menu-button" type="button" aria-expanded="false" aria-controls="top-nav">
       <span class="menu-icon" aria-hidden="true"><i></i><i></i></span>
@@ -27,6 +31,32 @@ const current = (href: string) => (href.startsWith('/') && here.startsWith(href)
 </header>
 
 <script>
+  // The theme follows the system until the button is pressed; a choice that
+  // differs from the system is remembered, and choosing the system's own
+  // theme goes back to following it.
+  const themeButton = document.querySelector<HTMLButtonElement>('#theme-button');
+  if (themeButton) {
+    const root = document.documentElement;
+    const system = matchMedia('(prefers-color-scheme: dark)');
+    const shown = () => root.dataset.theme ?? (system.matches ? 'dark' : 'light');
+    const label = () => themeButton.setAttribute('aria-label', `Switch to the ${shown() === 'dark' ? 'light' : 'dark'} theme`);
+    themeButton.addEventListener('click', () => {
+      const next = shown() === 'dark' ? 'light' : 'dark';
+      const follows = next === (system.matches ? 'dark' : 'light');
+      if (follows) delete root.dataset.theme;
+      else root.dataset.theme = next;
+      try {
+        if (follows) localStorage.removeItem('ponko-theme');
+        else localStorage.setItem('ponko-theme', next);
+      } catch {
+        // No storage: the choice lasts for this page.
+      }
+      label();
+    });
+    system.addEventListener('change', label);
+    label();
+  }
+
   const bar = document.querySelector<HTMLElement>('#top-bar');
   const button = bar?.querySelector<HTMLButtonElement>('.menu-button');
   const nav = bar?.querySelector<HTMLElement>('#top-nav');
