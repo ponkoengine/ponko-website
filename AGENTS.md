@@ -53,11 +53,11 @@ under `/guide/` is the engine's mdBook, built from the engine's `main`.
 
 ## Design
 
-- Two themes, paper by day and ink by night, from one set of variables in
-  `global.css` (`--night`, `--panel`, `--ink`, `--accent`, ...). Each is
-  written `light-dark(paper, ink)`, the page follows the system setting, and
-  the button in the header overrides it. Use the variables, never a fixed
-  colour, so both themes keep working.
+- Two themes from one set of variables in `global.css` (`--night`,
+  `--panel`, `--ink`, `--accent`, ...): paper, which is the default, and ink,
+  which the button in the header switches to. Each variable is written
+  `light-dark(paper, ink)`. Use the variables, never a fixed colour, so both
+  themes keep working.
 - Code, terminals, number boards and anything a game draws are "screens":
   they stay dark in both themes. Add a new one to the "Screens" rule in
   `global.css`.
