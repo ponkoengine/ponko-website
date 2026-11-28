@@ -1,11 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
 import Games from '../components/Games.astro';
+import Plays from '../components/Plays.astro';
+import examples from '../data/gallery.json';
 import { site } from '../site';
 
 const gh = site.github;
+const needWebgpu = examples.filter((e) => e.webgpu === 'required');
 ---
-<Base title="Examples · Ponko Engine" description="Games and examples made with Ponko: two you can play in the browser, three complete games with their source, and the examples in the engine repository.">
+<Base title="Examples · Ponko Engine" description={`Games and examples made with Ponko: two games and ${examples.length} of the engine's examples you can play in the browser, three complete games with their source, and how to run the rest.`}>
   <main id="main" class="page">
     <div class="wrap">
       <header class="page-head">
@@ -29,6 +32,16 @@ const gh = site.github;
           <li><a class="card" href="/play/wildfire/" target="_blank" rel="noopener"><b>Wildfire</b><span>A fire spreads through a valley with the wind and up the slopes. Dig firebreaks and call water bombers to keep it from five villages.</span></a></li>
           <li><a class="card" href="/play/tide/" target="_blank" rel="noopener"><b>Tide</b><span>An older, smaller one: thousands of units on a shore, moved by one system.</span></a></li>
           <li><a class="card" href={`${site.websiteSource}/tree/main/demo`}><b>Their source</b><span>Both games are in this website's repository, each a few files of Rust.</span></a></li>
+        </ul>
+      </section>
+
+      <section class="group" aria-labelledby="gallery-title">
+        <h2 id="gallery-title">The engine's examples, in the browser</h2>
+        <p>{examples.length} examples from the engine repository, each built for the web on a page of its own with its controls and a link to its source. They draw with WebGPU where the browser has it and with WebGL2 where it does not, except the {needWebgpu.length} marked "needs WebGPU", which show a message instead. The pictures are frames from the examples running in a headless browser.</p>
+        <Plays />
+        <ul class="cards">
+          <li><a class="card" href={site.gallery}><b>The whole gallery</b><span>All {examples.length} examples on one page, with what each one shows.</span></a></li>
+          <li><a class="card" href={`${gh}/tree/main/web/gallery`}><b>How it is built</b><span>The gallery's builder and its browser check, in the engine repository.</span></a></li>
         </ul>
       </section>
 
