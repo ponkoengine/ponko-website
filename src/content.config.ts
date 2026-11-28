@@ -15,7 +15,7 @@ const blog = defineCollection({
       date: z.coerce.date(),
       /** Set when a post is changed in a way readers should know about. */
       updated: z.coerce.date().optional(),
-      authors: z.array(z.string()).default(['Leon Mamic']),
+      authors: z.array(z.string()).default(['Leon Mamić']),
       tags: z.array(z.string()).default([]),
       /** The post's picture in dots. Both are picked from the address unless set. */
       art: z

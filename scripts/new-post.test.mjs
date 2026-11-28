@@ -18,6 +18,6 @@ test("a new post starts as a draft with today's date", () => {
 
 test("a new post is signed by a person, not the team", () => {
   const text = template("A post", "2026-11-11");
-  assert.match(text, /^authors: \[Leon Mamic\]$/m);
+  assert.match(text, /^authors: \[Leon Mamić\]$/m);
   assert.doesNotMatch(text, /Ponko team/);
 });
