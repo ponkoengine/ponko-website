@@ -15,20 +15,21 @@ import shaders from '../assets/home/shaders.jpg';
 import battle from '../assets/home/battle.jpg';
 import flow from '../assets/home/flow.jpg';
 import inspector from '../assets/home/inspector.jpg';
-import largerAerial from '../assets/home/larger-game-aerial.jpg';
+import largerForest from '../assets/home/larger-game-forest.jpg';
+import largerPond from '../assets/home/larger-game-pond.jpg';
 import largerLakeshore from '../assets/home/larger-game-lakeshore.jpg';
-import largerStreet from '../assets/home/larger-game-street.jpg';
 import largerNight from '../assets/home/larger-game-night.jpg';
 
 const gh = site.github;
 
-// Frames from a private 3D game that is being ported to Ponko. Say no more
-// about it than these captions do.
+// A private 3D game that is being ported to Ponko. The first two pictures
+// are the game's own art, which Ponko did not draw; the last two are frames
+// from the port. Say no more about the game than the caption does.
 const largerGame = [
-  { image: largerAerial, alt: 'Houses with red roofs along dirt roads on a grassy slope, with a forest behind them, seen from the air in afternoon light' },
+  { image: largerForest, alt: 'A stag standing among tall tree trunks with its head raised, lit from behind by orange light through fog' },
+  { image: largerPond, alt: 'A stag drinking at a pond at sunrise, mirrored in the water, with reeds beside it' },
   { image: largerLakeshore, alt: 'Tall grass in the foreground, a small silver car parked on a dirt track by a lake, and a line of forest on the far shore under scattered clouds' },
-  { image: largerStreet, alt: 'The plastered wall and green shutters of a house on the left, and a red shop with a striped awning across a yard, with trees behind' },
-  { image: largerNight, alt: 'The same houses from the air at night, with lit windows and dark forest around them' },
+  { image: largerNight, alt: 'Houses seen from the air at night, with lit windows and dark forest around them' },
 ];
 const released = formatDate(new Date(release.date));
 const posts = (await getPosts()).filter((p) => !p.data.draft).slice(0, 3);
@@ -260,7 +261,7 @@ const crabRects = crab
               <li><Image src={s.image} alt={s.alt} widths={[640, 960, 1280]} sizes="(max-width: 700px) 100vw, 600px" loading="lazy" /></li>
             ))}
           </ul>
-          <p class="games-note">A private 3D game that is being ported to Ponko. Frames from the port, 24 November 2026.</p>
+          <p class="games-note">A private 3D game that is being ported to Ponko. The first two pictures are art from the game; the last two are frames from the port, 24 November 2026.</p>
         </div>
       </section>
 
