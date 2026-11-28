@@ -2,10 +2,13 @@
 title: "Fewer releases, better ones"
 description: Ponko's main branch is more than 900 commits past 0.1.0, and we are not releasing it yet. Why the next release waits for proof instead of features, what that proof is, and how to follow along in the meantime.
 date: 2026-11-24
-tags: [Project, Release]
+authors: ["Leon Mamic"]
+tags: [Project]
 art: { palette: sea, shape: ripple }
 draft: false
 ---
+
+import grove from './shard-grove.jpg';
 
 Ponko 0.1.0 came out on 13 November. Since then `main` has moved more than
 900 commits past it: game states, an entity hierarchy, rollback netcode, an
@@ -40,6 +43,8 @@ That is the pattern we want to break. Some honest examples:
 - Every guide chapter was written and checked by people who already knew the
   engine.
 - The reference games use art drawn by scripts.
+
+<Figure src={grove} alt="A hooded character walks across a grassy courtyard between stone walls, casting a shadow, with a red crab-like enemy behind it" caption="Shard Grove, one of the reference games." wide />
 
 An engine is good when a stranger can install it on their own machine, follow
 the guide, and ship something. We have not shown that yet.

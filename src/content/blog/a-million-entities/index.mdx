@@ -1,16 +1,28 @@
 ---
 title: The first two days, up to a million entities
-description: What we built in Ponko's first two days. A window and a game loop, our own ECS, queries that use every core, and simulations of a million units that run in one frame.
+description: What we built in Ponko's first two days. A window and a game loop, our own ECS, queries that use every core, and simulations of a million units.
 date: 2026-11-03
-tags: [Engine, ECS, Performance]
+authors: ["Leon Mamic"]
+tags: [Dev update, ECS, Performance]
 art: { palette: ember, shape: blobs }
 ---
 
+import battle from './battle.jpg';
+
 Ponko's first commit opened a window and closed it again. That was on
 2 November. By the end of the 3rd it could simulate a million units fighting
-over a map, from Rust, C or C++, in a browser, with an AI agent driving it.
+over a map, from Rust, C or C++, in a browser, with an AI agent driving it. We wrote this post on 11 November,
+about the work of 2 and 3 November.
 
 Here's the order things went in, and what we measured along the way.
+
+<Callout type="note" title="Written for an early version">
+  The code in this post was written for the engine as it was on 3 November,
+  before 0.1.0, and doesn't compile on 0.2: `ctx.draw` is now `ctx.gfx.draw`
+  and takes the texture by value, and `Transform2D` is now `d2::Transform`.
+  The migration guides for [0.1](/guide/migrating-to-0.1.html) and
+  [0.2](/guide/migrating-to-0.2.html) list every change.
+</Callout>
 
 ## The loop, then the sprites
 
@@ -54,15 +66,17 @@ generational entity ids, queries, commands and resources. Components can be
 registered at runtime, which is what lets C and C++ code define its own.
 
 <Callout type="note" title="How these were measured">
-  Release builds on a MacBook Pro with an M4 Max. The reproduction commands are
-  on the [benchmarks page](/guide/performance.html). Web builds run on one
-  thread and are slower.
+  The numbers in this post are the current ones from the
+  [benchmarks page](https://ponko.dev/guide/performance.html), not the ones we
+  measured on 3 November, which have since been re-run. Release builds on a
+  MacBook Pro with an M4 Max; the page has the commands to reproduce them and
+  the date of each run. Web builds run on one thread and are slower.
 </Callout>
 
 <Stats>
-  <Stat value="0.15">ms to iterate 1M entities in Ponko (bevy_ecs 0.36, hecs 1.77)</Stat>
-  <Stat value="76">bytes of memory per entity, with 1M agents</Stat>
-  <Stat value="0.42">ms to send and read 100,000 events in a tick</Stat>
+  <Stat value="0.16">ms to iterate 1M entities in Ponko (bevy_ecs 0.36, hecs 0.70; medians of 3 runs)</Stat>
+  <Stat value="96">bytes of memory per entity, with 1M agents, spare capacity included</Stat>
+  <Stat value="0.44">ms to send and read 100,000 events in a tick</Stat>
 </Stats>
 
 Next was `par_for_each`, which spreads a query over all your cores with
@@ -77,7 +91,7 @@ ctx.world.query::<(&mut Transform2D, &Speed)>().par_for_each(|(t, speed)| {
 
 ## Big simulations
 
-A fast loop isn't enough for games with huge crowds, so we added the tools
+A fast loop isn't enough for games with big crowds, so we added the tools
 those games end up needing:
 
 - A fixed-rate simulation clock. It can pause, step a single tick, or run
@@ -93,24 +107,29 @@ those games end up needing:
   and stay the same with parallel queries. You can also save and load the
   whole world with entity ids intact.
 
-We wrote three demos that run a million entities each:
+We wrote three demos that run a million entities or more, headless:
 
 <Stats>
-  <Stat value="18.9">ms per tick: a battle of 1M units with flow fields and fighting</Stat>
-  <Stat value="15">ms per tick: 1M ants in colonies</Stat>
-  <Stat value="8.7">ms per tick: a headless simulation of 10M agents</Stat>
+  <Stat value="19.3">ms per tick: a battle of 1M units with flow fields and fighting</Stat>
+  <Stat value="15.6">ms per tick: 1M ants in colonies</Stat>
+  <Stat value="7.2">ms per tick: a headless simulation of 10M agents</Stat>
 </Stats>
 
+<Figure src={battle} alt="Two armies of about 10,000 dots each, red on the left and blue on the right, meeting in two long lines between grey rocks and brown mud on a green map" caption="The battle example with 20,000 units in a window. With a million, it runs headless." wide />
+
 For drawing, a million moving sprites run at 120 frames a second, which is
-as high as the display goes.
+as high as the display goes, when each sprite is 1.6 pixels across. At 32
+pixels the GPU has to fill far more pixels and it drops to 15 frames a second.
 
 ## The rest of day two
 
 A lot more landed on 3 November:
 
 - A C API and a header-only C++17 wrapper that cover almost all of the
-  engine. We ported the battle demo to C++ and it runs as fast as the Rust
-  one.
+  engine. We ported the battle demo to C++. It runs at the same speed as the
+  Rust one with 20,000 units (0.57 ms a tick) and 6% slower with a million
+  (19.97 against 18.85 ms a tick), as the
+  [C and C++ chapter](https://ponko.dev/guide/c-cpp.html#speed) shows.
 - Web builds. The same game runs in the browser on WebGPU or WebGL2.
 - 2D physics with [Rapier](https://rapier.rs/), including an option for
   bit-identical results on every platform.

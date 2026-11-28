@@ -1,18 +1,29 @@
 ---
 title: Ponko's 3D renderer
-description: In four days the renderer went from sprites to physically based 3D, with cascaded shadows, a physical sky, terrain, a thousand lights, temporal antialiasing, reflections and global illumination.
+description: In four days the renderer went from sprites to physically based 3D, with cascaded shadows, a physical sky, terrain, clustered lights, temporal antialiasing, reflections and global illumination.
 date: 2026-11-07
-tags: [Rendering, 3D, Performance]
+authors: ["Leon Mamic"]
+tags: [Dev update, Rendering, 3D, Performance]
 art: { palette: amber, shape: sphere }
 ---
 
+import terrain from './terrain.jpg';
+import vsUnity from './3d-vs-unity.jpg';
+
 Ponko drew its first 3D mesh on the evening of 3 November. Three days later
-it had physically based rendering and real-time global illumination. Below is
-everything that went in, roughly in the order we built it.
+it had physically based rendering and real-time global illumination. We wrote this post on 11 November, about the
+work of 3 to 6 November. Below is what went in, roughly in the order we
+built it.
 
 It's all behind the `3d` Cargo feature, so 2D games don't pay for it. 3D
 models use the same ECS as everything else: put a `Transform3D` and a
 `Model` on an entity and the renderer picks it up.
+
+<Callout type="note" title="Written for an early version">
+  Some names in this post are from before 0.1.0. On 0.2, `Transform3D` is
+  `d3::Transform` and `CellStreamer` lives in `ponko::streaming`. The
+  [0.2 migration guide](/guide/migrating-to-0.2.html) lists every change.
+</Callout>
 
 ## The basics
 
@@ -49,6 +60,8 @@ monitors and planar reflections.
 - Streaming. `CellStreamer` tells you which cells of the world to load and
   unload around a point, closest first and a few per frame, and `Job` builds
   tiles on worker threads.
+<Figure src={terrain} alt="Green islands with sandy shores in a blue sea under a hazy sky, seen from above" caption="Terrain tiles, water and the physical sky." wide />
+
 - LOD groups with dithered crossfades, and occlusion culling against the
   depth of an earlier frame.
 
@@ -56,20 +69,12 @@ monitors and planar reflections.
 
 Point and spot lights are sorted into clusters for each camera, and each
 pixel only looks at the lights in its cluster. This works on WebGL2 too,
-without storage buffers.
-
-<Stats>
-  <Stat value="1000">visible lights</Stat>
-  <Stat value="0.14">ms of CPU for them</Stat>
-  <Stat value="1">ms of GPU, at 720p</Stat>
-</Stats>
-
-That's on an M4 Max with shadows turned off. Point and spot light shadows
+without storage buffers. Point and spot light shadows
 share one atlas, and decals are projected on the GPU using the same clusters.
 
 ## Image quality
 
-By 6 November we had most of what you'd expect from a current renderer:
+By 6 November the renderer also had:
 
 - Temporal antialiasing with per-object motion vectors, plus FXAA and SMAA.
 - Ground-truth ambient occlusion (GTAO), with half-resolution and temporal
@@ -89,9 +94,15 @@ and shadows. We built the same scene in Unity 6 to compare:
   <Stat value="54">FPS for the same scene in Unity 6</Stat>
 </Stats>
 
-Both are release builds on an M4 Max. The workload and how to run it are on
-the [benchmarks page](/guide/performance.html), and we'd like to know what
-numbers you get on your own machine.
+<Figure src={vsUnity} alt="Two views of the same field of thousands of coloured cubes on green ground under a blue sky, with a row of red and gold spheres in front: Ponko on the left, Unity on the right, mirrored" caption="The 100,000-cube scene: Ponko on the left, Unity 6 on the right." wide />
+
+This is one scene on one machine: release builds on an M4 Max, the median of
+three 10-second runs, with SSAO, post-processing and HDR turned off. Unity
+used one GameObject per cube with Mono scripts; Unity's DOTS was not
+measured, and the gap doesn't carry over to it. The workload, the other
+caveats and how to run it are on the
+[benchmarks page](https://ponko.dev/guide/performance.html#3d-ponko-vs-unity),
+and we'd like to know what numbers you get on your own machine.
 
 There are profiling tools built in as well. `ctx.perf.frame_stats()` breaks a
 frame down into systems, rendering and waiting, with GPU time for every pass

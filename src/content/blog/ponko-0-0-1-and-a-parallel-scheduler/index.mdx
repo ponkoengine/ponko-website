@@ -2,9 +2,12 @@
 title: "The name, 0.0.1, plugins and a parallel scheduler"
 description: The engine got its name and a 0.0.1 release line, along with phases and plugins, one error type, change detection, a parallel scheduler, asset streaming and GPU culling.
 date: 2026-11-11
-tags: [Engine, ECS, Performance]
+authors: ["Leon Mamic"]
+tags: [Dev update, ECS, Performance]
 art: { palette: dusk, shape: blobs }
 ---
+
+import coinDash from './coin-dash.jpg';
 
 In the first week we mostly added features: sprites, an ECS, 3D, physics,
 animation. The second week was more about making that work well in an actual game.
@@ -109,8 +112,7 @@ moves.
   <Stat value="0.26">ms of GPU culling for 4,096 batches, down from 7.8</Stat>
 </Stats>
 
-The culling number is new as of today. Big static batches are now culled on
-the GPU in a single compute dispatch, where before it took one per batch and
+Big static batches are now culled on the GPU in a single compute dispatch, where before it took one per batch and
 view. For the same scene, the renderer's CPU time dropped from 9.4 ms to
 1.1 ms.
 
@@ -119,6 +121,10 @@ view. For the same scene, the renderer's CPU time dropped from 9.4 ms to
 `coin_dash` is our example of a whole game, as opposed to a demo of one
 feature. It has menus, a settings screen where you can rebind keys and
 gamepad buttons, saved progress, and sound effects generated in code. It's
-packaged with its licences and tested on Linux, macOS, Windows and the web.
+packaged with its licences, and at the time it was tested on Linux, macOS,
+Windows and the web.
+
+<Figure src={coinDash} alt="A small character on a grass field with four gold coins around it and the coin count at the top" caption="Coin Dash, the complete example game, as it looks today." pixelated />
+
 The guide goes through it in
 [A complete game, packaged](/guide/packaging.html).

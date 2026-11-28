@@ -2,19 +2,33 @@
 title: 3D physics, animation and navmeshes
 description: In one day Ponko got 3D physics, with terrain colliders, a character controller, cars on raycast wheels and ragdolls. Skinned animation and navigation meshes came right after.
 date: 2026-11-05
-tags: [Physics, Animation, 3D]
+authors: ["Leon Mamic"]
+tags: [Dev update, Physics, Animation, 3D]
 art: { palette: sea, shape: waves }
 ---
 
+import grove from './shard-grove.jpg';
+
 By 5 November Ponko could draw 3D scenes, but nothing in them moved. That
 day we added physics, then animated characters, then navigation meshes so
-characters can find their own way around.
+characters can find their own way around. We wrote this post on 11 November,
+about the work of 5 November.
+
+<Figure src={grove} alt="A hooded character walks across a grassy courtyard between stone walls, casting a shadow, with a red crab-like enemy behind it" caption="Shard Grove, one of the engine's example games, uses the character controller, skinned animation and a navigation mesh from this post. It was written later, for 0.2." wide />
+
+<Callout type="note" title="Written for an early version">
+  The names in this post are from before 0.1.0. On 0.2, `Character3D` is
+  `d3::Character`, and the mouse calls moved to `ctx.input.set_cursor_locked`
+  and `ctx.input.mouse_motion`. The migration guides for
+  [0.1](/guide/migrating-to-0.1.html) and [0.2](/guide/migrating-to-0.2.html)
+  list every change.
+</Callout>
 
 ## Physics
 
 3D physics uses [Rapier](https://rapier.rs/), the same library as our 2D
 physics, and is behind the `physics3d` feature. Rigid bodies and colliders
-are just components: add them to an entity and its transform follows the
+are components: add them to an entity and its transform follows the
 simulation.
 
 - Shapes: spheres, boxes, capsules, convex hulls, triangle meshes and
@@ -33,7 +47,7 @@ simulation.
 You give it the velocity you want and it deals with the rest: it has a slope
 limit and a step height for stairs and kerbs, sticks to the ground when going
 downhill, and pushes light bodies out of the way. You can ask it whether it's
-on the ground.
+on the ground. A thousand characters is about the limit of a 50 Hz step.
 
 For first-person games, `ctx.set_cursor_locked` captures the mouse and
 `ctx.mouse_motion` gives you the raw movement.
@@ -46,9 +60,7 @@ mounted. A spring and damper push the chassis up, the motor and brake torque
 you set spin the wheel, and the tyre's friction curves push the chassis
 forward and sideways.
 
-You can have up to 8 wheels, so trucks and buggies work as well as cars. If
-you tuned a car for this model in another engine, the same numbers should
-work here. Every tick you set torque and steering, and you can read back each
+You can have up to 8 wheels, so trucks and buggies work as well as cars. Every tick you set torque and steering, and you can read back each
 wheel's contact, suspension compression, slip, rpm and pose for rendering.
 
 <Callout type="tip">

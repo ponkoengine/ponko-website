@@ -2,22 +2,26 @@
 title: Ponko has an MCP server for coding agents
 description: With ponko-mcp, an AI agent can launch your game, read its entities, step the simulation, take screenshots and profile frames, so it can check its work instead of guessing from the source.
 date: 2026-11-02
-tags: [Agents, Tools]
+authors: ["Leon Mamic"]
+tags: [Dev update, Agents, Tools]
 art: { palette: rose, shape: ripple }
 ---
+
+import inspector from './inspector.jpg';
 
 When an AI coding agent edits a game, it normally can't see the game. It
 reads the code, changes something, and has no way to check the result. If
 something breaks at runtime, it adds print statements and asks you what's on
-the screen.
+the screen. We wrote this post on 11 November: it is dated 2 November, the
+day the server's first version went in, and describes the server as it was
+on the 11th.
 
 `ponko-mcp` is our fix for that. It's a
 [Model Context Protocol](https://modelcontextprotocol.io) server, so it works
 with any MCP client (Claude Code, Cursor, Codex and so on). The agent can use
 it to start your game, look at what's going on inside while it runs, change
-things, and step the simulation one tick at a time. We wrote the first
-version on the engine's first evening and have kept adding to it. This post
-covers what it does now.
+things, and step the simulation one tick at a time. We wrote the first version on the engine's first
+evening and kept adding to it.
 
 ## Setup
 
@@ -46,6 +50,8 @@ covers what it does now.
 </Steps>
 
 ## What it can do
+
+<Figure src={inspector} alt="The battle example with the inspector open beside it: a list of entities and their components, the Score resource, and a time in milliseconds for each system" caption="The inspector in the battle example. It reads the world through the same reflection that ponko-mcp uses." wide />
 
 By default it launches games headless and paused, so nothing happens until
 the agent asks for it. Then the agent can:
