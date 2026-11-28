@@ -28,8 +28,8 @@ title: What's new in Ponko 0.1          # up to 90 characters
 description: One or two sentences.      # list, search results and social cards
 date: 2026-11-11                        # the day it's published
 updated: 2026-12-01                     # optional: a change readers should know about
-authors: [Ada Lovelace]                 # optional: defaults to "The Ponko team"
-tags: [Release, Rendering]              # optional: each tag gets its own page
+authors: [Leon Mamic]                   # who wrote it; defaults to Leon Mamic
+tags: [Release, Rendering]              # its kind, then up to four areas
 art: { palette: ember, shape: blobs }   # optional: see "The picture in dots"
 cover: ./cover.png                      # optional: a picture next to the file
 coverAlt: The new shadow cascades in the island demo
@@ -83,64 +83,141 @@ stops `npm run build` with a message saying which post and which field.
 
 ## Writing style
 
-Release posts are written in the style of Bevy's release posts and Godot's
+Release posts follow the order of Bevy's release posts and Godot's
 release-candidate posts: warm, concrete, and generous with links and code.
-Other posts follow the same voice.
+Other posts follow the same voice. We borrow their structure, not their
+words: say things in Ponko's own sentences.
+
+### Four kinds of post
+
+Every post is one of four kinds. The kind sets the title, the first tag and
+roughly how long it runs.
+
+| Kind | Title | Tag | Length |
+|---|---|---|---|
+| Release | `Ponko 0.3` | `Release` | 1,500 to 3,500 words |
+| Release candidate | `Release candidate: Ponko 0.3 RC 1` | `Release` | 400 to 900 words, mostly the fixed parts below |
+| Dev update | `Ponko dev update: December 2026` | `Dev update` | 500 to 1,000 words |
+| Deep dive | A plain title that says what it explains, at most 60 characters | `Deep dive` | 1,500 to 3,000 words |
+
+A post about the project itself rather than the engine (how we work, an
+incident, a change of policy) is tagged `Project` and follows the deep
+dive's voice.
+
+### Tags
+
+Each post has its kind's tag (`Release`, `Dev update`, `Deep dive` or
+`Project`) and at most four area tags, such as `Rendering`, `ECS`,
+`Physics`, `3D` or `Performance`. Reuse an area tag that exists before you
+make a new one. Don't tag a post `Engine`: every post is about the engine,
+so the tag filters nothing.
 
 ### Voice
 
 - "We" is the people making Ponko, "you" is the person using it. Talk to
   them, not about them.
+- Release and candidate posts say "we" for the project. Deep dives and
+  dev updates are written by one person, in the first person: "I measured
+  ...".
 - Warm and a little excited, never salesy. Short bits of humour are welcome
-  inside technical prose; jokes are not a section of their own.
+  inside technical prose; jokes are not a section of their own. At most
+  three exclamation marks per thousand words.
 - Plain about limits. Say what doesn't work yet, on which platform, in one
   flat sentence ("Mesh shaders are not supported on the web."). Explain a
   trade-off when you make one ("We think this is worth it, because ...").
 - Sentences mostly of 12 to 25 words, paragraphs of one to four sentences.
   Follow a long explanation with a short line.
-- Introduce a name the first time with what it is: "Feathers, our
-  editor-first UI toolkit, now has more widgets".
-- Link generously: the guide chapter, docs.rs, the example, the pull request.
+- Introduce a name the first time with what it is: "`ponko-mcp`, our
+  server that lets a coding agent drive a running game, can now take
+  screenshots".
+- Link generously: the guide chapter, docs.rs, the example, the pull
+  request. Every issue and pull request number is a link.
 - Use _italics_ for the odd intensifier, bold only for the names in lists.
+
+### Words we don't use
+
+These words say nothing a reader can check, so they don't appear: blazing,
+seamless, powerful, robust, game-changing, revolutionary, effortless,
+production-ready. "Huge" and "massive" only appear with a number after them.
+Instructions don't say "simply" or "just": if a step were simple, the reader
+wouldn't need it written down.
+
+### Numbers
+
+Every number has its sentence, and every number has a source in the engine
+repository. A number we can't trace back to a measurement there is not
+printed. When you give a measurement, say:
+
+- what was measured, and how big it was (a million entities, 1080p);
+- the machine, the operating system and the graphics backend;
+- the before and after in absolute units, and the ratio after them;
+- how many runs, and which one you give ("the median of 10 runs");
+- a link to the benchmark's source or the guide page with the table;
+- one hedge: where the result would differ.
+
+No "up to". No ratio without the absolute numbers next to it. When a
+number later changes, the post keeps the old one and says when it was
+measured, with a link to the current figure.
+
+### Pictures
+
+Every post has at least one real picture or clip of the engine's output: a
+capture from an example, a test image or a screenshot from the guide's
+`book/src/images/`. Captures are made headlessly where the engine can. The
+alt text says what is on screen, not what it proves.
+
+### Dates
+
+A post's `date` is the day it was written. A post about earlier work says
+so in its first paragraph: "I wrote this on 20 November, about the work
+of 2 to 5 November."
 
 ### A release post
 
-1. **The opening.** Who made it and how much ("Thanks to N contributors and
-   M pull requests, we're happy to announce Ponko 0.3 on crates.io!"), then
-   two sentences on what Ponko is with links to the guide, the source and
-   the examples. End with "It's free and open source forever!" Point to the
-   migration guide in one sentence.
-2. **Highlights.** "There's a _lot_ in this release, but here are some of
-   the highlights:" and a bullet list of five to eight items, each a bold
-   name, a colon and one sentence.
+1. **The opening.** Say who made it, honestly. Until ten people have
+   contributed, don't write "Thanks to N contributors": write "Ponko 0.3
+   is on crates.io. It has commits from 3 people; thanks to @a and @b for
+   ...". Thank the people who reported bugs and tested the release by
+   name, too. Then two sentences on what Ponko is, with links to the
+   guide, the source and the examples, and that it is free and open source
+   under MIT or Apache 2.0, in our own words. Point to the migration guide
+   in one sentence.
+2. **Highlights.** A short lead-in and a bullet list of five to eight
+   items, each a bold name, a colon and one sentence.
 3. **One section per feature**, as `##` headings in Title Case, plain noun
    phrases ("Compute Readback", "Game States"). Under the heading, a credit
-   line with the authors' GitHub handles and the pull requests:
+   line with the authors' GitHub handles and the pull requests, linked:
 
    ```md
-   Authors: @someone, @someone-else · PRs: #702, #710
+   Authors: @someone, @someone-else · PRs: [#702](https://github.com/ponkoengine/ponko/pull/702)
    ```
 
    Then: what was hard or missing before (one short paragraph), what you can
    do now, and code. Show changes to existing APIs as a before and after
    (`// Before` and `// After`, or two titled blocks). Sub-features get `###`
-   headings. End with where to see it: "Check out the `compute` example to
-   see it in action!" A section can be three sentences or a page; size it to
-   the feature.
+   headings. End with where to see it: "Run the `compute` example to see it
+   in action." A section can be three sentences or a page; size it to the
+   feature.
 4. **Breaking changes** are explained where they happen, inside the
    feature's section, with before and after code. The migration guide is
    linked once at the top and once at the end.
-5. **What's next**, a few lines on what we're working on.
-6. **Thanks**, with the number of contributors and a link to the full
-   changelog.
+5. **Known limitations**: three to six bullets, each a flat sentence linked
+   to its issue.
+6. **What's next**, a few lines naming the work in progress. No dates.
+7. **Thanks**, by name, with a link to the full changelog.
+
+Release, candidate and dev-update posts will end with a fixed "Support
+Ponko" block (who works on it, what money pays for, and the link), once a
+page for donations exists.
 
 ### A release-candidate post
 
 The same voice, in Godot's order:
 
 1. What a candidate is (features locked, only fixes for regressions from now
-   on, the final release when a week passes without one) and why testing
-   matters. Ask people to back up or use version control.
+   on) and the one condition for the final release, stated the same way
+   everywhere in the post. Say why testing matters, and ask people to back
+   up or use version control.
 2. Highlights, or a link to the post that had them.
 3. What changed since the last candidate or preview, in the section
    style above, as a short list for small fixes.
@@ -151,11 +228,16 @@ The same voice, in Godot's order:
 7. Bug reports: where, and what is most useful.
 8. Thanks.
 
+Only the first candidate gets a post. Later candidates update it.
+
 ### Credits
 
-Posts are signed by the people who made the work (`authors`) or by the
-Ponko team. Commits and pull requests for posts carry no tool attribution:
-no co-author lines and no "generated with" footers.
+A post is signed with the name of the person who wrote it (`authors`), or
+the names of the people who did. The maintainer signs as `Leon Mamic`, and a
+post without `authors` gets that name. We don't sign as "the Ponko team":
+a reader should know who is talking. Commits and pull requests for posts
+carry no tool attribution: no co-author lines and no "generated with"
+footers.
 
 ## Markdown
 

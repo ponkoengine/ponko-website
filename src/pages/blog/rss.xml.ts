@@ -6,7 +6,7 @@ export async function GET(context: APIContext) {
   const posts = (await getPosts()).filter((p) => !p.data.draft);
   return rss({
     title: 'Ponko blog',
-    description: 'News from Ponko: releases, how the engine works inside, and games people make with it.',
+    description: 'News from Ponko: releases, how the engine works inside, and what is happening in the project.',
     site: context.site!,
     items: posts.map((post) => ({
       title: post.data.title,

@@ -13,6 +13,7 @@ export function template(title, date) {
 title: ${quoted}
 description: One or two sentences that say what the post is about. They show in the list of posts, in search results and on social cards.
 date: ${date}
+authors: [Leon Mamic]
 tags: []
 draft: true
 ---
